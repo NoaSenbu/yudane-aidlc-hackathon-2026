@@ -29,7 +29,7 @@
 ### 🔵 INCEPTION PHASE
 - [x] Workspace Detection
 - [ ] Reverse Engineering (N/A - greenfield)
-- [x] Requirements Analysis（v0.7、2026-05-10 ）
+- [x] Requirements Analysis（v0.8、2026-05-10 ダメ化 3 段メカニズム M-1/M-2/M-3 を明示化）
 - [x] User Stories（美咲ペルソナ追加、2026-05-10）
 - [x] Workflow Planning
 - [x] Application Design

@@ -305,7 +305,7 @@ YUDANE は「ダメにする」を名乗るが、**2 層構造で実害を抑え
 **Inception Phase 完了内訳**:
 
 - Workspace Detection ✅
-- Requirements Analysis（v0.7）✅
+- Requirements Analysis（v0.8）✅
 - User Stories（**28 本** + ペルソナ 2 名 + 非ターゲット 3 名 + 1 年退化年表）✅
 - Workflow Planning（EXECUTE / SKIP 判定済み）✅
 - Application Design（31 コンポーネント + 7 サービス）✅
@@ -315,11 +315,19 @@ YUDANE は「ダメにする」を名乗るが、**2 層構造で実害を抑え
 <details>
 <summary><strong>Construction Phase 規約整備</strong>（書類審査対象外、参考情報）</summary>
 
-並行開発のためのステアリング規約を既存 3 ファイルに統合済（実装・CI・デプロイは Construction 着手後に進める）。
+並行開発のためのステアリング規約を **3 層構造（always / fileMatch / manual）** で整備済。context を最小化しつつ対象ファイル編集時に詳細ルールが自動発火する（実装・CI・デプロイは Construction 着手後に進める）。
 
-- [`.kiro/steering/AGENTS.md`](.kiro/steering/AGENTS.md): Git 運用 / 品質ゲート / 衝突解決
-- [`.kiro/steering/structure.md`](.kiro/steering/structure.md): 命名規則 / コード編集ルール
-- [`.kiro/steering/tech.md`](.kiro/steering/tech.md): Lint・型 / API 契約ガバナンス / テストレイヤー
+**常時注入（always）** — 横断規約・プロダクト文脈:
+
+- [`product.md`](.kiro/steering/product.md) / [`AGENTS.md`](.kiro/steering/AGENTS.md) / [`structure.md`](.kiro/steering/structure.md) / [`tech.md`](.kiro/steering/tech.md) / [`hackathon-evaluation-criteria.md`](.kiro/steering/hackathon-evaluation-criteria.md)
+
+**コンテキスト発火（fileMatch）** — 対象ファイル編集時に自動注入:
+
+- [`tech-typescript.md`](.kiro/steering/tech-typescript.md)（`*.ts*`）/ [`tech-python.md`](.kiro/steering/tech-python.md)（`*.py`）/ [`tech-cdk.md`](.kiro/steering/tech-cdk.md)（`infra/**`）/ [`api-contracts.md`](.kiro/steering/api-contracts.md)（`shared/schema/**`）/ [`hackathon-stage-checklists.md`](.kiro/steering/hackathon-stage-checklists.md)（`aidlc-docs/**`）
+
+**AI 自発 readFile（manual）** — キーワード検出時に AI が自動読込:
+
+- [`git-ops.md`](.kiro/steering/git-ops.md) / [`dev-commands.md`](.kiro/steering/dev-commands.md) — 発動条件は [`AGENTS.md` §10](.kiro/steering/AGENTS.md) 参照
 
 </details>
 
@@ -339,7 +347,9 @@ YUDANE は「ダメにする」を名乗るが、**2 層構造で実害を抑え
 | アプリケーション設計 | [application-design.md](aidlc-docs/inception/application-design/application-design.md) / [components.md](aidlc-docs/inception/application-design/components.md) / [component-methods.md](aidlc-docs/inception/application-design/component-methods.md) / [services.md](aidlc-docs/inception/application-design/services.md) / [component-dependency.md](aidlc-docs/inception/application-design/component-dependency.md) |
 | Unit of Work | [unit-of-work.md](aidlc-docs/inception/application-design/unit-of-work.md) / [unit-of-work-dependency.md](aidlc-docs/inception/application-design/unit-of-work-dependency.md) / [unit-of-work-story-map.md](aidlc-docs/inception/application-design/unit-of-work-story-map.md) |
 | 計画 | [execution-plan.md](aidlc-docs/inception/plans/execution-plan.md) / [application-design-plan.md](aidlc-docs/inception/plans/application-design-plan.md) / [unit-of-work-plan.md](aidlc-docs/inception/plans/unit-of-work-plan.md) / [story-generation-plan.md](aidlc-docs/inception/plans/story-generation-plan.md) / [user-stories-assessment.md](aidlc-docs/inception/plans/user-stories-assessment.md) |
-| Construction 並行開発規約 | [AGENTS.md](.kiro/steering/AGENTS.md)（Git 運用 / 品質ゲート / マイルストーン判定 / 同期プロトコル）/ [structure.md](.kiro/steering/structure.md)（命名規則 / コード編集ルール）/ [tech.md](.kiro/steering/tech.md)（Lint・型・フォーマッタ / API 契約ガバナンス / テストレイヤー） |
+| Construction 並行開発規約（always） | [AGENTS.md](.kiro/steering/AGENTS.md)（横断規約 / Git ダイジェスト / 品質ゲート原則 / AI 自発参照ガイド）/ [structure.md](.kiro/steering/structure.md)（ディレクトリ配置 / Unit 構成）/ [tech.md](.kiro/steering/tech.md)（技術スタック / 開発環境 / 品質ゲート）/ [product.md](.kiro/steering/product.md)（プロダクト概要）/ [hackathon-evaluation-criteria.md](.kiro/steering/hackathon-evaluation-criteria.md)（4 審査基準コア） |
+| Construction 並行開発規約（fileMatch 自動発火） | [tech-typescript.md](.kiro/steering/tech-typescript.md)（`*.ts*`）/ [tech-python.md](.kiro/steering/tech-python.md)（`*.py`）/ [tech-cdk.md](.kiro/steering/tech-cdk.md)（`infra/**`）/ [api-contracts.md](.kiro/steering/api-contracts.md)（`shared/schema/**`）/ [hackathon-stage-checklists.md](.kiro/steering/hackathon-stage-checklists.md)（`aidlc-docs/**`） |
+| Construction 並行開発規約（AI 自発 readFile） | [git-ops.md](.kiro/steering/git-ops.md)（ブランチ / PR / マージ / 衝突解決）/ [dev-commands.md](.kiro/steering/dev-commands.md)（ビルド / テスト / デプロイ / 破壊的コマンド） |
 | プロセス管理 | [aidlc-state.md](aidlc-docs/aidlc-state.md) / [audit.md](aidlc-docs/audit.md) |
 
 ---

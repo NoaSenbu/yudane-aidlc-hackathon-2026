@@ -1,7 +1,7 @@
 # Application Design — 統合ビュー
 
 > YUDANE のアプリケーション設計統合ドキュメント。4 つの詳細成果物を束ねる入口。  
-> 参照: [要件書 v0.6](../requirements/requirements.md) / [ストーリー v1.1 (28 本)](../user-stories/stories.md) / [ペルソナ](../user-stories/personas.md) / [実行計画](../plans/execution-plan.md)
+> 参照: [要件書 v0.8](../requirements/requirements.md) / [ストーリー v1.1 (28 本)](../user-stories/stories.md) / [ペルソナ](../user-stories/personas.md) / [実行計画](../plans/execution-plan.md)
 
 ## 構成ドキュメント
 
@@ -16,7 +16,7 @@
 
 ## 設計サマリ
 
-### 技術スタック（要件書 v0.6 準拠）
+### 技術スタック（要件書 v0.8 準拠）
 
 | レイヤ | 選定 |
 |---|---|
