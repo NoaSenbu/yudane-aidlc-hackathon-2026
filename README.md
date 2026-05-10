@@ -20,12 +20,13 @@ AWS Summit Japan 2026 AI-DLC ハッカソン応募作品。テーマ「人をダ
 5. [👤 このアプリで完成した人間像（Year 1 後の悠介）](#-このアプリで完成した人間像year-1-後の悠介)
 6. [🗂️ Unit 責務サマリ](#%EF%B8%8F-unit-責務サマリ)
 7. [🔧 技術スタックとシステム構成](#-技術スタックとシステム構成)
-8. [🛡️ 倫理ライン](#%EF%B8%8F-倫理ライン)
-9. [🚥 進捗](#-進捗)
-10. [🎨 モックアップ](#-モックアップビジュアル検証用)
-11. [🧠 AI 論破プロンプトの設計原則](#-ai-論破プロンプトの設計原則)
-12. [🧪 AI-DLC プロセス](#-ai-dlc-プロセス--サイクル反復で品質を磨く方針)
-13. [🗓️ ハッカソン情報 / ライセンス](#%EF%B8%8F-ハッカソン情報)
+8. [📁 フォルダ構成](#-フォルダ構成)
+9. [🛡️ 倫理ライン](#%EF%B8%8F-倫理ライン)
+10. [🚥 進捗](#-進捗)
+11. [🎨 モックアップ](#-モックアップビジュアル検証用)
+12. [🧠 AI 論破プロンプトの設計原則](#-ai-論破プロンプトの設計原則)
+13. [🧪 AI-DLC プロセス](#-ai-dlc-プロセス--サイクル反復で品質を磨く方針)
+14. [🗓️ ハッカソン情報 / ライセンス](#%EF%B8%8F-ハッカソン情報)
 
 </details>
 
@@ -189,6 +190,37 @@ YUDANE の価値提案は短期的な便利さではなく、**時間をかけ�
 </details>
 
 システム構成図（Mermaid）と 31 コンポーネント × 7 サービスの全体像は [Application Design](aidlc-docs/inception/application-design/application-design.md) を参照。
+
+---
+
+## 📁 フォルダ構成
+
+```
+yudane-aidlc-hackathon-2026/
+├── README.md
+├── LICENSE
+├── .gitignore
+│
+├── aidlc-docs/                          # 📄 AI-DLC ドキュメント（Inception 成果物）
+│   ├── aidlc-state.md                   #   ステージ進捗追跡
+│   ├── audit.md                         #   AI-DLC 対話履歴
+│   └── inception/
+│       ├── requirements/                #   要件書 v0.8 / NG シナリオ / 市場ポジショニング
+│       ├── user-stories/                #   28 ストーリー / ペルソナ / 退化年表
+│       ├── application-design/          #   31 コンポーネント / 7 サービス / 8 Units
+│       ├── mockup-validation/           #   6 画面仮説検証 / 論破コピー代表例集
+│       └── plans/                       #   実行計画 / 各ステージプラン
+│
+├── mockup/                              # 🎨 静的 HTML モックアップ（ビジュアル検証用）
+│   ├── index.html                       #   6 画面（ホーム/カート介入/リール/論破/レポート/セーフガード）
+│   ├── styles.css / app.js
+│   └── assets/{brand,products}/*.svg
+│
+└── .kiro/                               # ⚙️ Kiro IDE 設定 / AI steering
+    └── steering/                        #   3 層構造（always / fileMatch / manual）
+```
+
+Construction Phase 着手後に `mobile/` / `backend/` / `infra/` / `shared/` が追加される。詳細は [structure.md](.kiro/steering/structure.md) を参照。
 
 ---
 
