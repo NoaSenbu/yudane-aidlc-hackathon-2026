@@ -449,7 +449,7 @@ UC-03 / FR-CART-01, FR-CART-08 / SECURITY-05 / §8 A-10 / Persona A
 
 #### 受入条件
 
-- **AC-1**: GIVEN カート監視リストに商品が登録された、WHEN バックエンドの通知スケジューラ（Amazon Pinpoint）が起動する、THEN 30 分後 / 6 時間後 / 24 時間後の 3 ステップで追撃通知がスケジュールされる（FR-CART-02）
+- **AC-1**: GIVEN カート監視リストに商品が登録された、WHEN バックエンドの通知スケジューラ（AWS End User Messaging Push + EventBridge Scheduler）が起動する、THEN 30 分後 / 6 時間後 / 24 時間後の 3 ステップで追撃通知がスケジュールされる（FR-CART-02）
 - **AC-2**: GIVEN 各ステップの通知、WHEN 配信内容が合成される、THEN ステップに応じて「軽い論破」「記憶想起」「最終通告」のトーンが使い分けられる（コピー例は mockup / 付録 A 参照）
 - **AC-3**: GIVEN ユーザーが通知タップ、WHEN 論破モードに遷移、THEN UC-01 のフローに合流する（FR-CART-03）
 - **AC-4**: GIVEN ユーザーが「いらない」を明示的に選択、WHEN 監視エントリが更新される、THEN 残りの追撃通知はすべてキャンセルされる
@@ -470,7 +470,7 @@ UC-03 / FR-CART-01, FR-CART-08 / SECURITY-05 / §8 A-10 / Persona A
 
 #### INVEST 適合
 
-Independent ✓ / Negotiable ✓（通知タイミングは調整可）/ Valuable ✓（核心の成約ドライバ）/ Estimable ✓ / Small ✓（Pinpoint スケジューラ活用）/ Testable ✓（配信率・開封率・キャンセル率は計測可能）
+Independent ✓ / Negotiable ✓（通知タイミングは調整可）/ Valuable ✓（核心の成約ドライバ）/ Estimable ✓ / Small ✓（End User Messaging + EventBridge Scheduler 活用）/ Testable ✓（配信率・開封率・キャンセル率は計測可能）
 
 #### 関連
 

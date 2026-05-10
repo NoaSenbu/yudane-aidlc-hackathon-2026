@@ -147,3 +147,51 @@ This file contains the complete audit trail of all user inputs and AI responses 
 **Context**: User Stories stage complete — 次ステージ Workflow Planning へ移行可能
 
 ---
+
+## Workflow Planning — 実行計画ドキュメント作成
+**Timestamp**: 2026-05-07T06:30:00Z
+**User Input**: "A"（Workflow Planning ステージに進む）
+**AI Response**: "Workflow Planning を実施。execution-plan.md 作成。後続ステージの EXECUTE/SKIP 判定: Application Design = EXECUTE（Greenfield の多コンポーネント設計）/ Units Generation = EXECUTE（評価軸『Unit 分解の適切さ』の核心）/ 全 Construction Phase 条件付きステージ（Functional Design, NFR Requirements, NFR Design, Infrastructure Design）= EXECUTE / Code Generation & Build and Test = ALWAYS EXECUTE。リスク Medium-High（Amazon Approved Mobile App 承認タイミング不確定 + PBT/Security 全面強制による実装負荷 + 4 名× 3 週間スケジュール）。Mermaid ワークフロー可視化を content-validation ルールに従い作成。書類審査締切 5/10 までの直近 3 日の重点を Application Design + Units Generation に明記。aidlc-state.md の Stage Progress と Current Stage を更新。承認待ち。"
+**Context**: Workflow Planning - Step 7 (execution-plan.md 作成) 完了, Step 9 承認ゲート前
+
+---
+
+## Workflow Planning — 技術スタック更新（RN + Amplify Gen 2 + End User Messaging）
+**Timestamp**: 2026-05-07T07:00:00Z
+**User Input**: "モバイルはFlutterではなく、React Nativeを使ってください。AWS Pinpointは2026年10月にサービス終了するので、別のもの（例えばEnd User Messaging）を使ってください。サーバーレスではなくCDKにしてください。Amplifyは使えますか？" → "Q1=Ampilfy Gen2 + CDKで良いです。Q2=ii"
+**AI Response**: "AWS 公式情報を Web 検索で確認: Pinpoint EoL 2026-10-30 で AWS End User Messaging が後継、Amplify Gen 2 は CDK ベースで React Native 公式サポートあり。ユーザー選択（Amplify Gen 2 + CDK 拡張 / Auth は Amplify・他は生 CDK）を反映して requirements.md を v0.3 → v0.4 に更新。(1) §6.5 PBT-09: glados (Dart) → fast-check (TypeScript/RN)。(2) §7 技術スタック表の全行更新: モバイル = RN + Amplify Gen 2 SDK、認証 = Amplify Auth、API/データ = Amplify Data + CDK 拡張 Lambda、プッシュ通知 = AWS End User Messaging Push + EventBridge Scheduler、CI/CD = Amplify Gen 2 + CDK 拡張。(3) §7 末尾に v0.3→v0.4 変更メモ追加。(4) §8 A-2 モバイル実装戦略: RN + Amplify Gen 2 採用範囲を明記（Auth/Data 中心、論破 LLM / Creators API / カート追撃は CDK 拡張で Lambda）。(5) execution-plan.md の技術言及 3 箇所（概要 / リスク / パッケージ構造）を更新。(6) stories.md US-03-02 の AC-1 + INVEST で Pinpoint → End User Messaging + EventBridge Scheduler に置換。(7) mockup/README.md の Flutter 参照 2 箇所を RN + Amplify Gen 2 に置換。全置換完了、残存参照なし。"
+**Context**: Workflow Planning - execution-plan.md 承認前の技術スタック更新（ユーザー要望対応）
+
+---
+
+## Workflow Planning — Approve & Continue → Application Design 着手
+**Timestamp**: 2026-05-07T07:15:00Z
+**User Input**: "Approve & Continue"
+**AI Response**: "Workflow Planning 承認。execution-plan.md に記載の EXECUTE 判定（Application Design + Units Generation + 全 Construction 条件付きステージ）を有効化。Current Stage を Application Design Part 1 Planning に更新。Part 1 で application-design-plan.md を作成し、設計判断ポイントを [Answer]: タグ形式でユーザーに投げる。Part 2 で承認後に components.md / component-methods.md / services.md / component-dependency.md / application-design.md（統合）を生成する計画。"
+**Context**: Workflow Planning 完了 → Application Design 遷移
+
+---
+
+## Application Design — Q1-Q8 回答分析 + Amplify 全面削除方針確定 + Part 2 Generation
+**Timestamp**: 2026-05-07T08:00:00Z
+**User Input**: Q1=C, Q2=B（+「Amplifyを削除してください」）, Q3=B, Q4=A, Q5=A, Q6=B, Q7=A, Q8=B → 矛盾検出（Q2=B vs Q5=A の Amplify Data hooks）→ "Xにします"（Amplify 完全削除）→ "A"（Q5=TanStack Query + Zustand + 要件書 v0.5 + Part 2 一気通貫で進む）
+**AI Response**: "矛盾を 5-whys で解析、Amplify 全面削除で統一。(1) requirements.md を v0.4 → v0.5 に更新: §7 技術スタック表の 5 行から Amplify 関連記述を削除（モバイル = RN + TypeScript + AWS SDK v3 + TanStack Query + Zustand / 認証 = Cognito + amazon-cognito-identity-js 直接 / API・データ = API Gateway + Lambda + 生 DynamoDB / CI/CD = AWS CDK 単独 / AI 呼出 = CDK 管理 Lambda）。(2) §7 末尾に v0.4→v0.5 変更メモ追加、§8 A-2 モバイル実装戦略を Amplify 不採用で書き換え。(3) execution-plan.md の 3 箇所（概要/リスク/パッケージ構造）で Amplify 言及を削除。(4) application-design-plan.md の設計スコープ・アーキテクチャ前提・Backend 層暫定案テーブルを Amplify 不採用に更新、末尾に Q1-Q8 確定サマリを追記。(5) mockup/README.md の『Amplify Gen 2 本実装』2 箇所を『AWS SDK v3 本実装（Amplify 不採用）』に。(6) Part 2 Generation 実施: application-design/ 配下に 5 ファイル生成 — components.md（Mobile 13 + Backend 13 + Shared 4 = 計 30 コンポーネント）/ component-methods.md（主要メソッドシグネチャ TS+Python）/ services.md（SVC-01〜07 オーケストレーション + サービス相関マトリクス）/ component-dependency.md（全体 Mermaid graph + UC-01/02/03 × UC-04 の sequence diagram + 通信パターン + ストア配置 + 障害フォールバック）/ application-design.md（統合ビュー + ディレクトリ構造 + UC↔SVC マッピング + 未解決事項）。全 9 ファイル診断エラーなし。Amplify 残存参照は履歴メモと選択肢記録のみ（意図的に保持）。plan チェックボックス更新、aidlc-state.md の Current Stage を Part 2 完了・承認待ちに更新。"
+**Context**: Application Design - Part 2 Generation 完了, Step 13 承認ゲート前
+
+---
+
+## Application Design — セルフレビュー後の修正（B: Issue 1-7 全修正）
+**Timestamp**: 2026-05-07T08:30:00Z
+**User Input**: "自己レビューしてください" → "B"（Issue 1-7 すべて修正）
+**AI Response**: "セルフレビューで 7 件検出、すべて修正。(1) components.md に `B-14 TelemetryIngestionService` を追加、Backend 数 13 → 14、合計 30 → 31。(2) 主要 API エンドポイントに 5 件追加（POST /users/{id}/profile, GET/PATCH /users/{id}, DELETE /users/{id}, POST /calendar-categories, POST /telemetry）。(3) component-methods.md に B-01 AuthEdgeLambda（on_post_confirmation / on_pre_token_generation）、B-12 AuditLogger（log / metric / trace の 3 関数）、B-14 TelemetryIngestionService を追加。(4) services.md に FR-FUNNEL 具現化マッピング（FR-FUNNEL-01〜05 × 実装 SVC/コンポーネント）と北極星指標の集計経路（M-13 Telemetry + B-12 AuditLogger → CloudWatch Metrics → B-08 日次集計 → WeeklyReports → M-06 / SVC-07）を追記。(5) component-dependency.md に主要データフロー 4（認証: サインアップ / MFA / サインイン / リフレッシュ）の sequence diagram を新設。(6) データフロー 1 に Share Extension の簡略化注記を追加（実装では Platform Channel 経由で registerAsCartWatchItem 経由）。(7) application-design.md の Backend 数を 14 に更新、合計 31 に更新。全 5 ファイル診断エラーなし。"
+**Context**: Application Design Part 2 承認前のセルフレビュー修正 7 件
+
+---
+
+## Application Design — 2 巡目セルフレビュー後の最終修正（Issue 8-12）
+**Timestamp**: 2026-05-07T08:45:00Z
+**User Input**: "自己レビューしてください。" → "A"（Issue 8-12 修正）
+**AI Response**: "2 巡目レビューで B 修正の伝播漏れ 5 件を検出、即修正。(8) application-design.md L10 の components 参照で計 30 個 → 31 個。(9) L13 の主要データフロー 3 本 → 4 本（Auth Flow 追加分）。(10) L145 未解決事項 (1) Lambda 単位で 11 個 → 12 個（B-14 追加分）。(11) backend/ ディレクトリ構造に auth/ (B-01) と telemetry/ (B-14) を追加し 11 フォルダ → 13 フォルダ。(12) component-dependency.md の全体依存図 Backend subgraph に `TelIn[B-14 TelemetryIngestion]` ノード追加、`APIGW --> TelIn` の経路を追加。全 2 ファイル診断エラーなし。2 巡目レビューで要件書・他成果物との整合性が完全に取れたことを確認。"
+**Context**: Application Design Part 2 最終修正、Approve & Commit 前
+
+---

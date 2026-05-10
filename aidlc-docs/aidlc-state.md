@@ -8,7 +8,7 @@
 - **Project Type**: Greenfield
 - **Start Date**: 2026-05-07T00:00:00Z
 - **Current Phase**: 🔵 INCEPTION PHASE
-- **Current Stage**: User Stories 完了 → Workflow Planning 待ち
+- **Current Stage**: Application Design Part 2 Generation 完了、承認待ち
 - **User Language**: Japanese
 
 ## Workspace State
@@ -30,13 +30,18 @@
 - [ ] Reverse Engineering (N/A - greenfield)
 - [x] Requirements Analysis
 - [x] User Stories
-- [ ] Workflow Planning
-- [ ] Application Design (TBD)
-- [ ] Units Generation (TBD)
+- [x] Workflow Planning
+- [ ] Application Design (EXECUTE)
+- [ ] Units Generation (EXECUTE)
 
 ### 🟢 CONSTRUCTION PHASE
 - [ ] Per-Unit Loop (pending)
-- [ ] Build and Test
+- [ ] Functional Design (EXECUTE, per-unit)
+- [ ] NFR Requirements (EXECUTE, per-unit)
+- [ ] NFR Design (EXECUTE, per-unit)
+- [ ] Infrastructure Design (EXECUTE, per-unit)
+- [ ] Code Generation (EXECUTE, per-unit)
+- [ ] Build and Test (EXECUTE)
 
 ### 🟡 OPERATIONS PHASE
 - [ ] Operations (placeholder)

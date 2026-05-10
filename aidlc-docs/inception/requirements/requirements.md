@@ -3,7 +3,7 @@
 > プロダクト: 買わない理由を論破する、AI エージェント・コマース  
 > スコープ: AWS Summit Japan 2026 AI-DLC Hackathon テーマ「人をダメにするサービスを考えよう！」への応募作品として設計  
 > ステージ: 🔵 INCEPTION / Requirements Analysis  
-> バージョン: v0.3
+> バージョン: v0.5
 
 ---
 
@@ -356,7 +356,7 @@ YUDANE は「ユーザーの購入意思決定のファネルにいかに深く�
 | PBT-06 Stateful | **カート介入の状態遷移**（登録 → 30 分後通知 → 6 時間後通知 → 24 時間後通知 → Amazon 遷移 or 破棄）、委ね EXP / Streak 遷移、冷却モード遷移 |
 | PBT-07 Generator quality | 金額・歩数・カレンダー予定パターンに対する現実的ドメインジェネレータ |
 | PBT-08 Shrinking | 失敗ケースの自動縮約、シード値ログ必須 |
-| PBT-09 Framework | Flutter/Dart: `glados`、バックエンド Python Lambda: Hypothesis、ネイティブ拡張で必要に応じて SwiftCheck / Kotest PT |
+| PBT-09 Framework | **React Native/TypeScript**: `fast-check`、バックエンド Python Lambda: Hypothesis、ネイティブモジュールは必要に応じて SwiftCheck / Kotest PT |
 | PBT-10 Complementary | 主要 UC-01/02/03 は example-based test も併存必須 |
 
 ### 6.6 アクセシビリティ
@@ -378,29 +378,41 @@ YUDANE は「ユーザーの購入意思決定のファネルにいかに深く�
 
 | レイヤ | 候補 | 理由 |
 |---|---|---|
-| モバイル | **Flutter** を第一候補、iOS Swift + Android Kotlin を第二候補 | 4 名で両 OS 対応する実装効率。**ただし Share Extension / Share Target は Platform Channel 経由でネイティブ実装**（Flutter プラグインだけでは実現困難） |
-| 認証 | Amazon Cognito + TOTP MFA | SECURITY-12 整合 |
-| API | API Gateway (REST) + Lambda (Python 3.12) | サーバーレス、Hypothesis で PBT |
-| データストア | DynamoDB（ユーザー / Amazon 遷移履歴 / カート監視リスト）+ S3（画像 / カタログキャッシュ）+ ElastiCache Redis（セッション / Creators API キャッシュ / レート制限） | サーバーレス整合、暗号化標準 |
-| AI / 推薦 | Amazon Bedrock（Claude Haiku/Sonnet）、埋め込み Titan Embeddings、ベクトル OpenSearch Serverless | Core AI 要件 + ストリーミング + 低レイテンシ |
+| モバイル | **React Native + TypeScript** + **AWS SDK v3** + **TanStack Query**（サーバー状態）+ **Zustand**（クライアント状態） | RN と AWS SDK を直接利用して技術スタックを純化（Amplify 不採用）。Share Extension / Share Target はネイティブモジュール（`react-native-share-menu` 等）経由で実装 |
+| 認証 | **Amazon Cognito**（モバイルからは `amazon-cognito-identity-js` を直接利用）+ TOTP MFA | SECURITY-12 整合。Amplify Auth を介さず、CDK で Cognito User Pool を直接管理 |
+| API / データ | **API Gateway (REST) + Lambda (Python 3.12)** + **生 DynamoDB** | Amplify Data (AppSync) を採用せず、REST で柔軟に制御。論破 LLM / カート監視 / Amazon 連携など複雑ロジックは Lambda で自由実装 |
+| データストア | **生 DynamoDB**（ユーザー / Amazon 遷移履歴 / カート監視リスト）+ S3（画像 / カタログキャッシュ）+ ElastiCache Redis（セッション / Creators API キャッシュ / レート制限） | CDK で直接定義、暗号化標準 |
+| AI / 推薦 | Amazon Bedrock（Claude Haiku/Sonnet）、埋め込み Titan Embeddings、ベクトル OpenSearch Serverless | CDK 拡張 Lambda (Python) から呼び出し、Core AI 要件 + ストリーミング + 低レイテンシ |
 | **Amazon 連携** | **Amazon Creators API**（商品データ）+ **Amazon Associates Program**（Special Link 生成 + コミッション計測） | PA-API の後継、2026-05-15 に PA-API が廃止予定。モバイルアプリで使用するには **Approved Mobile Application** 承認が必要（§8 A-10） |
-| プッシュ通知 | Amazon Pinpoint + APNs / FCM | カート介入の時間差追撃に必須 |
-| カレンダー | iOS EventKit / Google Calendar API | FR-CAL 予定取得 |
+| プッシュ通知 | **AWS End User Messaging Push** + **EventBridge Scheduler**（CDK 拡張） | Amazon Pinpoint は 2026-10-30 で EoL のため代替採用。APNs / FCM サポート、カート介入の 30 分 / 6 時間 / 24 時間追撃を EventBridge Scheduler でスケジューリング |
+| カレンダー | iOS EventKit / Google Calendar API（RN ネイティブモジュール経由） | FR-CAL 予定取得 |
 | 観測 | CloudWatch Logs + Metrics + Alarms + X-Ray | SECURITY-02/03/14 整合 |
-| CI/CD | GitHub Actions + AWS CDK (TypeScript) | IaC + SBOM 生成 |
-| PBT FW | Hypothesis (Python) / glados (Dart) / SwiftCheck / Kotest PT | PBT-09 |
+| CI/CD | **AWS CDK (TypeScript)** + **GitHub Actions** | IaC + SBOM 生成（Amplify Gen 2 CLI は不採用） |
+| PBT FW | **Hypothesis (Python Lambda)** + **fast-check (TypeScript / React Native)** + ネイティブモジュール用に必要に応じて SwiftCheck / Kotest PT | PBT-09 |
 
 v0.2 から削除したもの:
 
 - Plaid / Moneytree / Money Forward ME（金融アグリゲーション）→ オンボーディングアンケートで代替
 - Stripe test mode / Square sandbox（決済）→ Amazon 側で決済が完結するため不要
 
+v0.3 → v0.4 で更新:
+
+- Flutter → **React Native + AWS Amplify Gen 2**（Auth / Data を中心に採用、複雑ロジックは CDK 拡張 Lambda）
+- Amazon Pinpoint（2026-10-30 EoL）→ **AWS End User Messaging Push + EventBridge Scheduler**
+- PBT FW: glados (Dart) → **fast-check (TypeScript / React Native)**
+
+v0.4 → v0.5 で更新:
+
+- **AWS Amplify Gen 2 を全面削除**（Data / Auth / Functions / CLI すべて不採用）。AppSync の縛りを外し、REST + Lambda + 生 DynamoDB で柔軟性と説明容易性を優先
+- モバイル状態管理: **TanStack Query**（サーバー状態）+ **Zustand**（クライアント状態）を採用。認証は `amazon-cognito-identity-js` を直接利用
+- IaC は **AWS CDK (TypeScript) 単独**、Amplify Gen 2 CLI のラッパーは不採用
+
 ---
 
 ## 8. 前提 & 未確定事項
 
 - **A-1 プロダクト名**: **「YUDANE（委ね）」で確定**。「判断を委ねる」= 自分で決める能力を放棄するという、本プロダクトの退化ゴール（§2.5）そのものを名前に刻む
-- **A-2 モバイル実装戦略**: Flutter 第一候補、Share Extension / Share Target はネイティブ Platform Channel で実装
+- **A-2 モバイル実装戦略**: **React Native + AWS SDK v3** を第一候補（Amplify 不採用）。状態管理は **TanStack Query + Zustand**、認証は `amazon-cognito-identity-js` でモバイルから Cognito を直接利用。Share Extension / Share Target はネイティブモジュール（`react-native-share-menu` 等）経由で実装。論破 LLM / Creators API 連携 / カート監視スケジューラなど独自要件は **AWS CDK (TypeScript)** で Lambda を自由実装する
 - **A-3 初期コア**: UC-01（論破）/ UC-02（リール）/ UC-03（カート介入）の 3 つ。UC-04 カレンダー連動は準コアとして早期実装、サポーティング（UC-05〜08）は段階的に追加
 - **A-4 Amazon 連携のスコープ**: 初期ターゲットは Amazon（Japan マーケットプレイス）。実お金は動かさない（§9 NG-4）— YUDANE 内部で決済は持たず、ユーザーが Amazon 側で決済するため、原則として YUDANE 側の金銭的実害は発生しえない構造
 - **A-5 外部 EC 連携の段階展開**: 初期は Amazon のみ対応。拡張時に楽天・Yahoo! ショッピング・ZOZO 等を Share Target に追加
