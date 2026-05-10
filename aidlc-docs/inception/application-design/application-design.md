@@ -34,7 +34,7 @@
 ### ディレクトリ構造（暫定案、Units Generation で確定予定）
 
 ```
-AIDLC-Hackathon-2026-teamname/
+yudane-aidlc-hackathon-2026/
 ├── mobile/                     # React Native + TypeScript
 │   ├── src/
 │   │   ├── features/           # Feature-based: home/reel/debate/cart/report/safeguard

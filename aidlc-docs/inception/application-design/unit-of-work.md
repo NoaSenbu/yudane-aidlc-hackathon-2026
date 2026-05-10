@@ -18,7 +18,7 @@
 ## コード組織戦略（Greenfield モノレポ）
 
 ```
-AIDLC-Hackathon-2026-teamname/
+yudane-aidlc-hackathon-2026/
 ├── mobile/                  # React Native + TypeScript（1 アプリ、Unit ごとに features/ サブディレクトリ）
 │   └── src/features/
 │       ├── platform/        # Unit-1 の mobile 部分（AppShell, ApiClient, Telemetry）
