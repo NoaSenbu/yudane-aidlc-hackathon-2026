@@ -2,10 +2,10 @@
 
 ## Request Analysis
 
-- **Original Request**: YUDANE（買わない理由を論破する AI エージェント・コマース）の書類審査・予選向けストーリー作成
+- **Original Request**: YUDANE（買わない理由を論破する AI エージェント・コマース）の予選・決勝向けストーリー作成
 - **User Impact**: **Direct** — コア 3 UC を含む全機能がユーザー向け
 - **Complexity Level**: **Complex** — マルチタッチポイント / Amazon 連携 / LLM 論破 / セーフガード
-- **Stakeholders**: ハッカソン審査員 / プロダクト担当 / モバイル・バックエンド・AI・インフラ担当の 4 名 / 将来のユーザー（悠介・里奈）
+- **Stakeholders**: プロダクト担当 / モバイル・バックエンド・AI・インフラ担当の 4 名 / 将来のユーザー（悠介・里奈）
 
 ## Assessment Criteria Met
 
@@ -21,15 +21,15 @@
 
 ### Expected Benefits
 
-- 書類審査評価軸「Intent 明確さ」への直接貢献（ダメ化アーク付きストーリー）
-- 評価軸「Unit 分解の適切さ」の下地整備（UC × ペルソナのマッピング）
-- 評価軸「創造性とテーマ適合性」への貢献（ダメ化シグナルを受入条件に埋め込む）
+- Intent（ビジネス意図）の明確化への直接貢献（ダメ化アーク付きストーリー）
+- Unit 分解の下地整備（UC × ペルソナのマッピング）
+- 創造性とテーマ適合性への貢献（ダメ化シグナルを受入条件に埋め込む）
 - チーム内の共通理解形成（4 名並行開発時の解釈ブレを防ぐ）
 
 ## Decision
 
 **Execute User Stories**: Yes  
-**Reasoning**: High Priority 7 指標すべて該当。評価軸 4 基準のうち 3 基準（Intent / Unit 分解 / 創造性）に直接貢献。オーバーヘッドより便益が大きい。
+**Reasoning**: High Priority 7 指標すべて該当。Intent / Unit 分解 / 創造性の 3 観点に直接貢献。オーバーヘッドより便益が大きい。
 
 ## Expected Outcomes
 

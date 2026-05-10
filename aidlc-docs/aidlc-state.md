@@ -9,7 +9,7 @@
 - **Project Type**: Greenfield
 - **Start Date**: 2026-05-07T00:00:00Z
 - **Current Phase**: 🔵 INCEPTION PHASE
-- **Current Stage**: 🎉 INCEPTION PHASE 完了 → Construction Phase 着手可能（書類審査 5/10 後）
+- **Current Stage**: 🎉 INCEPTION PHASE 完了→ Construction Phase 着手可能（予選 5/30 に向けて）
 - **User Language**: Japanese
 
 ## Workspace State
@@ -29,13 +29,18 @@
 ### 🔵 INCEPTION PHASE
 - [x] Workspace Detection
 - [ ] Reverse Engineering (N/A - greenfield)
-- [x] Requirements Analysis
-- [x] User Stories
+- [x] Requirements Analysis（v0.7、2026-05-10 ）
+- [x] User Stories（美咲ペルソナ追加、2026-05-10）
 - [x] Workflow Planning
 - [x] Application Design
 - [x] Units Generation
+- [x] 🆕 Mockup Validation（補助ステージ / AI-DLC 公式外 / 6 ファイル完成、2026-05-10）
 
 ### 🟢 CONSTRUCTION PHASE
+- [x] 並行開発規約の整備（既存ステアリング 3 ファイルに統合、2026-05-10）
+  - AGENTS.md: Git 運用 / 品質ゲート / MVP・決勝 Readiness / 同期プロトコル
+  - structure.md: 識別子命名規則 / コード編集ルール
+  - tech.md: Lint・型・フォーマッタ / API 契約ガバナンス / テストレイヤー
 - [ ] Per-Unit Loop (pending)
 - [ ] Functional Design (EXECUTE, per-unit)
 - [ ] NFR Requirements (EXECUTE, per-unit)

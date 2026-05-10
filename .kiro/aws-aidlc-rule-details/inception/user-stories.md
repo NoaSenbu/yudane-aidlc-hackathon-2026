@@ -13,6 +13,7 @@ User Stories focus on:
 ## Prerequisites
 - Workspace Detection must be complete
 - Requirements Analysis recommended (can reference requirements if available)
+- Mockup Generation recommended (if executed, user stories should reference and build upon mockup artifacts at `aidlc-docs/inception/mockup/` to maintain visual-to-textual consistency)
 - Workflow Planning must indicate User Stories stage should execute
 
 ## Intelligent Assessment Guidelines
@@ -120,6 +121,7 @@ For medium priority cases, execute user stories if ANY of these apply:
 - Generate a comprehensive plan with step-by-step execution checklist for story development
 - Each step and sub-step should have a checkbox []
 - Focus on methodology and approach for converting requirements into user stories
+- **If Mockup Generation was executed**, explicitly incorporate the mockup artifacts as authoritative sources for user journeys, screen inventories, and interaction details. Stories should trace to specific screens/flows in `aidlc-docs/inception/mockup/`.
 
 ## Step 3: Generate Context-Appropriate Questions
 **DIRECTIVE**: Thoroughly analyze the requirements and context to identify ALL areas where clarification would improve story quality and team understanding. Be proactive in asking questions to ensure comprehensive user story development.

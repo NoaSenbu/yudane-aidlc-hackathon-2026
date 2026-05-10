@@ -176,14 +176,16 @@ Update `aidlc-docs/aidlc-state.md`:
 > **You may:**
 >
 > 🔧 **Request Changes** -  Ask for modifications to the requirements if required based on your review 
+> [IF Mockup Generation will be skipped, add this option:]
+> 🎨 **Add Mockup Generation** - Choose to Include **Mockup Generation** stage (currently skipped based on project type — recommended for UI-centric or user-facing projects)
 > [IF User Stories will be skipped, add this option:]
 > 📝 **Add User Stories** - Choose to Include **User Stories** stage (currently skipped based on project simplicity)  
-> ✅ **Approve & Continue** - Approve requirements and proceed to **[User Stories/Workflow Planning]**
+> ✅ **Approve & Continue** - Approve requirements and proceed to **[Mockup Generation/User Stories/Workflow Planning]**
 
 ---
 ```
 
-**Note**: Include the "Add User Stories" option only when User Stories stage will be skipped. Replace [User Stories/Workflow Planning] with the actual next stage name.
+**Note**: Include the "Add Mockup Generation" option only when Mockup Generation stage will be skipped. Include the "Add User Stories" option only when User Stories stage will be skipped. Replace [Mockup Generation/User Stories/Workflow Planning] with the actual next stage name based on which conditional stages will execute.
 
    - Wait for explicit user approval before proceeding
    - Record approval response with timestamp
