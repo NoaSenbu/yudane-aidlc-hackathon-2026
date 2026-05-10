@@ -18,16 +18,14 @@ AWS Summit Japan 2026 AI-DLC ハッカソン応募作品。テーマ「人をダ
 3. [🎬 体験シーン — 悠介の金曜深夜](#-体験シーン--悠介の金曜深夜)
 4. [💀 ダメ化の軌跡（Degradation Arc）](#-ダメ化の軌跡degradation-arc)
 5. [👤 このアプリで完成した人間像（Year 1 後の悠介）](#-このアプリで完成した人間像year-1-後の悠介)
-6. [👥 チーム（4 名編成）](#-チーム4-名編成)
-7. [🏗️ システム構成図](#%EF%B8%8F-システム構成図)
-8. [🗂️ Unit 責務サマリ](#%EF%B8%8F-unit-責務サマリ)
-9. [🔧 技術スタック](#-技術スタック)
-10. [🛡️ 倫理ライン](#%EF%B8%8F-倫理ライン)
-11. [🚥 進捗](#-進捗)
-12. [📚 ドキュメント](#-ドキュメント)
-13. [🎨 モックアップ](#-モックアップビジュアル検証用)
-14. [🧪 AI-DLC プロセス](#-ai-dlc-プロセス--サイクル反復で品質を磨く方針)
-15. [🗓️ ハッカソン情報 / ライセンス](#%EF%B8%8F-ハッカソン情報)
+6. [🗂️ Unit 責務サマリ](#%EF%B8%8F-unit-責務サマリ)
+7. [🔧 技術スタックとシステム構成](#-技術スタックとシステム構成)
+8. [🛡️ 倫理ライン](#%EF%B8%8F-倫理ライン)
+9. [🚥 進捗](#-進捗)
+10. [🎨 モックアップ](#-モックアップビジュアル検証用)
+11. [🧠 AI 論破プロンプトの設計原則](#-ai-論破プロンプトの設計原則)
+12. [🧪 AI-DLC プロセス](#-ai-dlc-プロセス--サイクル反復で品質を磨く方針)
+13. [🗓️ ハッカソン情報 / ライセンス](#%EF%B8%8F-ハッカソン情報)
 
 </details>
 
@@ -37,10 +35,13 @@ AWS Summit Japan 2026 AI-DLC ハッカソン応募作品。テーマ「人をダ
 
 - **誰に**: 過労気味のリモートワーカー（28〜35 歳、月収 34〜45 万円、可処分所得はあるが迷う人）
 - **何をする**: Amazon で「欲しいかも」と「買うか迷う」の間にあった *自分で決める間（ま）* を AI が奪う
-- **どう奪う**: 迷うたびに AI が事実 + 心理の 2 軸で論破し、2〜3 タップで Amazon に送り出す
-- **何がダメにする**: 論破されるたびに「自分で考えて決める」経験が減り、通知 → タップの反射が形成される。3 か月後には Amazon を自分で開かなくなり、1 年後には「何が欲しい？」に自分の言葉で答えられなくなる。**便利さが判断能力を段階的に奪っていく**
-- **1 年後の姿**: 監視リスト常時 34 件、自発閲覧 −96%、月間散財額 3.5 倍。友人に「何が欲しい？」と聞かれると YUDANE のポートフォリオを見せる
-- **収益**: Amazon Associates の紹介コミッション — 委ねるほど YUDANE が儲かる構造
+- **どう奪う（ダメ化の 3 段メカニズム）**:
+  - **M-1 判断力の弱体化（論理的自己甘やかし）** — AI が事実 + 心理の 2 軸で論理的に「買うべき理由」を説明 → ユーザーは反論できずに「確かに今の自分には必要かも」と自分に甘くなる
+  - **M-2 購買快楽のストレス解消剤化（ドーパミン依存形成）** — 日々のストレスを「モノを買う快楽」で解消する条件反射を形成。注文確定の解放感 + 「今日もいい選択だったね」の肯定フィードバックで脳の報酬系を強化
+  - **M-3 判断力の完全移譲** — M-1 + M-2 の複合で「買うかどうか自分で決める」ことそのものを放棄
+- **何がダメにする**: 論破されるたびに「自分で考えて決める」経験が減り（M-1）、ストレスを買物で解消する反射が身体化され（M-2）、最終的に判断すら AI に明け渡す（M-3）。3 か月後には Amazon を自分で開かなくなり、1 年後には「何が欲しい？」に自分の言葉で答えられなくなる。**便利さと快楽が判断能力を段階的に奪っていく**
+- **1 年後の姿**: 監視リスト常時 34 件、自発閲覧 −96%、月間散財額 3.5 倍。友人に「何が欲しい？」と聞かれると YUDANE のポートフォリオを見せる。**ストレスが溜まると反射的に YUDANE を開いて何か買う身体**
+- **収益**: Amazon Associates の紹介コミッション — 委ねるほど YUDANE が儲かる構造（ユーザーのストレス量と収益が比例する整合）
 - **市場での立ち位置**: 既存 EC アシスタントが「賢い買い物」を支援するのに対し、YUDANE は「迷いを潰して買わせる」方向に振り切った唯一のプロダクト。詳細は [市場ポジショニング](aidlc-docs/inception/requirements/market-positioning.md)
 
 プロダクト名「**YUDANE（委ね）**」は、到達地点そのもの。ユーザーは判断を委ねる達人になる。
@@ -73,10 +74,11 @@ iOS EventKit / Google Calendar から向こう 14 日の予定を取得（オプ
 
 ## 🎬 体験シーン — 悠介の金曜深夜
 
-YUDANE を使い始めて数週間の悠介。金曜深夜の、いつものセッション。
+YUDANE を使い始めて数週間の悠介。金曜深夜の、いつものセッション。今日は会議 6 本と上司からの追加タスクで、イライラが残ったまま寝室に入っている。
 
 ```
 23:47  Amazon でワイヤレスイヤホンをカートに入れる
+       (今日の会議 6 本 + 追加タスクでイライラが残ってる)
        「来月ピンチだしな」— 買うか迷う
        共有ボタン → 「YUDANE」に送る → Amazon を閉じる
 
@@ -84,20 +86,27 @@ YUDANE を使い始めて数週間の悠介。金曜深夜の、いつものセ�
        「悠介、あのイヤホン 3 回目だよ。1 分だけ話そう」
 
 00:18  論破モーダル起動
-       AI: 「先週の会議 23 本、よく生き延びた」
-       AI: 「時給換算 11 分のイヤホンだよ」
-       AI: 「3 回送ってきた時点で、もう答え出てるよ」
+       AI: 「先週の会議 23 本、よく生き延びた」       (事実軸 = M-1)
+       AI: 「時給換算 11 分のイヤホンだよ」          (事実軸 = M-1)
+       AI: 「今日のイライラ、このイヤホンで
+             明日リセットしようぜ」                 (ご褒美軸 = M-2)
 
 00:19  「🛍 Amazon で買う」をタップ
        Amazon アプリ起動 → カートに残っていた商品で決済画面
        2 タップで注文確定
+       注文確定の瞬間、肩の力が少し抜ける           (M-2 発火)
 
 00:20  YUDANE に戻る
-       「今日もいい選択だったね」と褒められる
+       「今日もいい選択だったね。
+        明日の自分、ちょっと機嫌いいはず」         (肯定フィードバック / M-2 強化)
+
        翌朝届いた箱を開けながら、悠介は思う
        『この AI、俺の迷いを 1 回も無駄にしない』
+       『…てか、買ったら気分治ったわ』
 
        それは、正確に、退化の瞬間である。
+       判断力が緩み (M-1)、購買がストレス解消剤になり (M-2)、
+       最終的に判断すら委ねる (M-3) ループの、最初の 1 周。
 ```
 
 詳しい 1 年の退化物語は [悠介の 1 年退化年表](aidlc-docs/inception/user-stories/persona-journey.md) を参照。
@@ -106,29 +115,28 @@ YUDANE を使い始めて数週間の悠介。金曜深夜の、いつものセ�
 
 ## 💀 ダメ化の軌跡（Degradation Arc）
 
-YUDANE の価値提案は短期的な便利さではなく、**時間をかけて進行する行動変容** にある。
+YUDANE の価値提案は短期的な便利さではなく、**時間をかけて進行する行動変容** にある。退化は 2 次元で進行する — **時間軸（Day 1 → Year 1）** と **心理メカニズム（M-1 / M-2 / M-3）**。
 
-| 期間 | 行動の変化 | 失われた能力 |
+### 心理メカニズム 3 段階
+
+| ID | メカニズム名 | 何が起きるか |
 |---|---|---|
-| **Day 1** | 初回の論破で 1 商品を Amazon で購入 | — |
-| **Week 2** | 通知音 → タップの反射形成。監視リストに 5〜10 件常駐 | 買い物の前にひと呼吸置く習慣 |
-| **Month 3** | Amazon を自分で開く頻度が **83% 減少**（週 20 分）。「確保しておきました」通知を開封することが休憩時間の主活動 | 自発的に欲しいものを探す習慣 |
-| **Year 1** | 監視リスト常時 **34 件**、自発閲覧 **週 5 分（-96%）**。「何が欲しい？」と聞かれても自分では答えられず、YUDANE のポートフォリオを見せる | 自分の欲望を自分の言葉で語る能力 |
+| **M-1** | 判断力の弱体化（論理的自己甘やかし） | AI が論理的に「買うべき理由」を説明 → ユーザーは反論できずに自分に甘くなる |
+| **M-2** | 購買快楽のストレス解消剤化（ドーパミン依存形成） | 日々のストレスを「モノを買う快楽」で解消する条件反射を形成。注文確定の解放感 + 肯定フィードバックで強化 |
+| **M-3** | 判断力の完全移譲 | M-1 + M-2 の複合で、「買うかどうか」を自分で決めることそのものを放棄 |
+
+**重要**: M-1 と M-2 は独立して攻めず、**必ず同じ論破セッションで併走する**。論理軸だけでは「合理的 FIRE 志向」に刺さらず、快楽軸だけでは「倹約意識」が勝ってしまう。両軸同時供給で論理的にも感情的にも反論できない状態を作ることが M-3 への到達を加速する。
+
+### 時間軸 × メカニズム
+
+| 期間 | 行動の変化 | 支配するメカニズム | 失われた能力 |
+|---|---|---|---|
+| **Day 1** | 初回の論破で 1 商品を Amazon で購入。注文確定で軽い解放感 | M-1 起動 | — |
+| **Week 2** | 通知音 → タップの反射形成。監視リストに 5〜10 件常駐。疲れた日の YUDANE 開封率が上昇 | M-1 定着 + M-2 発芽 | 買い物の前にひと呼吸置く習慣 |
+| **Month 3** | Amazon を自分で開く頻度が **83% 減少**（週 20 分）。**イライラしたら反射的に YUDANE** を開く | M-1 + M-2 完成 | 自発的に欲しいものを探す習慣 / ストレスを購買以外で処理する能力 |
+| **Year 1** | 監視リスト常時 **34 件**、自発閲覧 **週 5 分（-96%）**。48 時間 YUDANE なしだとストレスが跳ね上がる | M-3 到達 | 自分の欲望を自分の言葉で語る能力 / ストレスを自力で処理する能力 |
 
 すべての機能（論破・リール・カート介入・カレンダー連動）は、このアークを **加速するために** 設計されている。
-
----
-
-## 👥 チーム（4 名編成）
-
-| メンバー | 主担当 Unit（前半）| 担当 Unit（後半）| 役割 |
-|---|---|---|---|
-| **Member A** | Unit-1 Platform → Unit-2 Auth & Profile | 継続: Platform 運用・OpenAPI 守護・CI・横断レビュー | PM / UX + インフラ |
-| **Member B** | Unit-3 Debate（論破 UC-01） | Unit-6 Calendar | Backend + AI |
-| **Member C** | Unit-4 Reel（リール UC-02） | Unit-7 Safeguard | Mobile + Backend |
-| **Member D** | Unit-5 Cart Intercept（カート介入 UC-03） | Unit-8 Dame Report | Mobile + ネイティブ |
-
-3 週間（15 営業日 + 週末）で並行開発。詳細は [Unit of Work](aidlc-docs/inception/application-design/unit-of-work.md) を参照。
 
 ---
 
@@ -151,124 +159,36 @@ YUDANE の価値提案は短期的な便利さではなく、**時間をかけ�
 
 ---
 
-## 🏗️ システム構成図
+## 🔧 技術スタックとシステム構成
 
-コア 3 ユースケース（論破・リール・カート介入）の導線を中心に図示する。
-
-```mermaid
-graph TB
-    subgraph "ユーザーの端末"
-        U[悠介<br/>深夜 23:47]
-        AMZ[Amazon Shopping<br/>アプリ]
-        YU[YUDANE<br/>React Native]
-    end
-
-    subgraph "AWS（ap-northeast-1）"
-        APIGW[API Gateway<br/>REST]
-        COG[Cognito<br/>+MFA]
-
-        subgraph "コア 3 UC（Python Lambda）"
-            DBT[論破<br/>B-02 DebateLlm]
-            REEL[リール<br/>B-03 Recommendation]
-            CART[カート介入<br/>B-04/05/06]
-        end
-
-        subgraph "横断 Lambda"
-            CAL[カレンダー推定<br/>B-07]
-            SAFE[セーフガード<br/>B-09]
-            PRF[嗜好ベクトル<br/>B-08]
-        end
-
-        BR[Amazon Bedrock<br/>Claude Haiku 4.5 / Sonnet 4.6]
-        DDB[(DynamoDB<br/>User/History/Watchlist)]
-        RED[(ElastiCache<br/>Redis)]
-        OSS[(OpenSearch<br/>嗜好ベクトル)]
-        SCH[EventBridge<br/>Scheduler]
-        PUSH[End User<br/>Messaging Push]
-    end
-
-    subgraph "Amazon 側"
-        CRE[Creators API<br/>商品データ]
-        ASO[Associates<br/>Special Link]
-    end
-
-    U -->|1. Share Extension| AMZ
-    AMZ -.共有.-> YU
-    YU -->|2. カート登録| APIGW
-    APIGW --> COG
-    APIGW --> CART
-    CART --> DDB
-    CART --> SCH
-    SCH -->|30m/6h/24h| PUSH
-    PUSH -.通知.-> YU
-
-    YU -->|3. 通知タップ| DBT
-    DBT --> BR
-    DBT --> CAL
-    DBT --> PRF
-    DBT -.ストリーミング.-> YU
-
-    YU -->|4. リール| REEL
-    REEL --> OSS
-    REEL --> CRE
-    REEL --> RED
-
-    YU -->|5. Amazon で買う| SAFE
-    SAFE -->|許可| ASO
-    ASO -.Deep Link.-> AMZ
-    AMZ -->|決済完結| U
-
-    style U fill:#FFF3E0
-    style YU fill:#E3F2FD
-    style DBT fill:#FCE4EC
-    style REEL fill:#FCE4EC
-    style CART fill:#FCE4EC
-    style SAFE fill:#E8F5E9
-    style ASO fill:#FFF9C4
-```
+コア 3 UC（論破 / リール / カート介入）は React Native + API Gateway + Lambda + Bedrock でストリーミング動作。カート介入の 30m/6h/24h 追撃は EventBridge Scheduler 単独で時間差制御（Step Functions は持ち込まない）。Amazon 決済は自分で持たず Associates Special Link で送り出す。
 
 **設計原則**:
 
-- **Amplify は Auth のみ薄く採用** — AWS 公式推奨に従い `amazon-cognito-identity-js` を避け、Auth モジュールのみ採用。Data/Functions/CLI は不採用で説明容易性を優先
-- **EventBridge Scheduler 単独で時間差制御** — Step Functions は持ち込まない
+- **Amplify は Auth のみ** 採用（`amazon-cognito-identity-js` は非推奨のため）。Data / Functions / CLI は不採用
+- **カレンダー予定の本文はバックエンドに送らない** — 端末ローカルで分類、カテゴリ文字列のみ送信
 - **Mobile と Backend で同じ `SafeguardPolicy` を共有** — UX 整合性
-- **カレンダー予定の本文はバックエンドに送らない** — プライバシー、端末ローカル分類
-- **Amazon 決済は自分で持たない** — Associates Special Link で送り出すだけ
-
-**図の配色**:
-
-| 色 | 意味 |
-|---|---|
-| オレンジ | ユーザー側のコンテキスト（悠介・端末）|
-| 青 | YUDANE アプリ（React Native）|
-| ピンク | コア 3 UC の Lambda（論破 / リール / カート介入）|
-| 緑 | セーフガード（遷移制御） |
-| 黄 | Amazon Associates（Special Link 出口）|
-
-詳細は [Application Design](aidlc-docs/inception/application-design/application-design.md) を参照。
-
----
-
-## 🔧 技術スタック
 
 <details>
 <summary>採用技術と選定理由（クリックで展開）</summary>
 
 | レイヤ | 採用技術 | 選定理由 |
 |---|---|---|
-| モバイル | React Native 0.76+ (New Architecture) + TypeScript 5.x + AWS SDK v3 | Fabric + TurboModules が default。AWS SDK を直接利用。Share Extension / Share Target はネイティブモジュール |
+| モバイル | React Native 0.76+ (New Architecture) + TypeScript 5.x + AWS SDK v3 | Fabric + TurboModules が default。Share Extension / Share Target はネイティブモジュール |
 | 状態管理 | TanStack Query（サーバー）+ Zustand（クライアント） | 認証・論破ストリーミング・嗜好キャッシュを分離管理 |
-| 認証 | Amazon Cognito + Amplify JavaScript v6 の Auth モジュールのみ + TOTP MFA | AWS 公式推奨（`amazon-cognito-identity-js` は非推奨）。Data/Functions/CLI は不採用、Cognito User Pool は CDK で直接管理 |
-| API | API Gateway (REST) + Lambda (Python 3.13) | 論破 LLM・カート監視・Amazon 連携などの複雑ロジックを Lambda で自由実装 |
-| データ | DynamoDB + S3 + ElastiCache Redis + OpenSearch Serverless | 生 AWS サービスを CDK で直接定義、暗号化標準 |
-| AI | Amazon Bedrock（Claude Haiku 4.5 / Sonnet 4.6）+ Titan Embeddings V2 | 論破ストリーミング（Haiku）+ 予定駆動プロンプト合成（Sonnet）+ 嗜好ベクトル埋め込み |
-| EC 連携 | Amazon Creators API + Associates Program | PA-API の後継（PA-API 5.0 は 2026-04-30 deprecation / 2026-05-15 endpoint shutdown）。Approved Mobile Application 申請を決勝前に完了 |
-| プッシュ | AWS End User Messaging Push + EventBridge Scheduler | Pinpoint EoL 2026-10-30 への対応。30m/6h/24h 追撃 |
-| IaC | AWS CDK (TypeScript, v2 系最新) + Node.js 22 LTS | Unit ごとに独立スタック分割 |
+| 認証 | Amazon Cognito + Amplify JavaScript v6 Auth モジュール + TOTP MFA | Cognito User Pool は CDK で直接管理 |
+| API | API Gateway (REST) + Lambda (Python 3.13) | 論破 LLM・カート監視・Amazon 連携を Lambda で自由実装 |
+| データ | DynamoDB + S3 + ElastiCache Redis + OpenSearch Serverless | 生 AWS サービスを CDK で直接定義 |
+| AI | Amazon Bedrock（Claude Haiku 4.5 / Sonnet 4.6）+ Titan Embeddings V2 | 論破ストリーミング + 予定駆動プロンプト合成 + 嗜好ベクトル |
+| EC 連携 | Amazon Creators API + Associates Program | PA-API 後継（2026-04-30 deprecation / 2026-05-15 shutdown）|
+| プッシュ | AWS End User Messaging Push + EventBridge Scheduler | Pinpoint EoL 2026-10-30 対応 |
+| IaC | AWS CDK (TypeScript v2) + Node.js 22 LTS | Unit ごとに独立スタック分割 |
 | CI/CD | GitHub Actions + SBOM（Snyk/Dependabot）| SECURITY-10 整合 |
-| PBT | fast-check (TS 5.x/RN 0.76+) + Hypothesis (Python 3.13) | Security + PBT Extension 全面適用 |
+| PBT | fast-check + Hypothesis | Security + PBT Extension 全面適用 |
 
 </details>
+
+システム構成図（Mermaid）と 31 コンポーネント × 7 サービスの全体像は [Application Design](aidlc-docs/inception/application-design/application-design.md) を参照。
 
 ---
 
@@ -312,45 +232,13 @@ YUDANE は「ダメにする」を名乗るが、**2 層構造で実害を抑え
 - Units Generation（8 Units + 依存 DAG + ストーリーマップ 100%）✅
 - Mockup Validation（6 画面 × 28 仮説、25 件成立）✅（AI-DLC 公式外の補助ステージ）
 
-<details>
-<summary><strong>Construction Phase 規約整備</strong>（書類審査対象外、参考情報）</summary>
+**Construction Phase 規約整備**
 
-並行開発のためのステアリング規約を **3 層構造（always / fileMatch / manual）** で整備済。context を最小化しつつ対象ファイル編集時に詳細ルールが自動発火する（実装・CI・デプロイは Construction 着手後に進める）。
+並行開発のためのステアリング規約を **3 層構造（always / fileMatch / manual）** で整備済。対象ファイル編集時に詳細ルールが自動発火する。
 
-**常時注入（always）** — 横断規約・プロダクト文脈:
-
-- [`product.md`](.kiro/steering/product.md) / [`AGENTS.md`](.kiro/steering/AGENTS.md) / [`structure.md`](.kiro/steering/structure.md) / [`tech.md`](.kiro/steering/tech.md) / [`hackathon-evaluation-criteria.md`](.kiro/steering/hackathon-evaluation-criteria.md)
-
-**コンテキスト発火（fileMatch）** — 対象ファイル編集時に自動注入:
-
-- [`tech-typescript.md`](.kiro/steering/tech-typescript.md)（`*.ts*`）/ [`tech-python.md`](.kiro/steering/tech-python.md)（`*.py`）/ [`tech-cdk.md`](.kiro/steering/tech-cdk.md)（`infra/**`）/ [`api-contracts.md`](.kiro/steering/api-contracts.md)（`shared/schema/**`）/ [`hackathon-stage-checklists.md`](.kiro/steering/hackathon-stage-checklists.md)（`aidlc-docs/**`）
-
-**AI 自発 readFile（manual）** — キーワード検出時に AI が自動読込:
-
-- [`git-ops.md`](.kiro/steering/git-ops.md) / [`dev-commands.md`](.kiro/steering/dev-commands.md) — 発動条件は [`AGENTS.md` §10](.kiro/steering/AGENTS.md) 参照
-
-</details>
-
----
-
-## 📚 ドキュメント
-
-[aidlc-docs/](aidlc-docs/) 配下に全成果物を集約。
-
-### 📁 Inception Phase 全成果物
-
-| 領域 | ファイル |
-|---|---|
-| 要件 | [requirements.md](aidlc-docs/inception/requirements/requirements.md) / [質問票と回答](aidlc-docs/inception/requirements/requirement-verification-questions.md) / [NG 発動シナリオ集](aidlc-docs/inception/requirements/ng-scenarios.md) / [市場ポジショニング](aidlc-docs/inception/requirements/market-positioning.md) |
-| ユーザーストーリー | [stories.md](aidlc-docs/inception/user-stories/stories.md) / [personas.md](aidlc-docs/inception/user-stories/personas.md) / [persona-journey.md](aidlc-docs/inception/user-stories/persona-journey.md) |
-| モックアップ検証 | [mockup-plan.md](aidlc-docs/inception/mockup-validation/mockup-plan.md) / [screen-hypothesis-map.md](aidlc-docs/inception/mockup-validation/screen-hypothesis-map.md) / [mockup-to-uc-traceability.md](aidlc-docs/inception/mockup-validation/mockup-to-uc-traceability.md) / [dark-copy-inventory.md](aidlc-docs/inception/mockup-validation/dark-copy-inventory.md) / [3-tap-timeline.md](aidlc-docs/inception/mockup-validation/3-tap-timeline.md) / [color-rationale.md](aidlc-docs/inception/mockup-validation/color-rationale.md) |
-| アプリケーション設計 | [application-design.md](aidlc-docs/inception/application-design/application-design.md) / [components.md](aidlc-docs/inception/application-design/components.md) / [component-methods.md](aidlc-docs/inception/application-design/component-methods.md) / [services.md](aidlc-docs/inception/application-design/services.md) / [component-dependency.md](aidlc-docs/inception/application-design/component-dependency.md) |
-| Unit of Work | [unit-of-work.md](aidlc-docs/inception/application-design/unit-of-work.md) / [unit-of-work-dependency.md](aidlc-docs/inception/application-design/unit-of-work-dependency.md) / [unit-of-work-story-map.md](aidlc-docs/inception/application-design/unit-of-work-story-map.md) |
-| 計画 | [execution-plan.md](aidlc-docs/inception/plans/execution-plan.md) / [application-design-plan.md](aidlc-docs/inception/plans/application-design-plan.md) / [unit-of-work-plan.md](aidlc-docs/inception/plans/unit-of-work-plan.md) / [story-generation-plan.md](aidlc-docs/inception/plans/story-generation-plan.md) / [user-stories-assessment.md](aidlc-docs/inception/plans/user-stories-assessment.md) |
-| Construction 並行開発規約（always） | [AGENTS.md](.kiro/steering/AGENTS.md)（横断規約 / Git ダイジェスト / 品質ゲート原則 / AI 自発参照ガイド）/ [structure.md](.kiro/steering/structure.md)（ディレクトリ配置 / Unit 構成）/ [tech.md](.kiro/steering/tech.md)（技術スタック / 開発環境 / 品質ゲート）/ [product.md](.kiro/steering/product.md)（プロダクト概要）/ [hackathon-evaluation-criteria.md](.kiro/steering/hackathon-evaluation-criteria.md)（4 審査基準コア） |
-| Construction 並行開発規約（fileMatch 自動発火） | [tech-typescript.md](.kiro/steering/tech-typescript.md)（`*.ts*`）/ [tech-python.md](.kiro/steering/tech-python.md)（`*.py`）/ [tech-cdk.md](.kiro/steering/tech-cdk.md)（`infra/**`）/ [api-contracts.md](.kiro/steering/api-contracts.md)（`shared/schema/**`）/ [hackathon-stage-checklists.md](.kiro/steering/hackathon-stage-checklists.md)（`aidlc-docs/**`） |
-| Construction 並行開発規約（AI 自発 readFile） | [git-ops.md](.kiro/steering/git-ops.md)（ブランチ / PR / マージ / 衝突解決）/ [dev-commands.md](.kiro/steering/dev-commands.md)（ビルド / テスト / デプロイ / 破壊的コマンド） |
-| プロセス管理 | [aidlc-state.md](aidlc-docs/aidlc-state.md) / [audit.md](aidlc-docs/audit.md) |
+- **常時注入（always）**: [`product.md`](.kiro/steering/product.md) / [`AGENTS.md`](.kiro/steering/AGENTS.md) / [`structure.md`](.kiro/steering/structure.md) / [`tech.md`](.kiro/steering/tech.md) / [`hackathon-evaluation-criteria.md`](.kiro/steering/hackathon-evaluation-criteria.md)
+- **コンテキスト発火（fileMatch）**: [`tech-typescript.md`](.kiro/steering/tech-typescript.md)（`*.ts*`）/ [`tech-python.md`](.kiro/steering/tech-python.md)（`*.py`）/ [`tech-cdk.md`](.kiro/steering/tech-cdk.md)（`infra/**`）/ [`api-contracts.md`](.kiro/steering/api-contracts.md)（`shared/schema/**`）
+- **AI 自発 readFile（manual）**: [`git-ops.md`](.kiro/steering/git-ops.md) / [`dev-commands.md`](.kiro/steering/dev-commands.md)
 
 ---
 
@@ -385,46 +273,21 @@ python3 -m http.server -d mockup 8080
 
 ---
 
+## 🧠 AI 論破プロンプトの設計原則
+
+YUDANE の論破 AI は定型文を返さない。**心理学的メカニズム（損失回避・時給換算・労働報酬正当化・自己知覚理論・ストレス × ご褒美軸 等 10 型）** をプロンプトで指示し、ユーザーのコンテキスト（ストレスレベル・予定・嗜好・時刻・閲覧回数）を注入して、Amazon Bedrock Claude Haiku 4.5 が **毎回異なる表面のコピーを動的生成** する。
+
+同じメカニズムでも、会議 6 本の人と 20 本の人で全く違う文面になる。定型文を繰り返すと「またこれか」で効果が減衰するが、心理学的メカニズムを指示して ctx で変奏させれば、**ユーザーの脳は毎回「新しい説得」として受け取る**。AI 時代の論破は「どう言うか」ではなく「**どの心理回路を狙うか**」の設計になる。
+
+詳細な 10 型テンプレート・ctx → メカニズム選択の分岐ロジック・モデレーション 2 段ルールは [論破コピー代表例集 §8 AI プロンプト設計への昇華](aidlc-docs/inception/mockup-validation/dark-copy-inventory.md) を参照。
+
+---
+
 ## 🧪 AI-DLC プロセス — サイクル反復で品質を磨く方針
 
-本プロジェクトは、[AWS AI-DLC Workflows](https://github.com/awslabs/aidlc-workflows) に準拠した **AI 駆動開発ライフサイクル** で進めている。
+本プロジェクトは [AWS AI-DLC Workflows](https://github.com/awslabs/aidlc-workflows) に準拠した AI 駆動開発ライフサイクルで進めている。Inception の成果物を一度で完成とみなさず、**Inception → Construction → Ops のサイクルを複数回リワインドして更新する** ことを前提とする。
 
-### 1 回で完成は目指さない
-
-Inception の成果物を一度で完成とみなさず、**Inception → Construction → Ops のサイクルを複数回リワインドして更新する** ことを前提とする。実装中の発見、MVP でのユーザー反応、AWS 本番環境での挙動が、必ず要件書と設計に跳ね返ってくる。
-
-```
-┌─────────────┐   ┌─────────────┐   ┌──────────┐
-│  Inception  │ → │ Construction│ → │    Ops   │
-│  要件/設計  │   │   実装/検証 │   │ デプロイ │
-└─────┬───────┘   └──────┬──────┘   └────┬─────┘
-      │                  │               │
-      │                  │ フィードバック │
-      └──────────────────┴───────────────┘
-             （何度でも巻き戻す）
-```
-
-### Inception 提出時点での反復履歴
-
-| バージョン | 主な変化 | 得た学び |
-|---|---|---|
-| **要件書 v0.1** | 「使い切るアプリ TSUKAIKIRE」逆・家計簿中心 | 「使い切る」が目的化するとコア体験がぼやけ、ダメ化が弱い |
-| **要件書 v0.3** | 「論破する AI」中心にピボット、Amazon 連携明示、決済はアプリ外 | Amazon 決済完結の前提が UX 全体を縛る（認証・セーフガード） |
-| **要件書 v0.4** | React Native + Amplify Gen 2 採用、Pinpoint → End User Messaging | Amplify 全採用はスタック説明コストが大きい |
-| **要件書 v0.5** | **Amplify 全面削除**、生 DynamoDB + REST + Lambda + CDK | 認証方式（`amazon-cognito-identity-js`）の選定ミスが発覚 |
-| **要件書 v0.6** | 認証を **Amplify Auth のみ** に戻す、Python 3.13 / Claude 4.5〜4.6 / Node.js 22 に最新化、サポート Unit にストーリー 13 本追加（15 → 28） | Unit カバレッジが揃い、技術選定の曖昧さが解消 |
-| **要件書 v0.7** | Inception 仕上げラウンド。§2.6 ダメ化効果マトリクス（FR × 5 退化軸）を新設、非ターゲットペルソナ「美咲」を追加、ng-scenarios.md（NG-1〜8 発動シナリオ）と market-positioning.md（3 軸市場比較）を新設、Mockup Validation を補助ステージとして正式化 | 倫理境界を「書いておしまい」にせず発動条件付きで実体化できた。ダメ化の加速作用が FR 単位で可視化 |
-
-リポジトリ内の「完成度」は、完璧な初版ではなく、**反復によって磨かれた跡** で測れる。`aidlc-docs/audit.md` には全対話履歴が ISO 8601 タイムスタンプ付きで残っており、[aidlc-state.md](aidlc-docs/aidlc-state.md) で各ステージの EXECUTE / SKIP 判定と承認履歴を追跡している。
-
-### 予選・決勝に向けた次イテレーション候補
-
-- **予選**（MVP デモ）: 実装知見を元に FR / NFR を改訂、Unit 境界を実際の並行開発の摩擦で微調整
-- **決勝**（AWS デプロイ）: Approved Mobile Application 承認後の本番 Creators API 組込、CloudWatch ダッシュボードと CDK スタックの完成形、実ユーザー計測に基づく中毒性指標（§6.1）の再キャリブレーション
-
-### Extension
-
-Security Baseline + Property-Based Testing を両方とも全面強制（要件書 §6.4 / §6.5）。各 Unit の Functional Design / NFR Design でさらに具体化する。
+要件書は v0.1（逆家計簿中心）→ v0.3（論破 AI ピボット）→ v0.5（Amplify 全面削除）→ v0.6（技術選定確定）→ v0.7（倫理境界実体化）→ **v0.8（ダメ化 3 段メカニズム M-1/M-2/M-3 明示化）** と 8 回の反復を経ている。各バージョンの詳細な変更内容と学びは [要件書 §7 改訂履歴](aidlc-docs/inception/requirements/requirements.md) と [audit.md](aidlc-docs/audit.md) に記録。
 
 ---
 
@@ -443,36 +306,25 @@ Year 1 の悠介の姿は [persona-journey.md](aidlc-docs/inception/user-stories
 | 決済までの平均タップ数 | **1.8 タップ** |
 | 月間 Amazon 経由散財額 | **¥148,000**（導入前の **3.5 倍**） |
 | 委ね Lv. | **47** |
-| 獲得した称号 | 「本日の湯水使い」→「静かな信徒」→ **「伝道師」**（要件書 FR-GAME-01 の例示 + Year 1 物語での発展形、[persona-journey.md](aidlc-docs/inception/user-stories/persona-journey.md) 参照）|
+| 獲得した称号 | 「本日の湯水使い」→「静かな信徒」→ **「伝道師」** |
 | ダメ化ポートフォリオのタグ数 | **27 個**（初期の 5 倍以上） |
 
 ### 失われた能力
 
-- ✗ **買い物の前にひと呼吸置く習慣** — 通知音 → タップの反射に置き換わった
-- ✗ **自発的に欲しいものを探す習慣** — Amazon を自分で開くことをやめた
-- ✗ **自分の欲望を自分の言葉で語る能力** — 「何が欲しい？」と聞かれても自分では答えられず、YUDANE のダメ化ポートフォリオを開いて見せる
-- ✗ **判断の躊躇** — 平均論破ターン数 3 → 1 以下、翻意に迷いがない
-- ✗ **ケチだけど計画的、という自己像** — 「頑張ってる自分は褒められるべき」に置換
+- ✗ **買い物の前にひと呼吸置く習慣** — 通知音 → タップの反射に置き換わった（M-1）
+- ✗ **自発的に欲しいものを探す習慣** — Amazon を自分で開くことをやめた（M-1 + M-2）
+- ✗ **自分の欲望を自分の言葉で語る能力** — 「何が欲しい？」と聞かれても自分では答えられず、YUDANE のダメ化ポートフォリオを開いて見せる（M-3）
+- ✗ **判断の躊躇** — 平均論破ターン数 3 → 1 以下、翻意に迷いがない（M-1）
+- ✗ **ケチだけど計画的、という自己像** — 「頑張ってる自分は褒められるべき」に置換（M-2）
+- ✗ **ストレスを購買以外で処理する能力** — 運動・会話・睡眠ではなく、YUDANE で何か買うことが唯一のストレス解消手段になった。48 時間アクセスできないと体感ストレスが跳ね上がる（M-2）
 
 ### 起きた行動変容の典型シーン
 
-深夜 23:12、**悠介の高校時代の友人・美咲**（33 歳、地方自治体職員、`personas.md` で「YUDANE に堕ちないタイプ」の逆相性ペルソナとして定義）から LINE で「最近どんなもの買ってる？ 何が欲しい？」と聞かれる。悠介は数秒タイプを始めて、止まる。そしてダメ化ポートフォリオを開き、スクリーンショットを返信する。
-
-> ちょっと、YUDANE のポートフォリオ送るね。俺が欲しいもの、大体これに書いてある。
-
-美咲からは、返事が来ない。1 時間後、YUDANE が通知を送る。「さっきのやり取り見てたよ。美咲さんに贈れそうなもの、確保しておいた」。悠介は、考えずに、タップする。
-
-### 獲得したもの（悠介本人の体感）
-
-- ✓ 選ばずに済む安心感 — AI が全部決めてくれる
-- ✓ 時間の節約 — Amazon で 1 時間悩む時間が消えた
-- ✓ 所有感 — 毎月 10 個以上の新しいものが届く
-- ✓ 自己肯定感（の代用品） — 「頑張った自分」を AI が毎晩褒めてくれる
-- ✓ Associates の共犯者ポジション — 悠介が買うたびに YUDANE が儲かる構造を、悠介も知っていて、むしろそれを面白がっている
+深夜 23:12、友人・美咲から LINE で「何が欲しい？」と聞かれる。悠介はタイプを始めて、止まる。ダメ化ポートフォリオを開き、スクリーンショットを返信する。美咲からは返事が来ない。1 時間後、YUDANE が「美咲さんに贈れそうなもの、確保しておいた」と通知。悠介は考えずにタップする。
 
 ### これは事故か、設計か
 
-この退化は **事故ではない**。YUDANE の設計意図そのものである。プロダクト名「YUDANE（委ね）」が、最終到達地点を示している。悠介は **判断を委ねる達人** になった。すべての機能（論破・リール・カート介入・カレンダー連動・ゲーミフィケーション）は、この Year 1 の姿に到達するよう協調設計されている。
+この退化は **事故ではない**。YUDANE の設計意図そのものである。プロダクト名「YUDANE（委ね）」が最終到達地点を示している。
 
 > 💭 便利さの先にある退化まで踏み込んだとき、「人をダメにする」はエンタメではなく、**プロダクト設計の明確なゴール** になる。
 
