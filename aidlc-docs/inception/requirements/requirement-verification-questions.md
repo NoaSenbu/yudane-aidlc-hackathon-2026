@@ -176,9 +176,9 @@ X) Other (please describe after \[Answer]: tag below)
 
 ***
 
-### Question 10: 書類審査で最もアピールしたいポイントは？
+### Question 10: プロダクトとして最も強みにしたいポイントは？
 
-評価軸の中で強みにしたいもの。
+プロダクト設計・ドキュメント全体の中で強みとして押し出すもの。
 
 A) ビジネス意図(Intent)の明確さ — なぜ人をダメにするのか、の物語性
 B) Unit分解の適切さ — 設計の筋の良さ
@@ -197,7 +197,7 @@ X) Other (please describe after \[Answer]: tag below)
 Should security extension rules be enforced for this project?
 
 A) Yes — 本番グレード級にセキュリティを強制する
-B) No — PoC/プロトタイプとしてスキップ（ハッカソン書類審査段階ではこちらが一般的）
+B) No — PoC/プロトタイプとしてスキップ（Inception 初期段階ではこちらが一般的）
 X) Other (please describe after \[Answer]: tag below)
 
 \[Answer]:A

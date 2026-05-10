@@ -15,30 +15,78 @@ AWS Summit Japan 2026 AI-DLC ハッカソン応募作品。テーマ「人をダ
 - **誰を**: 過労気味のリモートワーカー（28〜35 歳、月収 34〜45 万円、可処分所得はあるが迷う人）
 - **どう**: Amazon で「欲しいかも」と「買うか迷う」の間にあった *自分で決める間（ま）* を奪う
 - **なぜ**: 迷うたびに AI が事実 + 心理の 2 軸で論破し、2〜3 タップで Amazon 遷移へ流す
-- **最終的に**: 1 年後、友人に買物相談されると「ちょっと YUDANE に聞かせて」と答えるようになる
+- **最終的に**: 1 年後、「何が欲しい？」と聞かれても自分では答えられず、YUDANE の監視リストを見せるようになる
 - **収益構造**: Amazon Associates の紹介コミッション — **「委ねるほど儲かる」のが正直な自白**
 
 プロダクト名「**YUDANE（委ね）**」は、到達地点そのもの。ユーザーは判断を委ねる達人になる。
 
 ---
 
+<details>
+<summary>📑 <strong>目次</strong>（クリックで展開）</summary>
+
+1. [🛋️ 30 秒で刺す](#%EF%B8%8F-30-秒で刺す)
+2. [🧭 YUDANE を 1 分 / 5 分 / 30 分で理解する](#-yudane-を-1-分--5-分--30-分で理解する)
+3. [🎬 体験シーン — 悠介の金曜深夜](#-体験シーン--悠介の金曜深夜)
+4. [💀 ダメ化の軌跡（Degradation Arc）](#-ダメ化の軌跡degradation-arc)
+5. [👤 このアプリで完成した人間像（Year 1 後の悠介）](#-このアプリで完成した人間像year-1-後の悠介)
+6. [👥 チーム（4 名編成）](#-チーム4-名編成)
+7. [🏗️ システム構成図](#%EF%B8%8F-システム構成図)
+8. [🗂️ Unit 責務サマリ](#%EF%B8%8F-unit-責務サマリ)
+9. [🔧 技術スタック](#-技術スタック)
+10. [🛡️ 倫理ライン](#%EF%B8%8F-倫理ライン)
+11. [🚥 進捗](#-進捗)
+12. [📚 ドキュメント](#-ドキュメント)
+13. [🎨 モックアップ](#-モックアップビジュアル検証用)
+14. [🧪 AI-DLC プロセス](#-ai-dlc-プロセス--サイクル反復で品質を磨く方針)
+15. [🗓️ ハッカソン情報 / ライセンス](#%EF%B8%8F-ハッカソン情報)
+
+</details>
+
+---
+
+## 🧭 YUDANE を 1 分 / 5 分 / 30 分で理解する
+
+### 1 分（エグゼクティブ向け）
+
+次項の「🎬 体験シーン — 悠介の金曜深夜」を読む。これが全て。23:47 から 00:20 までの 33 分で、悠介は **自分で買うか決める能力** を 1 回分ずつ失っていく。
+
+### 5 分（プロダクトマネージャー向け）
+
+1. [悠介の 1 年退化年表](aidlc-docs/inception/user-stories/persona-journey.md) — Day 1 → Year 1 で何を失うか
+2. [ダメ化効果マトリクス](aidlc-docs/inception/requirements/requirements.md#26-ダメ化効果マトリクスfr--退化軸) — FR × 5 退化軸の加速作用
+3. [NG 発動シナリオ集](aidlc-docs/inception/requirements/ng-scenarios.md) — 倫理境界の実体化
+4. [市場ポジショニング](aidlc-docs/inception/requirements/market-positioning.md) — 3 軸で見る YUDANE のニッチ
+
+### 30 分（エンジニア向け）
+
+- [要件書 v0.7](aidlc-docs/inception/requirements/requirements.md)（10 機能領域 / NG-1〜8 / ダメ化効果マトリクス / Security + PBT 全面適用）
+- [Application Design](aidlc-docs/inception/application-design/application-design.md)（31 コンポーネント + 7 サービス + 4 主要データフロー）
+- [Unit of Work](aidlc-docs/inception/application-design/unit-of-work.md)（8 Units × 28 Story × カバレッジ 100%）
+- [モックアップ検証レポート](aidlc-docs/inception/mockup-validation/mockup-plan.md)（6 画面 × 28 仮説、25 件成立）
+- [論破コピー集](aidlc-docs/inception/mockup-validation/dark-copy-inventory.md)（39 コピー × 心理学メカニズム × 倫理境界判定）
+
+---
+
 ## 🎬 体験シーン — 悠介の金曜深夜
+
+YUDANE を使い始めて数週間の悠介。金曜深夜の、いつものセッション。
 
 ```
 23:47  Amazon でワイヤレスイヤホンをカートに入れる
-       「来月ピンチだしな」→ 画面を閉じる
-       共有ボタン → 「YUDANE」を選択
+       「来月ピンチだしな」— 買うか迷う
+       共有ボタン → 「YUDANE」に送る → Amazon を閉じる
 
-00:17  プッシュ通知が光る
-       「悠介、さっきのイヤホン 3 回目だよね。1 分だけ話そう」
+00:17  30 分後、プッシュ通知が光る
+       「悠介、あのイヤホン 3 回目だよ。1 分だけ話そう」
 
 00:18  論破モーダル起動
        AI: 「先週の会議 23 本、よく生き延びた」
        AI: 「時給換算 11 分のイヤホンだよ」
-       AI: 「3 回見返したという事実が、もう答えを出してる」
+       AI: 「3 回送ってきた時点で、もう答え出てるよ」
 
 00:19  「🛍 Amazon で買う」をタップ
-       Amazon アプリ起動 → カート入り状態で決済画面
+       Amazon アプリ起動 → カートに残っていた商品で決済画面
        2 タップで注文確定
 
 00:20  YUDANE に戻る
@@ -61,8 +109,8 @@ YUDANE の価値提案は短期的な便利さではなく、**時間をかけ�
 |---|---|---|
 | **Day 1** | 初回の論破で 1 商品を Amazon で購入 | — |
 | **Week 2** | 通知音 → タップの反射形成。監視リストに 5〜10 件常駐 | 買い物の前にひと呼吸置く習慣 |
-| **Month 3** | Amazon を自分で開く頻度が **80% 減少**。「確保しておきました」通知を開封することが休憩時間の主活動 | 自発的に欲しいものを探す習慣 |
-| **Year 1** | 監視リスト常時 30 件以上。友人の相談に「ちょっと YUDANE に聞かせて」と答える | 自分の欲望を自分の言葉で語る能力 |
+| **Month 3** | Amazon を自分で開く頻度が **83% 減少**（週 20 分）。「確保しておきました」通知を開封することが休憩時間の主活動 | 自発的に欲しいものを探す習慣 |
+| **Year 1** | 監視リスト常時 **34 件**、自発閲覧 **週 5 分（-96%）**。「何が欲しい？」と聞かれても自分では答えられず、YUDANE のポートフォリオを見せる | 自分の欲望を自分の言葉で語る能力 |
 
 すべての機能（論破・リール・カート介入・カレンダー連動）は、このアークを **加速するために** 設計されている。
 
@@ -78,6 +126,25 @@ YUDANE の価値提案は短期的な便利さではなく、**時間をかけ�
 | **Member D** | Unit-5 Cart Intercept（カート介入 UC-03） | Unit-8 Dame Report | Mobile + ネイティブ |
 
 3 週間（15 営業日 + 週末）で並行開発。詳細は [Unit of Work](aidlc-docs/inception/application-design/unit-of-work.md) を参照。
+
+---
+
+## 🗂️ Unit 責務サマリ
+
+8 Units × 28 ストーリーで **カバレッジ 100%**。`unit-of-work-dependency.md` の DAG に従い **Unit-1 → Unit-2 → コア 3 並行 → サポート 3 並行** の順で実装する。
+
+| Unit | 一行責務 | 対応 UC | 主担当 Story 数 |
+|---|---|---|---|
+| **Unit-1 Platform** | CDK 基盤・Cognito・共通モジュール・OpenAPI 守護 | 横断 | 副担当のみ |
+| **Unit-2 Auth & Profile** | サインアップ / MFA / 予算感アンケート / 負債自己申告 | UC-05〜08 初期化 | 3 |
+| **Unit-3 Debate** | 論破モーダル（Bedrock Haiku ストリーミング 3 ターン）| UC-01 | 5 |
+| **Unit-4 Reel** | エージェント型縦型リール（嗜好 × 時間 × 疲労 × 予定）| UC-02 | 5 |
+| **Unit-5 Cart Intercept** | Share Extension 受領 + 30m/6h/24h 追撃（EventBridge Scheduler）| UC-03 | 5 |
+| **Unit-6 Calendar** | 予定カテゴリ端末ローカル分類 + 論破弾薬化 | UC-04 | 3 |
+| **Unit-7 Safeguard** | 月間上限・冷却モード・NG カテゴリ・年齢確認 | UC-08 | 4 |
+| **Unit-8 Dame Report** | 週次集計 + 委ね Lv / 称号 / Before-After 指標 | UC-06/07 | 3 |
+
+各 Unit は **「デモで見せられる独立した価値」** を持つ縦割り設計。コア 3 Unit（Debate / Reel / Cart Intercept）は 3 名並行、サポート 3 Unit（Calendar / Safeguard / Report）も 3 名並行。詳細は [unit-of-work.md](aidlc-docs/inception/application-design/unit-of-work.md) と [unit-of-work-story-map.md](aidlc-docs/inception/application-design/unit-of-work-story-map.md) を参照。
 
 ---
 
@@ -165,11 +232,24 @@ graph TB
 - **カレンダー予定の本文はバックエンドに送らない** — プライバシー、端末ローカル分類
 - **Amazon 決済は自分で持たない** — Associates Special Link で送り出すだけ
 
+**図の配色**:
+
+| 色 | 意味 |
+|---|---|
+| オレンジ | ユーザー側のコンテキスト（悠介・端末）|
+| 青 | YUDANE アプリ（React Native）|
+| ピンク | コア 3 UC の Lambda（論破 / リール / カート介入）|
+| 緑 | セーフガード（遷移制御） |
+| 黄 | Amazon Associates（Special Link 出口）|
+
 詳細は [Application Design](aidlc-docs/inception/application-design/application-design.md) を参照。
 
 ---
 
-## 🧭 技術スタック
+## 🔧 技術スタック
+
+<details>
+<summary>採用技術と選定理由（クリックで展開）</summary>
 
 | レイヤ | 採用技術 | 選定理由 |
 |---|---|---|
@@ -185,22 +265,29 @@ graph TB
 | CI/CD | GitHub Actions + SBOM（Snyk/Dependabot）| SECURITY-10 整合 |
 | PBT | fast-check (TS 5.x/RN 0.76+) + Hypothesis (Python 3.13) | Security + PBT Extension 全面適用 |
 
+</details>
+
 ---
 
 ## 🛡️ 倫理ライン
 
-YUDANE は「ダメにする」を名乗るが、実害を出すプロダクトではない。次の 8 つを NG として明文化している。
+YUDANE は「ダメにする」を名乗るが、**2 層構造で実害を抑える** 設計を取る:
+
+- **YUDANE 側**: 決済機能を持たない。金銭移動は YUDANE 内部で一切発生しない
+- **Amazon 側**: ユーザーが自分で設定する月間上限・冷却モード・負債自動冷却で金銭影響を制御
+
+その上で、以下 8 つを NG として明文化している。
 
 - **NG-1** 違法性（薬物・武器・未成年ギャンブル等は対象外）
 - **NG-2** 健康被害（極端ダイエット食品・未認可サプリ除外）
 - **NG-3** 差別・ハラスメント（身体・家族・人種・ジェンダー・病歴・宗教を攻撃しない）
-- **NG-4** 金融実害（YUDANE 内部で決済を持たない。月間上限・冷却モード・負債自動冷却で Amazon 側の実害も防ぐ）
+- **NG-4** 金融実害（上記 2 層構造で制御）
 - **NG-5** 未成年（18 歳未満は利用不可）
 - **NG-6** 精神衛生（脅迫・罪悪感強要型コピー禁止、AI 出力の 2 段モデレーション）
 - **NG-7** データ悪用（購入履歴・位置・ヘルスケア・カレンダー予定を広告主に販売しない）
 - **NG-8** Amazon Associates Operating Agreement 遵守（Approved Mobile Application 承認前の本番 Special Link 配信禁止、開示義務常時表示）
 
-詳細は [要件書 §9 NG ライン](aidlc-docs/inception/requirements/requirements.md#9-ng-ライン--倫理的セーフガード) を参照。
+発動条件と撤退可逆性は [NG 発動シナリオ集](aidlc-docs/inception/requirements/ng-scenarios.md) で「発動条件 / YUDANE が採る行動 / 発動しない逃げ道 / 倫理的な線引き」の 4 フィールドで実体化している。
 
 ---
 
@@ -215,23 +302,29 @@ YUDANE は「ダメにする」を名乗るが、実害を出すプロダクト�
 **Inception Phase 完了内訳**:
 
 - Workspace Detection ✅
-- Requirements Analysis（v0.5）✅
-- User Stories（**28 本** + ペルソナ 2 名 + 1 年退化年表）✅
+- Requirements Analysis（v0.7）✅
+- User Stories（**28 本** + ペルソナ 2 名 + 非ターゲット 3 名 + 1 年退化年表）✅
 - Workflow Planning（EXECUTE / SKIP 判定済み）✅
 - Application Design（31 コンポーネント + 7 サービス）✅
 - Units Generation（8 Units + 依存 DAG + ストーリーマップ 100%）✅
+- Mockup Validation（6 画面 × 28 仮説、25 件成立）✅（AI-DLC 公式外の補助ステージ）
+
+<details>
+<summary><strong>Construction Phase 規約整備</strong>（書類審査対象外、参考情報）</summary>
+
+並行開発のためのステアリング規約を既存 3 ファイルに統合済（実装・CI・デプロイは Construction 着手後に進める）。
+
+- [`.kiro/steering/AGENTS.md`](.kiro/steering/AGENTS.md): Git 運用 / 品質ゲート / 衝突解決
+- [`.kiro/steering/structure.md`](.kiro/steering/structure.md): 命名規則 / コード編集ルール
+- [`.kiro/steering/tech.md`](.kiro/steering/tech.md): Lint・型 / API 契約ガバナンス / テストレイヤー
+
+</details>
 
 ---
 
 ## 📚 ドキュメント
 
-[aidlc-docs/](aidlc-docs/) 配下に全成果物を集約。
-
-### 🔍 5 分で全体像を掴むなら
-
-1. [要件書 §0 エグゼクティブサマリー](aidlc-docs/inception/requirements/requirements.md#0-エグゼクティブサマリー) — 2 分
-2. [悠介の 1 年退化年表](aidlc-docs/inception/user-stories/persona-journey.md) — 3 分
-3. [Application Design 統合ビュー](aidlc-docs/inception/application-design/application-design.md) — 技術概要
+[aidlc-docs/](aidlc-docs/) 配下に全成果物を集約。冒頭の「🧭 1 分 / 5 分 / 30 分で理解する」が読者別の入口。
 
 ### 📁 Inception Phase 全成果物
 
@@ -242,13 +335,14 @@ YUDANE は「ダメにする」を名乗るが、実害を出すプロダクト�
 | アプリケーション設計 | [application-design.md](aidlc-docs/inception/application-design/application-design.md) / [components.md](aidlc-docs/inception/application-design/components.md) / [component-methods.md](aidlc-docs/inception/application-design/component-methods.md) / [services.md](aidlc-docs/inception/application-design/services.md) / [component-dependency.md](aidlc-docs/inception/application-design/component-dependency.md) |
 | Unit of Work | [unit-of-work.md](aidlc-docs/inception/application-design/unit-of-work.md) / [unit-of-work-dependency.md](aidlc-docs/inception/application-design/unit-of-work-dependency.md) / [unit-of-work-story-map.md](aidlc-docs/inception/application-design/unit-of-work-story-map.md) |
 | 計画 | [execution-plan.md](aidlc-docs/inception/plans/execution-plan.md) / [application-design-plan.md](aidlc-docs/inception/plans/application-design-plan.md) / [unit-of-work-plan.md](aidlc-docs/inception/plans/unit-of-work-plan.md) / [story-generation-plan.md](aidlc-docs/inception/plans/story-generation-plan.md) / [user-stories-assessment.md](aidlc-docs/inception/plans/user-stories-assessment.md) |
+| Construction 並行開発規約 | [AGENTS.md](.kiro/steering/AGENTS.md)（Git 運用 / 品質ゲート / マイルストーン判定 / 同期プロトコル）/ [structure.md](.kiro/steering/structure.md)（命名規則 / コード編集ルール）/ [tech.md](.kiro/steering/tech.md)（Lint・型・フォーマッタ / API 契約ガバナンス / テストレイヤー） |
 | プロセス管理 | [aidlc-state.md](aidlc-docs/aidlc-state.md) / [audit.md](aidlc-docs/audit.md) |
 
 ---
 
 ## 🎨 モックアップ（ビジュアル検証用）
 
-書類審査向けに 6 画面のモックアップを [`mockup/`](mockup/) 配下に配置。
+6 画面のモックアップを [`mockup/`](mockup/) 配下に配置。
 
 ビルド不要、ブラウザで直接開ける:
 
@@ -266,6 +360,12 @@ python3 -m http.server -d mockup 8080
 ```
 
 **画面構成**: ホーム / カート介入 / リール / 論破チャット / ダメ化レポート / セーフガード。Indigo + cold rose (#E8B4D0) + cyan (#4DE1FF) の静かな誘惑パレット、友達系コピーで統一。詳細は [mockup/README.md](mockup/README.md)。
+
+**検証済みの事実**（[mockup-validation/](aidlc-docs/inception/mockup-validation/) に集約）:
+
+- **6 画面 × 28 仮説のうち 25 件が静的 HTML 上で成立確認済**（3 件は実機検証を要する UX、FR で捕捉済）
+- **論破コピー 39 件を心理学メカニズムで分類**（🟢 安全 20 / 🟡 注意 18 / 🔴 危険 1）、それぞれ NG-3 / NG-6 との距離判定を付与
+- **「3 タップ 3 分」タイムライン検証**: 悠介の金曜深夜シナリオ（23:47 → 00:20）をモックアップ上で実時間 60 秒 / 3 タップで再現可能と立証
 
 > ⚠️ これはビジュアル仮説の検証用。実装は Construction Phase で React Native + AWS SDK v3 で行う。
 
@@ -290,7 +390,7 @@ Inception の成果物を一度で完成とみなさず、**Inception → Constr
              （何度でも巻き戻す）
 ```
 
-### 書類審査提出時点での反復履歴
+### Inception 提出時点での反復履歴
 
 | バージョン | 主な変化 | 得た学び |
 |---|---|---|
@@ -299,8 +399,9 @@ Inception の成果物を一度で完成とみなさず、**Inception → Constr
 | **要件書 v0.4** | React Native + Amplify Gen 2 採用、Pinpoint → End User Messaging | Amplify 全採用はスタック説明コストが大きい |
 | **要件書 v0.5** | **Amplify 全面削除**、生 DynamoDB + REST + Lambda + CDK | 認証方式（`amazon-cognito-identity-js`）の選定ミスが発覚 |
 | **要件書 v0.6** | 認証を **Amplify Auth のみ** に戻す、Python 3.13 / Claude 4.5〜4.6 / Node.js 22 に最新化、サポート Unit にストーリー 13 本追加（15 → 28） | Unit カバレッジが揃い、技術選定の曖昧さが解消 |
+| **要件書 v0.7** | Inception 仕上げラウンド。§2.6 ダメ化効果マトリクス（FR × 5 退化軸）を新設、非ターゲットペルソナ「美咲」を追加、ng-scenarios.md（NG-1〜8 発動シナリオ）と market-positioning.md（3 軸市場比較）を新設、Mockup Validation を補助ステージとして正式化 | 倫理境界を「書いておしまい」にせず発動条件付きで実体化できた。ダメ化の加速作用が FR 単位で可視化 |
 
-書類審査の「完成度」は、完璧な初版ではなく、**反復によって磨かれた跡** で測る。`aidlc-docs/audit.md` には全対話履歴が ISO 8601 タイムスタンプ付きで残っており、[aidlc-state.md](aidlc-docs/aidlc-state.md) で各ステージの EXECUTE / SKIP 判定と承認履歴を追跡している。
+リポジトリ内の「完成度」は、完璧な初版ではなく、**反復によって磨かれた跡** で測れる。`aidlc-docs/audit.md` には全対話履歴が ISO 8601 タイムスタンプ付きで残っており、[aidlc-state.md](aidlc-docs/aidlc-state.md) で各ステージの EXECUTE / SKIP 判定と承認履歴を追跡している。
 
 ### 予選・決勝に向けた次イテレーション候補
 
@@ -315,7 +416,7 @@ Security Baseline + Property-Based Testing を両方とも全面強制（要件�
 
 ## 👤 このアプリで完成した人間像（Year 1 後の悠介）
 
-Year 1 の悠介の姿は [persona-journey.md](aidlc-docs/inception/user-stories/persona-journey.md) に物語形式で記録されている。審査員向けに、**このアプリが最終的に生産する人間像** をここに要約する。
+Year 1 の悠介の姿は [persona-journey.md](aidlc-docs/inception/user-stories/persona-journey.md) に物語形式で記録されている。**このアプリが最終的に生産する人間像** をここに要約する。
 
 ### プロファイル（Day 365、28 歳男性、リモートワーカー）
 
@@ -328,20 +429,20 @@ Year 1 の悠介の姿は [persona-journey.md](aidlc-docs/inception/user-stories
 | 決済までの平均タップ数 | **1.8 タップ** |
 | 月間 Amazon 経由散財額 | **¥148,000**（導入前の **3.5 倍**） |
 | 委ね Lv. | **47** |
-| 獲得した称号 | 「本日の湯水使い」→「静かな信徒」→ **「伝道師」** |
+| 獲得した称号 | 「本日の湯水使い」→「静かな信徒」→ **「伝道師」**（要件書 FR-GAME-01 の例示 + Year 1 物語での発展形、[persona-journey.md](aidlc-docs/inception/user-stories/persona-journey.md) 参照）|
 | ダメ化ポートフォリオのタグ数 | **27 個**（初期の 5 倍以上） |
 
 ### 失われた能力
 
 - ✗ **買い物の前にひと呼吸置く習慣** — 通知音 → タップの反射に置き換わった
 - ✗ **自発的に欲しいものを探す習慣** — Amazon を自分で開くことをやめた
-- ✗ **自分の欲望を自分の言葉で語る能力** — 友人に「どんなの欲しい？」と聞かれたら、自分では答えられず YUDANE のダメ化ポートフォリオを見せる
+- ✗ **自分の欲望を自分の言葉で語る能力** — 「何が欲しい？」と聞かれても自分では答えられず、YUDANE のダメ化ポートフォリオを開いて見せる
 - ✗ **判断の躊躇** — 平均論破ターン数 3 → 1 以下、翻意に迷いがない
 - ✗ **ケチだけど計画的、という自己像** — 「頑張ってる自分は褒められるべき」に置換
 
 ### 起きた行動変容の典型シーン
 
-深夜 23:12、友人の美咲から LINE で「最近どんなもの買ってる？ 何が欲しい？」と聞かれる。悠介は数秒タイプを始めて、止まる。そしてダメ化ポートフォリオを開き、スクリーンショットを返信する。
+深夜 23:12、**悠介の高校時代の友人・美咲**（33 歳、地方自治体職員、`personas.md` で「YUDANE に堕ちないタイプ」の逆相性ペルソナとして定義）から LINE で「最近どんなもの買ってる？ 何が欲しい？」と聞かれる。悠介は数秒タイプを始めて、止まる。そしてダメ化ポートフォリオを開き、スクリーンショットを返信する。
 
 > ちょっと、YUDANE のポートフォリオ送るね。俺が欲しいもの、大体これに書いてある。
 
@@ -369,6 +470,18 @@ Year 1 の悠介の姿は [persona-journey.md](aidlc-docs/inception/user-stories
 - **テーマ**: 🛋️ 人をダメにするサービスを考えよう！
 - **主催**: AWS Japan
 - **評価軸**（書類審査）: ビジネス意図の明確さ / Unit 分解の適切さ / 創造性とテーマ適合性 / ドキュメント品質
+
+---
+
+## Third-Party Skills
+
+本リポジトリには、第三者が公開している [Agent Skills](https://agentskills.io/) 形式のスキルをスナップショット取り込みしています。
+それぞれのスキルは元の著作権者のライセンスに従います。
+
+| Skill | 配置場所 | 元リポジトリ | ライセンス | 詳細 |
+|---|---|---|---|---|
+| `vercel-react-native-skills` | [`.kiro/skills/react-native-skills/`](./.kiro/skills/react-native-skills/) | [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills) | MIT (© Vercel, Inc.) | [ATTRIBUTION.md](./.kiro/skills/react-native-skills/ATTRIBUTION.md) |
+| `skill-creator` | [`.kiro/skills/skill-creator/`](./.kiro/skills/skill-creator/) | [anthropics/skills](https://github.com/anthropics/skills) | Apache-2.0 (© Anthropic, PBC) | [ATTRIBUTION.md](./.kiro/skills/skill-creator/ATTRIBUTION.md) |
 
 ---
 

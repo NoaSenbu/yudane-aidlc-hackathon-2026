@@ -88,6 +88,7 @@ All subsequent rule detail file references (e.g., `common/process-overview.md`, 
 - Workspace Detection (ALWAYS)
 - Reverse Engineering (CONDITIONAL - Brownfield only)
 - Requirements Analysis (ALWAYS - Adaptive depth)
+- Mockup Generation (CONDITIONAL - UI-centric or user-facing projects)
 - User Stories (CONDITIONAL)
 - Workflow Planning (ALWAYS)
 - Application Design (CONDITIONAL)
@@ -156,6 +157,65 @@ All subsequent rule detail file references (e.g., `common/process-overview.md`, 
 4. Execute at appropriate depth (minimal/standard/comprehensive)
 5. **Wait for Explicit Approval**: Follow approval format from requirements-analysis.md detailed steps - DO NOT PROCEED until user confirms
 6. **MANDATORY**: Log user's response in audit.md with complete raw input
+
+## Mockup Generation (CONDITIONAL)
+
+**INTELLIGENT ASSESSMENT**: Execute when the project has a user interface or user-facing interaction that benefits from visualization before user stories are written.
+
+**Execute IF** (any of the following applies):
+- Application has a user interface (web, mobile, desktop, embedded UI)
+- Multiple user touchpoints or screens exist
+- User journey spans 3+ interaction steps
+- User experience is central to the product value
+- Team needs shared visual understanding before implementation
+- Stakeholders include non-technical members who benefit from visual artifacts
+- Requirements are complex or ambiguous enough that visualization reduces risk
+
+**Skip IF** (all of the following apply):
+- Backend API only (no user-facing interface)
+- CLI tools without interactive flows worth visualizing
+- Infrastructure/DevOps changes only
+- Pure code refactoring with no user-facing impact
+- Library/SDK development without reference UI
+
+**Retroactive Application Rule**:
+- Mockup Generation applies ONLY when the current stage is Requirements Analysis (just completed) AND User Stories has NOT yet started
+- If the workflow has already progressed to User Stories or beyond, DO NOT introduce Mockup Generation retroactively — continue with the existing flow
+
+**Purpose**:
+- Visualize requirements before user stories to validate project direction early
+- Build shared understanding across the team through concrete visual artifacts
+- Surface implicit assumptions before they propagate into stories and code
+- Provide interactive prototypes that stakeholders can experience hands-on (for UI-centric projects)
+
+**Mockup Generation has two parts within one stage**:
+1. **Part 1 - Planning**: Create mockup plan with questions (screen inventory, fidelity level, interaction depth, persona coverage), collect answers, analyze for ambiguities, get approval
+2. **Part 2 - Generation**: Execute approved plan to generate mockup artifacts and (for UI-centric projects) an interactive HTML prototype
+
+**Execution**:
+1. **MANDATORY**: Log any user input during this phase in audit.md
+2. Load all steps from `inception/mockup-generation.md`
+3. **MANDATORY**: Perform intelligent assessment (Step 1 in mockup-generation.md) to validate mockup generation is needed
+4. Load requirements from `aidlc-docs/inception/requirements/requirements.md`
+5. **PART 1 - Planning**: Create mockup plan with questions, wait for user answers, analyze for ambiguities, get approval
+6. **PART 2 - Generation**: Execute approved plan to generate mockup artifacts:
+   - `aidlc-docs/inception/mockup/mockup.md` — screen inventory, element lists, ASCII wireframes
+   - `aidlc-docs/inception/mockup/screen-flow.md` — Mermaid flowchart for navigation
+   - `aidlc-docs/inception/mockup/user-journey.md` — Mermaid journeys per persona
+   - `aidlc-docs/inception/mockup/mockup-review-questions.md` — generic UX review questions
+   - `aidlc-docs/inception/mockup/html/` — interactive HTML prototype (UI-centric/Hybrid projects MANDATORY)
+7. **HTML Prototype Constraints** (NON-NEGOTIABLE for projects that produce one):
+   - Zero external dependencies (no CDN, no npm, no frameworks)
+   - Offline operation (must work from `file://`)
+   - No tracking, analytics, or telemetry
+   - No hardcoded secrets or credentials
+   - Self-contained under `html/` directory
+8. **Validation before completion**:
+   - HTML prototype opens and operates without errors from `file://`
+   - Every requirement traces to at least one mockup element
+   - Every persona has at least one journey diagram
+9. **Wait for Explicit Approval**: Present detailed completion message (see mockup-generation.md) — DO NOT PROCEED until user confirms
+10. **MANDATORY**: Log user's response in audit.md with complete raw input
 
 ## User Stories (CONDITIONAL)
 

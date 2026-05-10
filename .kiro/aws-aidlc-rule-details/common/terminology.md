@@ -32,12 +32,13 @@
 - Workspace Detection (ALWAYS)
 - Reverse Engineering (CONDITIONAL - Brownfield only)
 - Requirements Analysis (ALWAYS - Adaptive depth)
+- Mockup Generation (CONDITIONAL - UI-centric or user-facing projects)
 - User Stories (CONDITIONAL)
 - Workflow Planning (ALWAYS)
 - Application Design (CONDITIONAL)
 - Units Generation (CONDITIONAL)
 
-**Outputs**: Requirements, user stories, architectural decisions, unit definitions
+**Outputs**: Requirements, mockup artifacts (visualizations and interactive prototypes), user stories, architectural decisions, unit definitions
 
 ### CONSTRUCTION PHASE
 **Purpose**: Detailed design and implementation  
@@ -77,6 +78,7 @@
 
 ### Conditional Stages
 - **Reverse Engineering**: Analyzing existing codebase (brownfield projects only)
+- **Mockup Generation**: Visualizing requirements and producing interactive prototypes to validate direction and build team alignment (user-facing projects only; between Requirements and User Stories)
 - **User Stories**: Creating user stories and personas (includes Story Planning and Story Generation)
 - **Application Design**: Designing application components, methods, business rules, and services
 - **Units Generation**: Decomposing the system into units of work (includes internal planning and generation sub-steps, plus per-unit design)
@@ -150,6 +152,7 @@ A reusable building block within a service or module. Components are classes, fu
 - **Generation**: Executing the plan to create artifacts
 
 Examples (these are internal sub-steps within a single stage, not separate stages):
+- Mockup Planning → Mockup Generation (within Mockup Generation stage)
 - Story Planning → Story Generation (within User Stories stage)
 - Units Planning → Units Generation (within Units Generation stage)
 - Unit Design Planning → Unit Design Generation (within per-unit design)
