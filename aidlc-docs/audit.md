@@ -195,3 +195,35 @@ This file contains the complete audit trail of all user inputs and AI responses 
 **Context**: Application Design Part 2 最終修正、Approve & Commit 前
 
 ---
+
+## Units Generation — Part 1 Planning 着手
+**Timestamp**: 2026-05-07T09:00:00Z
+**User Input**: "A"（Units Generation ステージに進む）
+**AI Response**: "Units Generation ステージの Part 1 Planning に着手。unit-of-work-plan.md を作成し、3 つの分割戦略（A: サービス軸 7 Units / B: フィーチャースライス 9 Units / C: ハイブリッド 8 Units 推奨）と 7 つの判断ポイント（戦略 / チーム分担 / 実装順序 / リポ構造 / デプロイ単位 / API 契約凍結 / ストーリー配分粒度）を [Answer]: タグで投げる。Application Design の 31 コンポーネント + 7 サービスを 8 Units（戦略 C）に割り当てる推奨案を提示。Current Stage を Units Generation Part 1 に更新。承認後に Part 2 で unit-of-work.md / unit-of-work-dependency.md / unit-of-work-story-map.md を生成予定。"
+**Context**: Units Generation Part 1 Planning - Step 5-6 ゲート前
+
+---
+
+## Units Generation — Part 1 承認（Q1-Q7 確定）+ Part 2 Generation
+**Timestamp**: 2026-05-07T09:30:00Z
+**User Input**: Q1=C, Q2=B, Q3=A, Q4=A, Q5=A, Q7=A（A-A 以外すべて推奨）、Q6 は詳細説明後「Aにします」
+**AI Response**: "Part 2 Generation 実施。3 ファイル生成。(1) unit-of-work.md: 8 Units 定義（Unit-1 Platform / Unit-2 Auth & Profile / Unit-3 Debate / Unit-4 Reel / Unit-5 Cart Intercept / Unit-6 Calendar / Unit-7 Safeguard / Unit-8 Dame Report）、各 Unit に目的 / 範囲（Mobile/Backend/Shared/Infra）/ 責務 / 対応 UC / ストーリー / デプロイ CDK / 担当 / 工数 / 依存を明記。コード組織は Greenfield モノレポ、mobile/features, backend/src, infra/lib, shared/ の構造で Unit 単位に分離。4 名の役割マトリクス（Member A = Platform+Auth+横断, B = Debate, C = Reel, D = Cart）。(2) unit-of-work-dependency.md: 依存マトリクス 8×8、Mermaid DAG + gantt で実装順序（Platform 3 日 → Auth 3 日 → コア 3 Unit 7-8 日並行 → サポート 4 日並行 → 統合 3 日 → 予選）、リスク & 緩和策 5 件、ロールアウト戦略（Stack 段階的）、テスト戦略。(3) unit-of-work-story-map.md: 15 ストーリー × 8 Units の主担当/副担当マトリクス、Unit-3/4/5 が各 5 ストーリー主担当でカバレッジ 100%、Unit-1/2/6/7/8 は副担当、Extension 適合のストーリーマッピング、非ターゲットペルソナ（田中/山田）を Unit-7 に集約。全 3 ファイル診断エラーなし。plan チェックボックスと aidlc-state.md を Part 2 完了・承認待ちに更新。"
+**Context**: Units Generation Part 2 Generation 完了, Step 16 承認ゲート前
+
+---
+
+## Units Generation — セルフレビュー後の修正（A: Issue A/C/D/E 全修正）
+**Timestamp**: 2026-05-07T10:00:00Z
+**User Input**: "自己レビューしてください" → "A"（Issue A/C/D/E すべて修正）
+**AI Response**: "セルフレビューで 4 件検出、すべて修正。Issue C（最重要）: Member A の工数超過を解消するため、unit-of-work.md の役割マトリクスを『各コア担当がコア Unit 完了後に 1 サポート Unit を主担当』に変更 — Member A は Unit-1/2 + 全期間 Platform 運用 / OpenAPI 守護 / CI / 横断レビュー、Member B は Unit-3→Unit-6、Member C は Unit-4→Unit-7、Member D は Unit-5→Unit-8。各メンバーの総工数は 8〜11 営業日に収まり 3 週間で完走可能。Unit-6/7/8 工数は 3-4d → 3d に圧縮（Platform の基盤により実現可能）。各 Unit の担当欄も更新。Gantt は Unit-6/7/8 を『after b1/c1/d1』に変更、統合 3d→2d、デモ準備 2d→1d に調整して予選 5/30 に丁度収まるスケジュールへ。Issue A（UC-05 主担当明確化）: Unit-2 対応 UC に『(判定ロジック: 称号/Lv 付与)』、Unit-4 に『+UC-05（散財 EXP 加算）』、Unit-8 に『UC-05（Lv/称号/Streak の表示層）』を明記。Issue D（Unit-6/7/8 成功条件明記）: 各 Unit の担当欄直後に『成功条件』フィールドを追加（Unit-6 は ctx 供給、Unit-7 は middleware 挿入 + 判定一致、Unit-8 は週次集計 + 表示）。Issue E（Q7 解釈注記）: ストーリー数サマリに『Q7=A の解釈について』の注記を追加し、コア集中 + サポート横断責務の合理性を説明。2 ファイル全診断エラーなし。"
+**Context**: Units Generation Part 2 最終修正、Approve & Commit 前
+
+---
+
+## Units Generation Approved → 🎉 INCEPTION PHASE 完了
+**Timestamp**: 2026-05-07T10:15:00Z
+**User Input**: "A"（Units Generation 承認 + Inception Phase 完了宣言 + コミット + README 整備）
+**AI Response**: "Units Generation を承認として記録。unit-of-work-plan.md のチェックボックス完了。aidlc-state.md で Application Design / Units Generation を [x] マーク、Current Stage を『🎉 INCEPTION PHASE 完了』に更新。Inception Phase の全成果物が揃った: Workspace Detection / Requirements Analysis v0.5 / User Stories (15 本 + 2 ペルソナ + 退化年表) / Workflow Planning / Application Design (31 コンポーネント / 7 サービス / 5 文書) / Units Generation (8 Units / 3 文書 / カバレッジ 100%)。書類審査 4 基準すべてを強で満たす構え。次は本変更のコミット → README 整備。"
+**Context**: Inception Phase 完了 — 書類審査 (5/10) 提出準備段階
+
+---
