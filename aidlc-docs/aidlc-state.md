@@ -1,7 +1,8 @@
 # AI-DLC State Tracking
 
 ## Project Information
-- **Project Name**: AIDLC-Hackathon-2026-teamname
+- **Project Name**: yudane-aidlc-hackathon-2026
+- **Product Name**: YUDANE（委ね）
 - **Hackathon**: AWS Summit Japan 2026 AI-DLC Hackathon
 - **Theme**: 「人をダメにするサービスを考えよう！」
 - **Submission Deadline**: 2026-05-10
