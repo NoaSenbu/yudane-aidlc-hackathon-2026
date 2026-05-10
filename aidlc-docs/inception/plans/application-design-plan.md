@@ -14,23 +14,23 @@
 
 ## 設計スコープ
 
-* **Mobile 層**: React Native + TypeScript + **AWS SDK v3** + **TanStack Query + Zustand**（Amplify 不採用）
+* **Mobile 層**: React Native + TypeScript + **AWS SDK v3** + **TanStack Query + Zustand**（Amplify は Auth のみ薄く採用、Data/Functions/CLI は不採用）
 
-* **Backend 層**: **CDK 管理 Lambda（Python 3.12）** + API Gateway (REST)
+* **Backend 層**: **CDK 管理 Lambda（Python 3.13）** + API Gateway (REST)
 
 * **Shared 層**: スキーマ定義、プロトコル、共通ユーティリティ
 
 本ステージでは **高レベルのコンポーネント識別・サービス層設計** に集中する。ビジネスロジックの詳細（例: 論破プロンプトの具体構造）は Construction フェーズの Functional Design（per-unit）で扱う。
 
-## アーキテクチャ前提（確定済み、要件書 v0.5 準拠）
+## アーキテクチャ前提（確定済み、要件書 v0.6 準拠）
 
-* **モバイル**: React Native + TypeScript + AWS SDK v3。状態管理は TanStack Query（サーバー）+ Zustand（クライアント）。Amplify 不採用
+* **モバイル**: React Native 0.76+ (New Architecture) + TypeScript 5.x + AWS SDK v3。状態管理は TanStack Query（サーバー）+ Zustand（クライアント）。Amplify は Auth のみ薄く採用、Data/Functions/CLI は不採用
 
-* **Auth**: Amazon Cognito + TOTP MFA（モバイルから `amazon-cognito-identity-js` で直接利用、CDK で User Pool 管理）
+* **Auth**: Amazon Cognito + TOTP MFA（モバイルから Amplify JavaScript v6 の Auth モジュールで利用、`amazon-cognito-identity-js` は非推奨のため不採用、CDK で User Pool 管理）
 
 * **Data**: REST API（API Gateway + Lambda）+ **生 DynamoDB**（AppSync / GraphQL 不採用）
 
-* **AI / 論破**: Amazon Bedrock（Claude Haiku/Sonnet）+ Titan Embeddings + OpenSearch Serverless
+* **AI / 論破**: Amazon Bedrock（Claude Haiku 4.5 / Sonnet 4.6）+ Titan Embeddings V2 + OpenSearch Serverless
 
 * **Push**: AWS End User Messaging Push + EventBridge Scheduler
 
@@ -111,7 +111,7 @@ Amplify Gen 2 採用決定と Q2=ii（ハイブリッド）から **A 推奨**�
 
 * **A**: Amplify Functions (Node.js/TS) から呼び出し
 
-* **B（推奨）**: **CDK 拡張 Lambda (Python 3.12)** から呼び出し。PBT（Hypothesis）と LLM ストリーミング制御がしやすい
+* **B（推奨）**: **CDK 拡張 Lambda (Python 3.13)** から呼び出し。PBT（Hypothesis）と LLM ストリーミング制御がしやすい
 
 * **C**: 両方（簡単な要約は TS、論破ストリーミングは Python）
 
@@ -208,7 +208,7 @@ Creators API のレート制限を考慮すると A 推奨。
 |---|---|---|
 | Q1 | Backend Lambda の粒度 | **C**: ドメインサービス単位（Debate / Reel / Cart / 他 計 10 個前後） |
 | Q2 | API プロトコル | **B**: REST + API Gateway + Lambda + 生 DynamoDB（**Amplify Data 不採用**） |
-| Q3 | Bedrock 呼び出し位置 | **B**: CDK 管理 Lambda (Python 3.12)（Hypothesis PBT 親和性） |
+| Q3 | Bedrock 呼び出し位置 | **B**: CDK 管理 Lambda (Python 3.13)（Hypothesis PBT 親和性） |
 | Q4 | カート追撃トリガー | **A**: EventBridge Scheduler で 30m / 6h / 24h の 3 ジョブ登録 |
 | Q5 | Mobile 状態管理 | **TanStack Query（サーバー）+ Zustand（クライアント）**（Amplify Data hooks 不採用） |
 | Q6 | 全体アーキテクチャ | **B**: Feature-based + 軽レイヤード |

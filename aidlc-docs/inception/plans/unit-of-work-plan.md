@@ -157,7 +157,7 @@ Application Design の 31 コンポーネントを以下 3 つの戦略で分割
 
 ## 計画フェーズ チェックリスト
 
-* [x] Step 1: 要件書 v0.5 / ストーリー / Application Design / ペルソナ読み込み
+* [x] Step 1: 要件書 v0.6 / ストーリー / Application Design / ペルソナ読み込み
 
 * [x] Step 2-4: 本プラン作成（分割戦略 / Unit 候補 / 判断ポイント）
 

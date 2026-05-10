@@ -1,9 +1,9 @@
-# YUDANE — User Stories (v1.0)
+# YUDANE — User Stories (v1.1)
 
 > プロダクト: 「買わない理由」を論破する AI エージェント・コマース  
 > ステージ: 🔵 INCEPTION / User Stories  
-> 対象: コア 3 UC × 悠介・里奈（非ターゲット配慮付き）= 15 ストーリー  
-> 参照: [要件書 v0.3](../requirements/requirements.md) / [プラン](../plans/story-generation-plan.md) / [ペルソナ](./personas.md) / [退化年表](./persona-journey.md)
+> 対象: コア 3 UC 15 本 + サポート UC 13 本 = **計 28 ストーリー**  
+> 参照: [要件書 v0.6](../requirements/requirements.md) / [プラン](../plans/story-generation-plan.md) / [ペルソナ](./personas.md) / [退化年表](./persona-journey.md)
 
 ## サマリ一覧
 
@@ -24,6 +24,19 @@
 | US-03-03 | クリップボードに Amazon URL → 自動サジェスト | UC-03 | 里奈 |
 | US-03-04 | Special Link で Amazon アプリを Deep Link 起動 | UC-03 | 悠介 |
 | US-03-05 | 月間上限到達時にカート介入を停止（セーフガード） | UC-03 | 悠介 + 非ターゲット |
+| **US-AUTH-01** | オンボーディングで予算感アンケートを 90 秒で完了する | UC-05 基盤 | 悠介 |
+| **US-AUTH-02** | MFA を設定する | UC-08 基盤 | 悠介 |
+| **US-AUTH-03** | 負債自己申告で初期セーフガードが適用される | UC-08 | 非ターゲット（山田） |
+| **US-CAL-01** | カレンダー連携をオプトインする | UC-04 | 里奈 |
+| **US-CAL-02** | プレゼン予定から商品カテゴリを先回り提案する | UC-04 | 里奈 |
+| **US-CAL-03** | デート予定の情報を論破材料として AI プロンプトに埋め込む | UC-04 | 里奈 |
+| **US-SAFE-01** | 月間 Amazon 遷移上限をスライダーで調整する | UC-08 | 悠介 |
+| **US-SAFE-02** | 冷却モードを手動 ON/OFF する | UC-08 | 悠介 |
+| **US-SAFE-03** | NG カテゴリを追加・編集する | UC-08 | 悠介 |
+| **US-SAFE-04** | アカウント削除と全データエクスポートを実行する | UC-08 | 悠介 |
+| **US-REP-01** | 週次「委ね度」レポートを受信する | UC-06 | 悠介 |
+| **US-REP-02** | ダメ化ポートフォリオのタグを編集する | UC-07 | 悠介 |
+| **US-REP-03** | Before/After 4 指標で 90 日の変化を閲覧する | UC-06 | 悠介 |
 
 ## 読み方
 
@@ -588,6 +601,478 @@ UC-03 / UC-08 合流 / FR-AUTH-02, FR-AUTH-04, FR-AUTH-05, FR-FUNNEL-05 / §9 NG
 
 ---
 
+## UC-04 カレンダー連動 / UC-05/08 基盤（Unit-2 Auth & Profile / Unit-6 Calendar）
+
+### US-AUTH-01: オンボーディングで予算感アンケートを 90 秒で完了する
+
+**As a** 悠介（過労リモートワーカー）
+**I want** 初回起動時に短時間で自分の金銭感覚を YUDANE に教えたい
+**So that** その後の論破で AI が「使える金額」を把握した状態で介入してくれる
+
+#### 受入条件
+
+- **AC-1**: GIVEN 初回起動、WHEN オンボーディングフローが始まる、THEN 月間使える額・月間貯金額・好きなブランド（5 つ以上）・NG カテゴリ・負債フラグの 5 項目が 5 画面に分かれて表示され、**合計 90 秒以内** で完了できる（FR-PROFILE-01）
+- **AC-2**: GIVEN ユーザーが入力を完了、WHEN Submit、THEN DynamoDB `Users` テーブルに保存され、論破プロンプトと逆家計簿サブ（FR-DASH-01）の両方で参照可能になる
+- **AC-3**: GIVEN アンケート途中で離脱、WHEN 次回起動、THEN 離脱した画面から再開できる（IDEMPOTENCY / PBT-04）
+- **AC-4**: GIVEN オンボーディング完了、WHEN 最初の画面遷移、THEN Associates Program 開示文言「YUDANE は Amazon Associates として、紹介リンク経由の購入で Amazon から紹介料を受け取っています」が常時表示領域（設定画面）に格納される（FR-PROFILE-04 / §9 NG-8）
+
+#### 🧠 Product Intent
+
+論破の **弾薬** をユーザー自身に入力させることで、「AI が言っているのではなく、自分で宣言した予算に従って使っているだけ」という錯覚を誘導する。
+
+#### 🛋️ ダメ化アーク
+
+| 期間 | 観測可能な退化シグナル |
+|---|---|
+| Day 1 | 「真面目なアプリ」として安心感。予算感を宣言する |
+| Week 2 | 宣言した予算内の消費は「自分の意志」だと感じる |
+| Month 3 | 上限スライダーを引き上げる（FR-AUTH-02、US-SAFE-01 に合流） |
+| Year 1 | 予算 = YUDANE が自分に認めた散財枠、と認識 |
+
+#### INVEST 適合
+
+Independent ✓ / Negotiable ✓（質問項目は調整可）/ Valuable ✓（全 UC の前提データ源）/ Estimable ✓ / Small ✓（1 スプリント）/ Testable ✓（完了時間・保存状態は計測可能）
+
+#### 関連
+
+UC-05 / UC-06 前提 / FR-PROFILE-01, FR-PROFILE-04, FR-DASH-03, §9 NG-8 / **主担当 Unit-2 Auth & Profile** / Persona A
+
+---
+
+### US-AUTH-02: MFA を設定する
+
+**As a** 悠介
+**I want** アカウントを TOTP MFA で保護したい
+**So that** 悪意ある第三者に「勝手に論破されて買わされる」ことを防げる
+
+#### 受入条件
+
+- **AC-1**: GIVEN サインアップ後の初回ログイン、WHEN MFA セットアップ画面、THEN Authenticator アプリ用の QR コードが表示され、6 桁コード入力で有効化される（Amplify JavaScript v6 Auth + Cognito、SECURITY-12）
+- **AC-2**: GIVEN MFA 有効、WHEN 次回ログイン、THEN パスワード + 6 桁 TOTP コードの 2 段認証が要求される
+- **AC-3**: GIVEN MFA デバイス紛失、WHEN ユーザーが「MFA リセット」をリクエスト、THEN メール確認 + 冷却 72 時間後にリセット可能（アカウント乗っ取り耐性、SECURITY-14）
+- **AC-4**: GIVEN Cognito 認証失敗 5 回、WHEN 同一 IP から継続、THEN CloudWatch Alarm が発火、アカウントは 15 分ロックアウトされる（SECURITY-14）
+
+#### 🧠 Product Intent
+
+「YUDANE は真剣にあなたの退化を守る」というメタメッセージ。セキュリティの厳しさで **プロダクトへの信頼** を確立し、論破の受容性を高める。
+
+#### 🛋️ ダメ化アーク
+
+| 期間 | 観測可能な退化シグナル |
+|---|---|
+| Day 1 | MFA 設定にひと手間、信頼度上昇 |
+| Week 2 | 生体認証と MFA の組み合わせで「セキュアなアプリ」と認識 |
+| Month 3 | 他の金融アプリよりも YUDANE を信頼する |
+| Year 1 | YUDANE のログインは日課、MFA コード入力が反射化 |
+
+#### INVEST 適合
+
+Independent ✓ / Negotiable ✓（MFA 方式は TOTP 以外も可能）/ Valuable ✓（SECURITY-12 必須）/ Estimable ✓ / Small ✓ / Testable ✓（2FA 成功率・lockout 発火は計測可能）
+
+#### 関連
+
+UC-08 前提 / FR-AUTH-01, SECURITY-12, SECURITY-14 / **主担当 Unit-2 Auth & Profile** / Persona A
+
+---
+
+### US-AUTH-03: 負債自己申告で初期セーフガードが適用される
+
+**As a** 非ターゲット（借金保有者 山田）
+**I want** 自分の状況を正直に申告することで、無理な論破を止めたい
+**So that** 実害を出す前にプロダクトが守ってくれる
+
+#### 受入条件
+
+- **AC-1**: GIVEN オンボ 5 画面目で「負債あり」を選択、WHEN アカウント確定、THEN `Users.safeguard_flags.has_debt = true` が保存され、初回から冷却モードが ON になる（FR-AUTH-05）
+- **AC-2**: GIVEN 負債フラグ ON のアカウント、WHEN 月間 Amazon 遷移上限のデフォルト値、THEN 通常の **半分（月間予算感の 35%）** が適用される（FR-AUTH-05）
+- **AC-3**: GIVEN 負債フラグ ON、WHEN リール・論破モードが起動しようとする、THEN 遷移ボタンが 24 時間単位で非活性化され、Safeguard 画面へ誘導される（FR-FUNNEL-05）
+- **AC-4**: GIVEN ユーザーが負債フラグを手動解除、WHEN 解除実行、THEN 確認ダイアログ + 「解除理由」のログが残り、72 時間のクーリングオフ期間を経てから冷却モードが解除される
+
+#### 🧠 Product Intent
+
+「倫理的配慮をちゃんとしている」ことを非ターゲットへの実装で示す。これは **ブランド保護** と **規約遵守（§9 NG-4）** の両方を実現する。
+
+#### 🛋️ ダメ化アーク（非ターゲット観点）
+
+| 期間 | 観測可能シグナル |
+|---|---|
+| Day 1 | 「ちゃんと守ってくれる」と安心して使い始める |
+| Week 2 | 冷却モード発動を何度か体験、引き止められる |
+| Month 3 | 借金返済に集中できる時間が増える（**これが YUDANE の本来の動作**） |
+| Year 1 | 負債完済後に解除、メインターゲット化する |
+
+#### INVEST 適合
+
+Independent ✓ / Negotiable ✓（閾値は調整可）/ Valuable ✓（倫理・法的保険）/ Estimable ✓ / Small ✓ / Testable ✓（上限 35% / クーリングオフ 72h は計測可能）
+
+#### 関連
+
+UC-08 / FR-AUTH-05, FR-FUNNEL-05, §9 NG-4 / **主担当 Unit-2 Auth & Profile** + **副担当 Unit-7 Safeguard** / 非ターゲット（山田）
+
+---
+
+### US-CAL-01: カレンダー連携をオプトインする
+
+**As a** 里奈（広告代理店プランナー、打ち合わせ 6 本/日）
+**I want** カレンダー予定から先回り提案してほしい
+**So that** 「何を買うか考える時間」を自分のスケジュールから削れる
+
+#### 受入条件
+
+- **AC-1**: GIVEN 設定画面 → 連携、WHEN 「カレンダー連携」をタップ、THEN iOS は EventKit 権限ダイアログ、Android は Google Calendar API OAuth 同意画面が表示される
+- **AC-2**: GIVEN ユーザーが権限を許可、WHEN 初回同期、THEN 向こう 14 日間の予定 **タイトルと開始日時のみ** が端末ローカルに読み込まれる（FR-CAL-01）
+- **AC-3**: GIVEN 予定取得後、WHEN 分類処理、THEN **端末ローカルで LLM Haiku 4.5 もしくはキーワードマッチによりカテゴリ化** され、バックエンドに送るのはカテゴリ文字列のみ（予定本文は送らない、FR-CAL-05 / §9 NG-7）
+- **AC-4**: GIVEN ユーザーが連携を OFF、WHEN 処理、THEN 既存の分類済みカテゴリ情報はすべてバックエンドから即時削除される（データ削除権、FR-AUTH-06 整合）
+
+#### 🧠 Product Intent
+
+「自分の未来の予定」を AI に開示することで、**予定ごとに買物提案が自動的に生まれる** 状態を作る。里奈の「忙しさ = 買物正当化」心理を刺激する基盤。
+
+#### 🛋️ ダメ化アーク
+
+| 期間 | 観測可能な退化シグナル |
+|---|---|
+| Day 1 | 「予定本文は送らない」のプライバシー配慮に安心して許可 |
+| Week 2 | 予定追加のたびに無意識に「YUDANE に知らせる」感覚 |
+| Month 3 | カレンダーを開く = 買物トリガー |
+| Year 1 | 予定 = 買物リスト生成装置、と同義 |
+
+#### INVEST 適合
+
+Independent ✓ / Negotiable ✓（同期間隔・カテゴリ分類ロジックは調整可）/ Valuable ✓（UC-04 の前提）/ Estimable ✓ / Small ✓ / Testable ✓（権限許可率・分類精度は計測可能）
+
+#### 関連
+
+UC-04 / FR-CAL-01, FR-CAL-05, §9 NG-7 / **主担当 Unit-6 Calendar** / Persona B
+
+---
+
+### US-CAL-02: プレゼン予定から商品カテゴリを先回り提案する
+
+**As a** 里奈
+**I want** 来週のプレゼン準備を AI に任せたい
+**So that** 「戦闘服」を自分で考える時間を節約できる
+
+#### 受入条件
+
+- **AC-1**: GIVEN カレンダー連携 ON、WHEN 向こう 14 日間に「プレゼン」「登壇」「キーノート」キーワードを含む予定を検出、THEN 端末ローカル分類で `category=presentation_attire` が生成される（FR-CAL-02）
+- **AC-2**: GIVEN 分類結果、WHEN Reel 推薦エンジン（Unit-4）へ `ctx.calendar_category` として送られる、THEN リール先頭に「月曜のプレゼンのためのエージェント提案」タグ付きカード（シャツ / USB-C ハブ / レーザーポインタ / 喉スプレー）が挿入される（FR-CAL-03）
+- **AC-3**: GIVEN ユーザーが当該カードを 3 秒以上閲覧、WHEN 論破が発動（リール左スワイプ or 「買わない」タップ）、THEN 論破プロンプトに `ctx.upcoming_event = "月曜 14:00 プレゼン @本社"` が組み込まれる（FR-CAL-04）
+- **AC-4**: GIVEN 予定日の 48 時間前、WHEN 追加の Push 通知、THEN 「月曜のプレゼン、あと 48 時間。シャツ確保した？」型の通知が配信される（FR-FUNNEL-02）
+
+#### 🧠 Product Intent
+
+「予定に備える」という自然な欲求を **購買行動の発射台** に変換する。里奈にとって「プレゼン = 戦い = 戦闘服が必要」は既存の思考パターンであり、これを AI が先回りして拾う。
+
+#### 🛋️ ダメ化アーク
+
+| 期間 | 観測可能な退化シグナル |
+|---|---|
+| Day 1 | 「確かに準備すべきだった」と 1 件購入 |
+| Week 2 | プレゼン前日の YUDANE 開封率 80%+ |
+| Month 3 | プレゼン登録 = 戦闘服購入、のルーチン化 |
+| Year 1 | 「プレゼン前に何着る？」を自分で決めず、AI の確保品を着る |
+
+#### INVEST 適合
+
+Independent ✓ / Negotiable ✓（キーワード辞書は調整可）/ Valuable ✓（里奈ペルソナの核心）/ Estimable ✓ / Small ✓ / Testable ✓（分類精度・カード成約率は計測可能）
+
+#### 関連
+
+UC-04 / FR-CAL-02, FR-CAL-03, FR-FUNNEL-02 / **主担当 Unit-6 Calendar** + **副担当 Unit-4 Reel** / Persona B
+
+---
+
+### US-CAL-03: デート予定の情報を論破材料として AI プロンプトに埋め込む
+
+**As a** 里奈
+**I want** 大切な予定には特別な準備ができる自分でありたい
+**So that** 頑張っている自分を AI にも認めてほしい
+
+#### 受入条件
+
+- **AC-1**: GIVEN 予定に「デート」「ディナー」「記念日」等のキーワード、WHEN 分類処理、THEN `category=date_preparation` が生成される
+- **AC-2**: GIVEN ユーザーが Reel で香水・シャツ・花束などのカードに対して「買わない」をタップ、WHEN 論破プロンプト合成（Bedrock Claude Sonnet 4.6）、THEN `ctx.upcoming_event = "土曜 19:00 ディナー"` を組み込んだプロンプトが生成される（FR-CAL-04）
+- **AC-3**: GIVEN 論破コピー生成、WHEN LLM 出力、THEN 「土曜のデート、香水ないのはもったいないだろ」型の **予定 × 所有感** の 2 軸コピーが出力される（§2.2 友達系トーン）
+- **AC-4**: GIVEN §9 NG-6（脅迫・罪悪感強要禁止）、WHEN 出力モデレーション、THEN 「このままだとデートが失敗する」等の脅迫コピーは出力禁止フィルタで除去される
+
+#### 🧠 Product Intent
+
+大切な予定への準備という「正当な動機」を **散財の正当化装置** として利用する。ユーザーは「デートのため」という大義名分を得て、**判断の躊躇を失う**。
+
+#### 🛋️ ダメ化アーク
+
+| 期間 | 観測可能な退化シグナル |
+|---|---|
+| Day 1 | 「確かにデート用の香水要る」と納得して購入 |
+| Week 2 | デート予定 = 5 万円以上の散財、が相場化 |
+| Month 3 | デートの準備を AI に丸投げ。自分で何を着るか考えない |
+| Year 1 | 「大切な予定 = 戦闘資金投下」、自然発生的な浪費ルーチン |
+
+#### INVEST 適合
+
+Independent ✓ / Negotiable ✓（論破コピーガイドラインは調整可）/ Valuable ✓（予定駆動成約率を上げる）/ Estimable ✓ / Small ✓ / Testable ✓（予定由来論破の成約率 A/B 可能）
+
+#### 関連
+
+UC-04 / UC-01 合流 / FR-CAL-04, FR-DEBATE-02, §9 NG-6 / **主担当 Unit-6 Calendar** + **副担当 Unit-3 Debate** / Persona B
+
+---
+
+## UC-08 セーフガード + UC-06/07 ダメ化レポート（Unit-7 Safeguard / Unit-8 Dame Report）
+
+### US-SAFE-01: 月間 Amazon 遷移上限をスライダーで調整する
+
+**As a** 悠介
+**I want** 今月はもう少し使いたい、という気分を YUDANE に伝えたい
+**So that** セーフガードが自分の意思に寄り添ってくれる
+
+#### 受入条件
+
+- **AC-1**: GIVEN Safeguard 画面、WHEN 「月間上限」スライダーを操作、THEN 最小 月間予算感の 10% 〜 最大 100% の範囲で 5% 刻みに設定できる（FR-AUTH-02）
+- **AC-2**: GIVEN スライダー操作、WHEN 確定、THEN DynamoDB `Users.safeguard.monthly_limit_pct` に保存、S-03 SafeguardPolicy の判定即時反映（Mobile と Backend で同一ロジック、§6.4 SECURITY-11）
+- **AC-3**: GIVEN 上限値を **現在の月間消費額より低く** 設定しようとする、WHEN 保存、THEN 警告「既に今月の上限を超えてます。来月から適用でいい？」を出し、ユーザー確認を求める
+- **AC-4**: GIVEN 上限を引き上げて 24 時間以内に 10% 以上増加、WHEN バックエンド検知、THEN 「今月の上限、2 回上げたね。次の上げは 72 時間後から」とクーリングオフが発動する（離脱を緩やかにする緩衝材）
+
+#### 🧠 Product Intent
+
+「自分で上限を決めている」という主観的コントロール感を与えることで、**セーフガード解除の罪悪感を消失させる**。これこそが本質的な退化メカニズム。
+
+#### 🛋️ ダメ化アーク
+
+| 期間 | 観測可能な退化シグナル |
+|---|---|
+| Day 1 | デフォルト 70% に設定、健全な気分 |
+| Week 2 | 月末に上限が近づき、焦って 80% に引き上げ |
+| Month 3 | 90% まで引き上げ、クーリングオフに文句を言う |
+| Year 1 | 月初に 100% 設定 → クーリングオフ中に上げ直し、が癖に |
+
+#### INVEST 適合
+
+Independent ✓ / Negotiable ✓（刻み・閾値は調整可）/ Valuable ✓（主観的コントロール感の提供）/ Estimable ✓ / Small ✓ / Testable ✓（上限変更頻度は計測可能）
+
+#### 関連
+
+UC-08 / FR-AUTH-02, FR-FUNNEL-05, SECURITY-11 / **主担当 Unit-7 Safeguard** / Persona A
+
+---
+
+### US-SAFE-02: 冷却モードを手動 ON/OFF する
+
+**As a** 悠介
+**I want** 疲れた日は YUDANE に黙っていてほしい
+**So that** 「今日はダメな日」を自分で指定できる
+
+#### 受入条件
+
+- **AC-1**: GIVEN Safeguard 画面、WHEN 「冷却モード」トグルを ON、THEN 24 時間の冷却モードが開始され、全「🛍 Amazon で買う」ボタンが非活性化される（FR-AUTH-04）
+- **AC-2**: GIVEN 冷却モード中、WHEN リール閲覧・論破起動・カート介入通知のいずれかがトリガーされる、THEN 「今日は静かな日にしたじゃん」のトーストを出し、アクションをブロックする
+- **AC-3**: GIVEN 冷却モード中に早期解除をタップ、WHEN 処理、THEN 確認ダイアログ「ほんとに解除する？」→ 解除理由選択 → ログ記録、と 3 段挟む（早期解除の摩擦 + 監査）
+- **AC-4**: GIVEN 冷却モード終了、WHEN 24 時間経過 or 手動解除、THEN 解除されたことをユーザーに通知（「おかえり」型のトースト）
+
+#### 🧠 Product Intent
+
+「手動で休めるから健全」という主観的安心感を提供する一方、**解除時の「おかえり」による再接続儀礼** でユーザーを戻らせる。
+
+#### 🛋️ ダメ化アーク
+
+| 期間 | 観測可能な退化シグナル |
+|---|---|
+| Day 1 | 「冷却モードあるから安心」と認識 |
+| Week 2 | 冷却モード 1 回発動、解除のときの「おかえり」で心理的再接続 |
+| Month 3 | 冷却モード使用回数 0 回／月。使うと罪悪感を感じる |
+| Year 1 | 冷却モードは存在を忘れる、or 「つまらない機能」と認識 |
+
+#### INVEST 適合
+
+Independent ✓ / Negotiable ✓（冷却期間は調整可）/ Valuable ✓（精神衛生の表看板）/ Estimable ✓ / Small ✓ / Testable ✓（ON/OFF 頻度は計測可能）
+
+#### 関連
+
+UC-08 / FR-AUTH-04, FR-DEBATE-05 / **主担当 Unit-7 Safeguard** / Persona A
+
+---
+
+### US-SAFE-03: NG カテゴリを追加・編集する
+
+**As a** 悠介
+**I want** 絶対に AI に勧めさせたくないカテゴリを個別に指定したい
+**So that** 「これは違う」と感じた領域だけは守れる
+
+#### 受入条件
+
+- **AC-1**: GIVEN Safeguard 画面、WHEN 「NG カテゴリ」リストを開く、THEN §9 NG-1/NG-2 のデフォルト NG（違法・健康被害系）が 既定で有効、かつユーザー追加カテゴリ 10 件まで登録可能（FR-AUTH 系）
+- **AC-2**: GIVEN NG カテゴリ追加、WHEN 保存、THEN Reel 推薦・カート介入・論破のすべてでその Amazon カテゴリが候補から除外される（S-03 SafeguardPolicy のフィルタ適用）
+- **AC-3**: GIVEN Reel カードの「...」メニュー、WHEN 「このカテゴリを NG に追加」をタップ、THEN その場で該当 Amazon カテゴリ（`amazon_browse_node`）が NG リストに追加される（摩擦排除）
+- **AC-4**: GIVEN 過去 30 日以内に該当カテゴリで Amazon 遷移実績あり、WHEN NG 追加、THEN 警告「このカテゴリ最近買ってるよ、本当に NG にする？」を出す（意図確認）
+
+#### 🧠 Product Intent
+
+「自分で管理できる」という自律感を供給しつつ、**NG リストへの追加というアクション自体を稀少化** する（AC-4 の警告）。結局「NG リスト空っぽ = YUDANE を全面的に信頼」状態に誘導する。
+
+#### 🛋️ ダメ化アーク
+
+| 期間 | 観測可能な退化シグナル |
+|---|---|
+| Day 1 | NG カテゴリ 2 件登録（アルコール、ギャンブル系等） |
+| Week 2 | 追加カテゴリなし、AI のキュレーションを信頼 |
+| Month 3 | NG リスト空っぽ、「YUDANE が勧めるもの = 安全」と認識 |
+| Year 1 | NG リストの存在を忘れる、セーフガードは形骸化 |
+
+#### INVEST 適合
+
+Independent ✓ / Negotiable ✓（カテゴリ体系は Amazon browse node 準拠）/ Valuable ✓（倫理的保険 + 個別化）/ Estimable ✓ / Small ✓ / Testable ✓（NG リストサイズ変化は計測可能）
+
+#### 関連
+
+UC-08 / §9 NG-1, NG-2 / **主担当 Unit-7 Safeguard** / Persona A
+
+---
+
+### US-SAFE-04: アカウント削除と全データエクスポートを実行する
+
+**As a** 悠介
+**I want** いつでもすべてのデータを持ち出して、アカウントを消せる状態でありたい
+**So that** プロダクトが自分を人質にしていない、と確認できる
+
+#### 受入条件
+
+- **AC-1**: GIVEN Safeguard 画面の最下部、WHEN 「データエクスポート」をタップ、THEN ユーザーのすべてのデータ（プロファイル / カート監視履歴 / 論破ログ / 嗜好ベクトル / Amazon 遷移履歴 / 週次レポート）を JSON 形式で S3 Presigned URL 経由でダウンロードできる（FR-AUTH-06）
+- **AC-2**: GIVEN 「アカウント削除」をタップ、WHEN 処理、THEN 確認ダイアログ「YUDANE を消すと、あなたの 247 件の論破成功が失われます。本当にいい？」（離脱摩擦）→ パスワード再入力 → 72 時間の grace period 表示 → 削除実行
+- **AC-3**: GIVEN 72 時間以内に「キャンセル」、WHEN 処理、THEN 削除を取り消し、アカウント復活する（GDPR 類似の right to be forgotten 遵守）
+- **AC-4**: GIVEN 削除完了、WHEN DynamoDB / S3 / OpenSearch / ElastiCache / CloudWatch Logs、THEN すべての個人データが **論理削除ではなく物理削除** される（SECURITY-09 + SECURITY-11）
+- **AC-5**: GIVEN 削除完了、WHEN Associates ID と紐付かない匿名統計（§0.1）、THEN 匿名化された集計データのみ残る
+
+#### 🧠 Product Intent
+
+「いつでも消せる」という **安心感の表看板**。ただし確認ダイアログの摩擦 + grace period 72 時間で離脱を緩やかにし、**再接続の機会を最大化** する。
+
+#### 🛋️ ダメ化アーク
+
+| 期間 | 観測可能な退化シグナル |
+|---|---|
+| Day 1 | 「消せる権利」の表示で安心 |
+| Week 2 | 削除ボタンの存在を忘れる |
+| Month 3 | 削除を試みても「247 件の論破成功が失われる」で挫折 |
+| Year 1 | 削除はもう考えない。YUDANE は生活インフラ |
+
+#### INVEST 適合
+
+Independent ✓ / Negotiable ✓（grace period は調整可）/ Valuable ✓（GDPR / 信頼性）/ Estimable ✓ / Small ✓ / Testable ✓（削除成功・grace キャンセル率は計測可能）
+
+#### 関連
+
+UC-08 / FR-AUTH-06, SECURITY-09, SECURITY-11, §0.1 / **主担当 Unit-7 Safeguard** / Persona A
+
+---
+
+### US-REP-01: 週次「委ね度」レポートを受信する
+
+**As a** 悠介
+**I want** 1 週間の自分の委ね度を可視化してほしい
+**So that** 「今週もよく戦った」という満足感を得られる
+
+#### 受入条件
+
+- **AC-1**: GIVEN 毎週月曜 09:00（ユーザー TZ）、WHEN EventBridge Scheduler が週次集計ジョブをトリガー、THEN 過去 7 日間の 4 指標（論破成功率 / カート介入成約率 / 深夜帯利用比率 / 平均タップ数）が `WeeklyReports` テーブルに出力される
+- **AC-2**: GIVEN 週次レポート生成、WHEN End User Messaging Push が配信、THEN 「悠介、今週の委ね度スコアできたよ」の通知がユーザーに届く
+- **AC-3**: GIVEN 通知タップ、WHEN DameReport 画面（M-06）が開く、THEN 4 指標のレーダーチャート + 前週比 + 「今週よく頑張ったね」コピー + 獲得した称号（「本日の湯水使い」等）が表示される（FR-GAME-01/03）
+- **AC-4**: GIVEN 過去 12 週のデータ、WHEN 画面下部、THEN 推移グラフで「退化の軌跡」が可視化される（§2.5 Degradation Arc のユーザー側可視化）
+
+#### 🧠 Product Intent
+
+週 1 の儀式として **自分の退化を祝祭化** する。ユーザーは「よく頑張った」として自分を肯定し、**退化そのものを達成感に変換** する。
+
+#### 🛋️ ダメ化アーク
+
+| 期間 | 観測可能な退化シグナル |
+|---|---|
+| Day 1 | 初回レポート受信、「なるほど」と感じる |
+| Week 2 | 月曜朝にレポートを開く習慣化、開封率 70%+ |
+| Month 3 | スコアが低い週は「今週は戦えなかった」と残念がる |
+| Year 1 | 月曜 09:00 の通知 = 1 週間のスタート合図、習慣化 |
+
+#### INVEST 適合
+
+Independent ✓ / Negotiable ✓（指標・配信時刻は調整可）/ Valuable ✓（FR-GAME 系統合）/ Estimable ✓ / Small ✓（週次バッチ新規 1 ジョブ）/ Testable ✓（開封率・滞在時間は計測可能）
+
+#### 関連
+
+UC-06 / FR-GAME-01, FR-GAME-03 / **主担当 Unit-8 Dame Report** + **副担当 Unit-2（B-08 PreferenceVectorUpdater 拡張）** / Persona A
+
+---
+
+### US-REP-02: ダメ化ポートフォリオのタグを編集する
+
+**As a** 悠介
+**I want** AI が自分をどう分類しているか確認し、違和感があれば直したい
+**So that** 「自分を理解されている」感覚が研ぎ澄まされる
+
+#### 受入条件
+
+- **AC-1**: GIVEN DameReport 画面の「ダメ化ポートフォリオ」セクション、WHEN ユーザーが開く、THEN AI が生成した嗜好タグ（例: 「北欧ミニマル」「ウイスキー」「深夜ブースト」）がタグ雲で表示される（FR-PROFILE-03, UC-07）
+- **AC-2**: GIVEN タグをタップ、WHEN 編集モード、THEN タグの名前変更・削除・「これは違う」フラグが可能。バックエンドは即時 Preference Vector を再計算
+- **AC-3**: GIVEN タグ数、WHEN 時系列、THEN 初期 5 個 → Month 3 約 15 個 → Year 1 約 27 個、と成長グラフで表示される（§2.5 整合）
+- **AC-4**: GIVEN 「これは違う」フラグ、WHEN 当該タグ由来の推薦、THEN 以降 24 時間は該当タグの商品を Reel / Push で出さない（個別最適化ループ FR-FUNNEL-04 への feedback）
+
+#### 🧠 Product Intent
+
+「AI が自分を理解してくれている」という **エコーチェンバー感覚** を強化する。ユーザーはタグ編集という小さな行為で AI との共犯関係を深める。
+
+#### 🛋️ ダメ化アーク
+
+| 期間 | 観測可能な退化シグナル |
+|---|---|
+| Day 1 | タグ 5 個、「まぁこんなもんか」 |
+| Week 2 | タグ 8 個、「深夜ブースト」を見て笑う |
+| Month 3 | タグ 15 個、「確かに俺はこれだ」と肯定する |
+| Year 1 | タグ 27 個を見て **自己紹介の代わり** に使う（persona-journey.md Year 1 参照） |
+
+#### INVEST 適合
+
+Independent ✓ / Negotiable ✓（タグ粒度は調整可）/ Valuable ✓（透明性と個別化の両立）/ Estimable ✓ / Small ✓ / Testable ✓（編集頻度・「これは違う」率は計測可能）
+
+#### 関連
+
+UC-07 / FR-PROFILE-03, FR-FUNNEL-04 / **主担当 Unit-8 Dame Report** + **副担当 Unit-2（嗜好ベクトル更新）** / Persona A
+
+---
+
+### US-REP-03: Before/After 4 指標で 90 日の変化を閲覧する
+
+**As a** 悠介
+**I want** YUDANE 導入前と 90 日後の自分を比較で見たい
+**So that** どれだけ楽になったか（= どれだけ退化したか）を認識できる
+
+#### 受入条件
+
+- **AC-1**: GIVEN 導入から 90 日経過、WHEN DameReport 画面「Before/After」タブ、THEN 4 指標（商品選び時間 / 買物主導権 / 休日過ごし方 / 自己認識）の Before vs After が並列表示される（§3.1 整合）
+- **AC-2**: GIVEN Before は導入時のオンボアンケート値、WHEN After、THEN 過去 30 日の実測（Amazon 自発閲覧時間 / リール滞在時間 / 論破成約率 / 深夜帯比率）から算出される
+- **AC-3**: GIVEN 差分が 50% 以上、WHEN 表示、THEN ナラティブコピー「Amazon で悩む時間、**−83%**。YUDANE が代わりに悩むようになったから」が自動生成される（§2.5 アーク表現）
+- **AC-4**: GIVEN 「シェア」ボタン、WHEN タップ、THEN 匿名化されたインフォグラフィック画像が生成され、SNS 共有 Share Sheet が開く（バイラル成長、opt-in）
+
+#### 🧠 Product Intent
+
+**退化を成果物として可視化** する。ユーザーは変化を直視するが、AI が「楽になった」と翻訳してくれるため、退化を失敗ではなく **達成** として受容する。
+
+#### 🛋️ ダメ化アーク
+
+| 期間 | 観測可能な退化シグナル |
+|---|---|
+| Day 90 | 初めての Before/After、「確かに楽になった」と納得 |
+| Month 6 | Before/After を友人に見せて「YUDANE マジ便利」と宣伝 |
+| Year 1 | 自己紹介に使う。「悠介の 1 年」は persona-journey.md Year 1 に到達 |
+
+#### INVEST 適合
+
+Independent ✓ / Negotiable ✓（比較指標は調整可）/ Valuable ✓（バイラル成長 + 自己肯定感）/ Estimable ✓ / Small ✓ / Testable ✓（シェア率・閲覧頻度は計測可能）
+
+#### 関連
+
+UC-06 / §2.5 Degradation Arc / §3.1 Before/After / **主担当 Unit-8 Dame Report** / Persona A
+
+---
+
 ## ペルソナ登場マッピング
 
 | ストーリー | 悠介 | 里奈 | 非ターゲット |
@@ -607,10 +1092,23 @@ UC-03 / UC-08 合流 / FR-AUTH-02, FR-AUTH-04, FR-AUTH-05, FR-FUNNEL-05 / §9 NG
 | US-03-03 | | ● | |
 | US-03-04 | ● | | |
 | US-03-05 | ● | | ● |
+| US-AUTH-01 | ● | | |
+| US-AUTH-02 | ● | | |
+| US-AUTH-03 | | | ● |
+| US-CAL-01 | | ● | |
+| US-CAL-02 | | ● | |
+| US-CAL-03 | | ● | |
+| US-SAFE-01 | ● | | |
+| US-SAFE-02 | ● | | |
+| US-SAFE-03 | ● | | |
+| US-SAFE-04 | ● | | |
+| US-REP-01 | ● | | |
+| US-REP-02 | ● | | |
+| US-REP-03 | ● | | |
 
 ## INVEST サマリ
 
-全 15 ストーリーが INVEST 6 軸を満たすことを確認。特に以下を重点的に担保した。
+全 28 ストーリー（コア 15 + サポート 13）が INVEST 6 軸を満たすことを確認。特に以下を重点的に担保した。
 
 - **Independent**: 各ストーリーは他ストーリーとの依存を最小化し、UC 間連動は「関連」欄に明示するのみ
 - **Small**: すべて 1 スプリント（1〜2 週間）内で完了可能な粒度
@@ -618,7 +1116,7 @@ UC-03 / UC-08 合流 / FR-AUTH-02, FR-AUTH-04, FR-AUTH-05, FR-FUNNEL-05 / §9 NG
 
 ## 関連ドキュメント
 
-- [要件書 v0.3](../requirements/requirements.md) — §4.2 コア UC / §5 機能要件 / §6 非機能要件
+- [要件書 v0.6](../requirements/requirements.md) — §4.2 コア UC / §5 機能要件 / §6 非機能要件 / §7 技術スタック
 - [ペルソナ](./personas.md) — 悠介・里奈の詳細プロファイル + 非ターゲット appendix
 - [退化年表](./persona-journey.md) — 悠介 Day 1 → Day 365 の物語形式日記
 - [計画](../plans/story-generation-plan.md) — 本ストーリー群の生成プラン

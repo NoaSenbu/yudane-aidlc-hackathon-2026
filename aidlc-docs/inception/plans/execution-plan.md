@@ -1,7 +1,7 @@
 # Execution Plan (AI-DLC Workflow Planning)
 
 > プロジェクト: YUDANE（買わない理由を論破する AI エージェント・コマース）  
-> 参照: [要件書 v0.3](../requirements/requirements.md) / [ストーリー](../user-stories/stories.md) / [ペルソナ](../user-stories/personas.md)  
+> 参照: [要件書 v0.6](../requirements/requirements.md) / [ストーリー](../user-stories/stories.md) / [ペルソナ](../user-stories/personas.md)  
 > 作成: 2026-05-07 / ステージ: 🔵 INCEPTION / Workflow Planning
 
 ## 詳細分析サマリー
@@ -9,7 +9,7 @@
 ### プロジェクトタイプ
 
 - **Greenfield** — 既存コードなし、Reverse Engineering は N/A
-- モバイル（**React Native + AWS SDK v3** 前提、Amplify 不採用）+ サーバーレス AWS（API Gateway + Lambda + 生 DynamoDB + Bedrock + **AWS End User Messaging Push** 等）+ Amazon Creators API / Associates 連携
+- モバイル（**React Native + AWS SDK v3** 前提、Amplify は Auth のみ薄く採用）+ サーバーレス AWS（API Gateway + Lambda + 生 DynamoDB + Bedrock + **AWS End User Messaging Push** 等）+ Amazon Creators API / Associates 連携
 - チーム 4 名（PM/UX / モバイル / バックエンド・AI / インフラ）
 - Extension: Security Baseline + Property-Based Testing を全面適用
 

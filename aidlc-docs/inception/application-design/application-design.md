@@ -1,7 +1,7 @@
 # Application Design — 統合ビュー
 
 > YUDANE のアプリケーション設計統合ドキュメント。4 つの詳細成果物を束ねる入口。  
-> 参照: [要件書 v0.5](../requirements/requirements.md) / [ストーリー](../user-stories/stories.md) / [ペルソナ](../user-stories/personas.md) / [実行計画](../plans/execution-plan.md)
+> 参照: [要件書 v0.6](../requirements/requirements.md) / [ストーリー v1.1 (28 本)](../user-stories/stories.md) / [ペルソナ](../user-stories/personas.md) / [実行計画](../plans/execution-plan.md)
 
 ## 構成ドキュメント
 
@@ -16,20 +16,20 @@
 
 ## 設計サマリ
 
-### 技術スタック（要件書 v0.5 準拠）
+### 技術スタック（要件書 v0.6 準拠）
 
 | レイヤ | 選定 |
 |---|---|
-| Mobile | React Native + TypeScript + AWS SDK v3 + TanStack Query + Zustand |
-| Auth | Amazon Cognito（`amazon-cognito-identity-js` 直接利用、Amplify 不採用） |
-| API | API Gateway (REST) + Lambda (Python 3.12) |
+| Mobile | React Native 0.76+ (New Architecture) + TypeScript 5.x + AWS SDK v3 + TanStack Query + Zustand |
+| Auth | Amazon Cognito + Amplify JavaScript v6 の Auth モジュールのみ（`amazon-cognito-identity-js` は非推奨のため不採用、Data/Functions/CLI は引き続き不採用） |
+| API | API Gateway (REST) + Lambda (Python 3.13) |
 | Data | 生 DynamoDB + S3 + ElastiCache Redis + OpenSearch Serverless |
-| AI | Bedrock（Claude Haiku/Sonnet）+ Titan Embeddings |
+| AI | Bedrock（Claude Haiku 4.5 / Sonnet 4.6）+ Titan Embeddings V2 |
 | Push | AWS End User Messaging Push + EventBridge Scheduler |
-| Amazon | Creators API（商品データ）+ Associates Program（Special Link） |
-| IaC | AWS CDK (TypeScript) 単独 |
+| Amazon | Creators API（商品データ・OAuth 2）+ Associates Program（Special Link）※ PA-API 5.0 は 2026-04-30 deprecation / 2026-05-15 endpoint shutdown |
+| IaC | AWS CDK (TypeScript, v2 系最新) + Node.js 22 LTS |
 | CI | GitHub Actions + SBOM |
-| PBT | fast-check (TS/RN) + Hypothesis (Python) |
+| PBT | fast-check (TS/RN) + Hypothesis (Python 3.13) |
 
 ### ディレクトリ構造（暫定案、Units Generation で確定予定）
 
@@ -110,7 +110,7 @@ AIDLC-Hackathon-2026-teamname/
 ## 設計原則の再掲
 
 1. **Feature-based + 軽レイヤード** — 機能ごとにフォルダを切り、UI/hooks/API を同居
-2. **Amplify 不採用** — 技術スタック純化、説明容易性優先
+2. **Amplify は Auth のみ薄く採用** — AWS 公式推奨に従い `amazon-cognito-identity-js` を避け、Amplify JavaScript v6 の Auth モジュールのみ採用。Data/Functions/CLI は不採用を維持し、技術スタックの純化と説明容易性を優先
 3. **EventBridge Scheduler 単独で時間差制御** — Step Functions は採用しない
 4. **Mobile と Backend で同じ SafeguardPolicy を使う** — UX 整合
 5. **LLM 呼出は Python Lambda に集約** — PBT と相性、ストリーミング制御容易

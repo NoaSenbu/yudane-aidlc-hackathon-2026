@@ -342,7 +342,7 @@ sequenceDiagram
 
 | パターン | 使用箇所 | 根拠 |
 |---|---|---|
-| **Sync REST (HTTPS)** | Mobile ↔ Backend 全般 | Amplify 不採用の方針、シンプル |
+| **Sync REST (HTTPS)** | Mobile ↔ Backend 全般 | 認証のみ Amplify Auth を介し、データ通信は AWS SDK v3 で直接叩くシンプル構成 |
 | **SSE (Server-Sent Events)** | Debate ストリーミング | LLM トークン逐次表示、WebSocket より軽量 |
 | **非同期 EventBridge Scheduler** | Cart 追撃 (30m/6h/24h) | 時間遅延ジョブ。Step Functions より軽量 |
 | **EventBridge（日次 cron）** | PreferenceVectorUpdater | バッチジョブ |

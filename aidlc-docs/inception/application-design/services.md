@@ -51,7 +51,7 @@
     ↓ POST /debate-sessions (fact + psychology プロンプト生成)
 [API Gateway] → [B-09 SafeguardRulesEngine] → [B-02 DebateLlmService]
     → [B-03 getPreferenceVector] → [B-11 getProductMeta] → [B-07 getEvents]
-    → Bedrock Invoke (streaming, Claude Haiku/Sonnet)
+    → Bedrock Invoke (streaming, Claude Haiku 4.5 / Sonnet 4.6)
     → SSE stream to client
     → [M-04 onAgree] → POST /amazon-transitions → [B-13 AmazonTransitionRecorder]
         → [B-10 AssociatesLinkGenerator] → Deep Link → Amazon App

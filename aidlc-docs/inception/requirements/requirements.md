@@ -3,7 +3,7 @@
 > プロダクト: 買わない理由を論破する、AI エージェント・コマース  
 > スコープ: AWS Summit Japan 2026 AI-DLC Hackathon テーマ「人をダメにするサービスを考えよう！」への応募作品として設計  
 > ステージ: 🔵 INCEPTION / Requirements Analysis  
-> バージョン: v0.5
+> バージョン: v0.6
 
 ---
 
@@ -378,17 +378,17 @@ YUDANE は「ユーザーの購入意思決定のファネルにいかに深く�
 
 | レイヤ | 候補 | 理由 |
 |---|---|---|
-| モバイル | **React Native + TypeScript** + **AWS SDK v3** + **TanStack Query**（サーバー状態）+ **Zustand**（クライアント状態） | RN と AWS SDK を直接利用して技術スタックを純化（Amplify 不採用）。Share Extension / Share Target はネイティブモジュール（`react-native-share-menu` 等）経由で実装 |
-| 認証 | **Amazon Cognito**（モバイルからは `amazon-cognito-identity-js` を直接利用）+ TOTP MFA | SECURITY-12 整合。Amplify Auth を介さず、CDK で Cognito User Pool を直接管理 |
-| API / データ | **API Gateway (REST) + Lambda (Python 3.12)** + **生 DynamoDB** | Amplify Data (AppSync) を採用せず、REST で柔軟に制御。論破 LLM / カート監視 / Amazon 連携など複雑ロジックは Lambda で自由実装 |
+| モバイル | **React Native 0.76+ (New Architecture)** + **TypeScript 5.x** + **AWS SDK v3** + **TanStack Query**（サーバー状態）+ **Zustand**（クライアント状態） | New Architecture (Fabric + TurboModules) が default。AWS SDK を直接利用して通信レイヤを明示的に管理。Share Extension / Share Target はネイティブモジュール（`react-native-share-menu` 等）経由で実装 |
+| 認証 | **Amazon Cognito** + **AWS Amplify JavaScript v6 の Auth モジュールのみ** + TOTP MFA | `amazon-cognito-identity-js` は npm 公式で非推奨宣言。AWS 公式推奨に従い Amplify の Auth 機能のみを薄く採用する（Data/Functions/CLI は不採用）。CDK で Cognito User Pool を直接管理し、Amplify CLI での生成は行わない。SECURITY-12 整合 |
+| API / データ | **API Gateway (REST) + Lambda (Python 3.13)** + **生 DynamoDB** | Python 3.13 は AWS Lambda で GA（2024-11〜）。Amplify Data (AppSync) を採用せず、REST で柔軟に制御。論破 LLM / カート監視 / Amazon 連携など複雑ロジックは Lambda で自由実装 |
 | データストア | **生 DynamoDB**（ユーザー / Amazon 遷移履歴 / カート監視リスト）+ S3（画像 / カタログキャッシュ）+ ElastiCache Redis（セッション / Creators API キャッシュ / レート制限） | CDK で直接定義、暗号化標準 |
-| AI / 推薦 | Amazon Bedrock（Claude Haiku/Sonnet）、埋め込み Titan Embeddings、ベクトル OpenSearch Serverless | CDK 拡張 Lambda (Python) から呼び出し、Core AI 要件 + ストリーミング + 低レイテンシ |
-| **Amazon 連携** | **Amazon Creators API**（商品データ）+ **Amazon Associates Program**（Special Link 生成 + コミッション計測） | PA-API の後継、2026-05-15 に PA-API が廃止予定。モバイルアプリで使用するには **Approved Mobile Application** 承認が必要（§8 A-10） |
+| AI / 推薦 | Amazon Bedrock（**Claude Haiku 4.5** で論破ストリーミング + **Claude Sonnet 4.6** で複雑なプロンプト合成）、埋め込み **Titan Embeddings V2**、ベクトル OpenSearch Serverless | Haiku 4.5 は Sonnet 4 級性能で低コスト・高速、Sonnet 4.6 は予定駆動プロンプト合成向け。Opus 4.7 は高コストのため本番利用は見送り、評価用に限定。CDK 拡張 Lambda (Python) から呼び出し、Core AI 要件 + ストリーミング + 低レイテンシ |
+| **Amazon 連携** | **Amazon Creators API**（商品データ・OAuth 2）+ **Amazon Associates Program**（Special Link 生成 + コミッション計測） | PA-API の後継。**PA-API 5.0 は 2026-04-30 に deprecation、2026-05-15 に endpoint shutdown**。モバイルアプリで使用するには **Approved Mobile Application** 承認が必要（§8 A-10）。書類審査時点では Creators API への完全移行が必須タイミング |
 | プッシュ通知 | **AWS End User Messaging Push** + **EventBridge Scheduler**（CDK 拡張） | Amazon Pinpoint は 2026-10-30 で EoL のため代替採用。APNs / FCM サポート、カート介入の 30 分 / 6 時間 / 24 時間追撃を EventBridge Scheduler でスケジューリング |
 | カレンダー | iOS EventKit / Google Calendar API（RN ネイティブモジュール経由） | FR-CAL 予定取得 |
 | 観測 | CloudWatch Logs + Metrics + Alarms + X-Ray | SECURITY-02/03/14 整合 |
-| CI/CD | **AWS CDK (TypeScript)** + **GitHub Actions** | IaC + SBOM 生成（Amplify Gen 2 CLI は不採用） |
-| PBT FW | **Hypothesis (Python Lambda)** + **fast-check (TypeScript / React Native)** + ネイティブモジュール用に必要に応じて SwiftCheck / Kotest PT | PBT-09 |
+| CI/CD | **AWS CDK (TypeScript, v2 系最新)** + **Node.js 22 LTS** + **GitHub Actions** | IaC + SBOM 生成。Node.js 22 LTS（2024-10〜）は AWS CDK / AWS SDK v3 の推奨ランタイム。Amplify Gen 2 CLI は不採用 |
+| PBT FW | **Hypothesis (Python 3.13 Lambda)** + **fast-check (TypeScript 5.x / React Native 0.76+)** + ネイティブモジュール用に必要に応じて SwiftCheck / Kotest PT | PBT-09 |
 
 v0.2 から削除したもの:
 
@@ -407,12 +407,20 @@ v0.4 → v0.5 で更新:
 - モバイル状態管理: **TanStack Query**（サーバー状態）+ **Zustand**（クライアント状態）を採用。認証は `amazon-cognito-identity-js` を直接利用
 - IaC は **AWS CDK (TypeScript) 単独**、Amplify Gen 2 CLI のラッパーは不採用
 
+v0.5 → v0.6 で更新:
+
+- **認証方針の修正**: `amazon-cognito-identity-js` は npm 公式で非推奨（2025 以降、Amplify JavaScript の Auth 機能利用を推奨）。AWS 公式推奨に従い、**Amplify JavaScript v6 の Auth モジュールのみを薄く採用** する方針に変更。Data / Functions / CLI は引き続き不採用、Cognito User Pool は CDK で直接管理（§A-2 同期修正）
+- **ランタイム最新化**: Python 3.12 → **3.13**（Lambda GA 済み）、Node.js 版を明示 → **22 LTS**、React Native → **0.76+ (New Architecture)**、TypeScript → **5.x**
+- **Bedrock Claude モデルを明示**: Haiku/Sonnet（無印）→ **Claude Haiku 4.5 + Claude Sonnet 4.6**（Opus 4.7 は評価用に限定）。Titan Embeddings は V2 に更新
+- **PA-API 廃止タイムラインの正確化**: 「2026-05-15 廃止予定」→「**2026-04-30 deprecation / 2026-05-15 endpoint shutdown**」と分離記述
+- **CDK バージョン明示**: AWS CDK v2 系最新 を明記
+
 ---
 
 ## 8. 前提 & 未確定事項
 
 - **A-1 プロダクト名**: **「YUDANE（委ね）」で確定**。「判断を委ねる」= 自分で決める能力を放棄するという、本プロダクトの退化ゴール（§2.5）そのものを名前に刻む
-- **A-2 モバイル実装戦略**: **React Native + AWS SDK v3** を第一候補（Amplify 不採用）。状態管理は **TanStack Query + Zustand**、認証は `amazon-cognito-identity-js` でモバイルから Cognito を直接利用。Share Extension / Share Target はネイティブモジュール（`react-native-share-menu` 等）経由で実装。論破 LLM / Creators API 連携 / カート監視スケジューラなど独自要件は **AWS CDK (TypeScript)** で Lambda を自由実装する
+- **A-2 モバイル実装戦略**: **React Native 0.76+ (New Architecture) + TypeScript 5.x + AWS SDK v3** を第一候補。状態管理は **TanStack Query + Zustand**、認証は AWS 公式推奨に従い **Amplify JavaScript v6 の Auth モジュールのみ** を採用（`amazon-cognito-identity-js` は非推奨のため不採用）。Amplify の Data / Functions / CLI は不採用で、Cognito User Pool は CDK で直接管理する。Share Extension / Share Target はネイティブモジュール（`react-native-share-menu` 等）経由で実装。論破 LLM / Creators API 連携 / カート監視スケジューラなど独自要件は **AWS CDK (TypeScript) v2 系最新 + Python 3.13 Lambda** で自由実装する
 - **A-3 初期コア**: UC-01（論破）/ UC-02（リール）/ UC-03（カート介入）の 3 つ。UC-04 カレンダー連動は準コアとして早期実装、サポーティング（UC-05〜08）は段階的に追加
 - **A-4 Amazon 連携のスコープ**: 初期ターゲットは Amazon（Japan マーケットプレイス）。実お金は動かさない（§9 NG-4）— YUDANE 内部で決済は持たず、ユーザーが Amazon 側で決済するため、原則として YUDANE 側の金銭的実害は発生しえない構造
 - **A-5 外部 EC 連携の段階展開**: 初期は Amazon のみ対応。拡張時に楽天・Yahoo! ショッピング・ZOZO 等を Share Target に追加

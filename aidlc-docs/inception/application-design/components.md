@@ -1,12 +1,12 @@
 # Application Design — Components
 
 > YUDANE のコンポーネント定義（Mobile / Backend / Shared 3 層）  
-> 参照: [要件書 v0.5](../requirements/requirements.md) / [設計プラン](../plans/application-design-plan.md) / [統合ビュー](./application-design.md)
+> 参照: [要件書 v0.6](../requirements/requirements.md) / [設計プラン](../plans/application-design-plan.md) / [統合ビュー](./application-design.md)
 
 ## 設計原則
 
 - **Feature-based + 軽レイヤード**: 機能フォルダ内に UI / hooks / API 呼び出しを同居。Backend はドメインサービス単位で Lambda 分割
-- **Amplify 不採用**: React Native + AWS SDK v3 直接利用、Auth は `amazon-cognito-identity-js`
+- **Amplify は Auth のみ薄く採用**: React Native + AWS SDK v3 直接利用、Auth は Amplify JavaScript v6 の Auth モジュールのみ（`amazon-cognito-identity-js` は非推奨のため不採用）
 - **IaC 単独**: AWS CDK (TypeScript) でインフラを 1 つの手段で管理
 - **ハードウェア前提**: iOS 15+ / Android API 29+ / ナローバンド対応
 
@@ -26,7 +26,7 @@
 | M-08 | `ShareExtensionNativeModule` | iOS Share Extension（Swift）/ Android Share Target（Kotlin）。共有URL の受け取りとアプリへの引き渡し | Platform Channel（JSI）経由で RN に ASIN を渡す |
 | M-09 | `PushNotificationHandler` | APNs / FCM トークン登録 / 受信 / タップ時の deep link ルーティング | `react-native-firebase` / `@react-native-community/push-notification-ios` |
 | M-10 | `CalendarNativeModule` | iOS EventKit / Google Calendar 読み取り。端末ローカルで予定カテゴリ分類 | Platform Channel 経由、分類結果のみ RN へ |
-| M-11 | `AuthModule` | Cognito User Pool 認証（サインアップ / ログイン / MFA / トークン管理） | `amazon-cognito-identity-js` |
+| M-11 | `AuthModule` | Cognito User Pool 認証（サインアップ / ログイン / MFA / トークン管理） | AWS Amplify JavaScript v6 (`aws-amplify/auth`)（`amazon-cognito-identity-js` は非推奨のため不採用） |
 | M-12 | `ApiClient` | REST API 呼び出しのラッパー、認証ヘッダ付与、エラーハンドリング、相関 ID 付与 | `fetch` + TanStack Query |
 | M-13 | `Telemetry` | クライアントイベント計測（画面遷移 / タップ / スワイプ / Amazon 遷移） | CloudWatch カスタムメトリクス REST エンドポイント経由 |
 
@@ -38,7 +38,7 @@
 
 ---
 
-## Backend 層（AWS Lambda / Python 3.12、CDK 管理）
+## Backend 層（AWS Lambda / Python 3.13、CDK 管理）
 
 | # | コンポーネント | 責務 | トリガー |
 |---|---|---|---|
@@ -62,7 +62,7 @@
 - **プロトコル**: REST over HTTPS（TLS 1.2+）
 - **認証**: Cognito JWT / API Gateway Authorizer
 - **スキーマ**: OpenAPI 3.1（[shared/schema](#shared-%E5%B1%A4) 参照）
-- **Lambda ランタイム**: Python 3.12 + AWS Lambda Powertools（log / trace / metrics）
+- **Lambda ランタイム**: Python 3.13 + AWS Lambda Powertools（log / trace / metrics）
 - **主要エンドポイント**:
   - `POST /cart-items` — Share 受信（B-04）
   - `GET /reel` — リール生成（B-03）
