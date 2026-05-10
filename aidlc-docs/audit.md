@@ -115,3 +115,35 @@ This file contains the complete audit trail of all user inputs and AI responses 
 **Context**: Requirements Analysis v0.3 + Mockup v0.4 — ユーザー 5 点指示への一括対応（決済 Amazon 化 / Amazon 規約調査 / カレンダー再定義 / UI フレンドリー / 購入導線 UX）
 
 ---
+
+## User Stories — Part 1 Planning 着手（Q1-Q7 回答受領）
+**Timestamp**: 2026-05-07T05:00:00Z
+**User Input**: "User Storiesに進みます" → "Q1=C, Q2=X, Q3=2, Q4=Hybrid, Q5=15, Q6=ii, Q7=推奨構成"
+**AI Response**: "User Stories ステージの Part 1 Planning に着手。Intelligent Assessment（High Priority 7 指標すべて該当）により Execute と判定、`aidlc-docs/inception/plans/user-stories-assessment.md` 作成。続いて `aidlc-docs/inception/plans/story-generation-plan.md` を作成。承認済み決定: Q1=C（標準形式+ダメ化アーク+persona-journey.md 別添）/ Q2=X（コア 3 UC のみ）/ Q3=2（既存ペルソナ+非ターゲット appendix）/ Q4=Hybrid（UC ベース+ペルソナマッピング）/ Q5=15 ストーリー（UC-01: 5 / UC-02: 5 / UC-03: 5）/ Q6=ii（技術的+ダメ化シグナル）/ Q7=推奨構成。ストーリー配分表・ペルソナマッピング表・INVEST 適合基準・退化年表方針まで含む。計画フェーズの最終承認待ち（Step 13）。"
+**Context**: User Stories Part 1 Planning - Steps 1-6 完了, Step 13 承認ゲート前
+
+---
+
+## User Stories — Part 1 Planning Approved + Part 2 Generation Complete
+**Timestamp**: 2026-05-07T05:30:00Z
+**User Input**: "A"（Part 1 計画の最終承認）
+**AI Response**: "Part 2 Generation を実行。生成物: (1) stories.md (15 ストーリー: UC-01 論破チャット 5 + UC-02 リール 5 + UC-03 カート介入 5、すべて標準形式 + GIVEN/WHEN/THEN 受入条件 + ダメ化シグナル + 🧠 Product Intent + 🛋️ ダメ化アーク 4 段階 + INVEST 適合 + 関連 FR/UC/Persona)、(2) personas.md (悠介・里奈の詳細プロファイル + 田中/山田の非ターゲット appendix)、(3) persona-journey.md (悠介の 1 年退化年表を Day 1 / Week 2 / Month 3 / Month 6 / Year 1 の 5 フェーズで物語形式、各フェーズに観測可能シグナル + 作動 FR + 心境変化を記録)。story-generation-plan.md のチェックボックスを更新、aidlc-state.md の User Stories を [x] マーク、Current Stage を Part 2 完了・承認待ちに。全 5 ファイル診断エラーなし。書類審査評価軸へのインパクト: Intent 明確さ（ペルソナ詳細 + 年表）、創造性とテーマ適合性（退化アーク 60 箇所以上）、Unit 分解の下地（ペルソナ × UC マッピング表）に貢献。"
+**Context**: User Stories Part 2 Generation - Step 15-18 完了, Step 19-22 の承認ゲート前
+
+---
+
+## User Stories — セルフレビュー後の修正（A: 要修正 2 件 + 数値正確化）
+**Timestamp**: 2026-05-07T05:45:00Z
+**User Input**: "自己レビューしてください" → "A"（要修正 2 件と数値表現を即修正し Approve へ）
+**AI Response**: "セルフレビューで 2 件の blocking 誤記と 1 件の数値表現問題を検出、即修正。(1) stories.md US-02-01 の関連欄: 存在しない『FR-CTX-05』を要件書 v0.3 の実在 FR『FR-FUNNEL-02』に置換（深夜帯介入は §5.10 FR-FUNNEL に移管済み）。(2) stories.md 関連ドキュメント: 絶対パス『/.kiro/steering/hackathon-evaluation-criteria.md』を相対パス『../../../.kiro/steering/hackathon-evaluation-criteria.md』に修正（GitHub では動くがローカルプレビューで壊れる）。(3) persona-journey.md Month 6: 『Lv.12 から倍増 → Lv.28』は 2.3 倍で不正確、『Month 3 時点 Lv.12 から約 2.3 倍』に修正。その他の指摘（INVEST Independence の弱さ、Mermaid 未使用）は non-blocking として据え置き（後者は Workflow Planning で活用予定）。"
+**Context**: User Stories Part 2 承認前の最終レビュー修正
+
+---
+
+## User Stories — Approve & Continue
+**Timestamp**: 2026-05-07T06:00:00Z
+**User Input**: "Approve"
+**AI Response**: "User Stories ステージを正式承認として記録。story-generation-plan.md の Step 19-22/23 を [x] マーク、aidlc-state.md の User Stories を完了状態に更新、Current Stage を『Workflow Planning 待ち』に。書類審査評価軸への貢献: Intent 明確さ（ペルソナ × 1 年退化年表）/ 創造性とテーマ適合性（ダメ化アーク 60+ 箇所）/ Unit 分解の下地（UC × ペルソナマッピング表）/ ドキュ品質（セルフレビュー修正 3 件済み、診断エラーなし）。"
+**Context**: User Stories stage complete — 次ステージ Workflow Planning へ移行可能
+
+---
