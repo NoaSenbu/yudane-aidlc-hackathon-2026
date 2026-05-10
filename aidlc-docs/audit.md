@@ -75,3 +75,43 @@ This file contains the complete audit trail of all user inputs and AI responses 
 **Context**: Requirements Analysis stage - Extension rule compliance check before approval gate
 
 ---
+
+## Requirements Analysis - Direction Pivot (User Feedback)
+**Timestamp**: 2026-05-07T01:00:00Z
+**User Input**: "コア機能はUC-02,03や、欲しいものをカートに入れたときに論破するものです。使い切ることを目的としていないので、方針を再検討してください。また、スコープにハッカソンを入れてもいいですが、締切などの本質でない部分は不要です。モバイルアプリにした理由も考えてみてください。"
+**AI Response**: "要件書の方針を再設計。(1)コアを『論破(UC-01) + リール(UC-02) + カート介入(UC-新規)』の3つに再整理。死蔵資産ゲージ/使い切れ額は論破の弾薬となるサポーティング機能に格下げ。目的を『使い切らせる』から『迷いを購入に変換する』へ。(2)ハッカソン文脈は残すが締切・日程の本質でない記述を削除、ステージ表現を『初期/拡張時』に一般化。(3)モバイルアプリの必然性を5点で論理化(Share Extension/通知/コンテキスト信号/生体認証/意思決定タイミング)。requirements.md をv0.2として全面書き直し。mockup/index.html の home 画面も『使い切れ額 hero』から『AIエージェント稼働状況 hero + カート監視リスト』に再構成予定。"
+**Context**: Requirements Analysis stage - Post-approval revision based on user clarification of core intent
+
+---
+
+## Requirements Analysis - Name Change & Degradation Visibility (Approved)
+**Timestamp**: 2026-05-07T02:00:00Z
+**User Input**: "A: 1,2,3追記とYUDANEで進めてください。"
+**AI Response**: "承認を受けて実行: (A) プロダクト名を TSUKAIKIRE → YUDANE（委ね）に全面置換。使い切れ達成率など UC-06 の内部メトリクス名は意味的妥当性から温存。(B) ダメ化可視化 3 点を追加 — ①§0 末尾に『最終的な到達地点』2 行追記、②§2 に新規§2.5『ダメ化の軌跡（Degradation Arc）』4段階テーブル+ナラティブ、③§3.1 悠介に『Before/After 90 days』5観点対照表追加。§8 A-1 は確定扱い（『YUDANE（委ね）で確定』+ 退化ゴールそのものを名前に刻む根拠付記）。mockup/index.html・app.js・styles.css・README.md のブランド名/副題を同期更新。audit.md に追記、requirements.md v0.2+ としてレビュー待ち。"
+**Context**: Requirements Analysis stage - Post-approval revision (name confirmation + degradation narrative enhancement)
+
+---
+
+## Mockup Rebuild v0.3 (Approved & Executed)
+**Timestamp**: 2026-05-07T03:00:00Z
+**User Input**: "mockupを作り直してみてください。" → (後続) "承認"
+**AI Response**: "パッケージ提案（Q1=A クリーン書き直し / Q2=ii Indigo×cold rose×cyan / Q3=x 新画面 2 枚 / Q4=ピッチパネル維持 / Q5=破棄→再生成）を承認。既存 4 ファイル（index.html/styles.css/app.js/README.md）を削除し、次のとおり再構築: (1) mockup/assets/ を新設し SVG を外出し（brand/logo.svg + products/{earbuds,book,whisky,desk-lamp}.svg）、(2) index.html を 6 画面構成で書き直し（ホーム/カート介入(新)/リール/論破/ダメ化レポート(新)/セーフガード）、(3) styles.css を新パレット（Indigo base / cold rose #E8B4D0 / cyan #4DE1FF）とスローモーションで再構築、(4) app.js でタブ遷移・リール・論破チャット（事実/心理タグ付き）・Face ID 風決済オーバーレイ・トーストを実装、(5) README.md を v0.3 用に刷新。新規画面の狙い: カート介入 = UC-03 の Share Extension フローとプッシュ追撃タイムライン可視化、ダメ化レポート = §2.5 ダメ化の軌跡 + §3.1 Before/After 90 days を 4 指標（Face ID 反射速度 −42% / 自発的商品ページ閲覧 −68% / 深夜帯利用率 +89% / 論破成約率 +36%）で UI 化。全 9 ファイルで診断エラーなし。実 API・実決済・OS 固有機能は意図的に未実装（FR-FIN-03 サンドボックス原則遵守）。"
+**Context**: Mockup v0.3 — 要件書 v0.2 の YUDANE ブランド・Degradation Arc・Before/After を UI で体現、UC-03 を主役化
+
+---
+
+## Mockup v0.3 — Overlay Close Bug Fix + UX Enhancement (Approved)
+**Timestamp**: 2026-05-07T03:30:00Z
+**User Input**: "やめる、FACE IDで決済を押しても画面遷移しません" → (承認後) "承認"
+**AI Response**: "5-whys 分析で根本原因を特定: CSS `.overlay { display: flex; }` が `[hidden]` 属性を上書きしていたため、`overlay.hidden = true` で閉じなかった。UA ストイールシートの `[hidden] { display: none }` は `!important` なしで特異度 (0,1,0)、著者 CSS の `.overlay` と同値のため書き順勝ち。修正: (1) styles.css に `.overlay[hidden] { display: none; }` を追加（特異度 0,2,0 で確実に勝つ）。予防措置として `.toast[hidden] { display: none; }` も追加。(2) app.js の overlayConfirm ハンドラに `setTimeout(() => go('report'), 1200)` を追加し、Face ID 決済後にダメ化レポートへ自動遷移させることで『決済 → 委ね度上昇の即可視化』体験を実現（テーマ適合性強化）。再発防止: 今後 `hidden` 属性で切り替える要素に `display` を直指定する場合は必ず `.xxx[hidden] { display: none }` ガードを書くルールを明文化（本ファイル内コメントに記載）。"
+**Context**: Mockup v0.3 バグ修正 + UX 改善 — UC-03 カート介入 / UC-01 論破の決済帰着点を可視化
+
+---
+
+## Requirements v0.3 + Mockup v0.4 — Amazon 連携・カレンダー再定義・友達系 UI（承認後一括実装）
+**Timestamp**: 2026-05-07T04:30:00Z
+**User Input**: 「Q1=A, Q2=iv, Q3=X, Q4=i, Q5=3, Q6=α」→（計画提示後）「はい、進めてください」
+**AI Response**: "Amazon API 調査（Creators API, Associates Program Operating Agreement, Mobile Associates 承認要件）を踏まえ、requirements.md を v0.3 に全面書き直し + mockup を v0.4 に更新。主な変更: (1) 決済フローをアプリ内完結から Amazon 外部決済に変更（FR-CART-04, FR-REEL-05）。Face ID 決済オーバーレイを Amazon 遷移確認オーバーレイに置換、ボタンは『💳 即決済』→『🛍 Amazon で買う』。(2) 新規 §0.1 収益モデル: Amazon Associates コミッションを主収益と明記し、『委ねるほど儲かる』倫理的皮肉をストーリー化。(3) FR-CTX → FR-CAL にリネーム + 再定義: カレンダー連携を『疲労度算出』から『予定駆動の推薦 + 論破材料』に変更、3 例（プレゼン/デート/キャンプ）を記載。mockup ホーム画面に『📅 予定から先回り』カードを新設。(4) 新規 §5.10 FR-FUNNEL 購入導線 UX: 4 タッチポイント / 4 介入タイミング / 2-3 タップ摩擦 / 個別最適化ループ。(5) §2.2 コピートーンを『友達系』に統一、論破チャット・トースト・通知文を敬語からタメ口に書換え。(6) §5.8 FR-FIN 大幅縮小: 金融 API 連携削除、予算感はオンボーディングアンケートで代替。(7) §7 技術スタック: Amazon Creators API + Associates Program 追加、Plaid/Moneytree/Stripe 削除。(8) §8 A-10 Approved Mobile Application 申請計画を追加、書類審査・予選はモックデータで代替。(9) §9 NG-8 Associates Operating Agreement 遵守追加。requirements.md 全体が §0〜§11 + 付録で正しい順序、全診断エラーなし。mockup は index/css/js/README すべて更新、Face ID 参照を Amazon 遷移に置換、カレンダー card 用 CSS 新設。"
+**Context**: Requirements Analysis v0.3 + Mockup v0.4 — ユーザー 5 点指示への一括対応（決済 Amazon 化 / Amazon 規約調査 / カレンダー再定義 / UI フレンドリー / 購入導線 UX）
+
+---

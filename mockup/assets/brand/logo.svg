@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40" width="120" height="40" role="img" aria-label="YUDANE">
+  <defs>
+    <linearGradient id="yudaneGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E8B4D0"/>
+      <stop offset="50%" stop-color="#B987C7"/>
+      <stop offset="100%" stop-color="#4DE1FF"/>
+    </linearGradient>
+  </defs>
+  <text x="0" y="28" font-family="'Space Grotesk', sans-serif" font-size="22" font-weight="700" fill="url(#yudaneGrad)" letter-spacing="2">YUDANE</text>
+  <circle cx="112" cy="10" r="3" fill="#4DE1FF" opacity="0.8"/>
+</svg>

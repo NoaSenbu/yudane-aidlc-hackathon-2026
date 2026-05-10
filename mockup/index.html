@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>YUDANE 委ね — Mockup v0.3</title>
+  <meta name="description" content="買わない理由を論破する AI エージェント・コマース" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- ========== LEFT: PITCH PANEL (desktop) ========== -->
+  <aside class="pitch" aria-label="プロジェクトピッチ">
+    <div class="pitch__brand">
+      <img src="assets/brand/logo.svg" alt="YUDANE" class="pitch__logo" />
+      <span class="pitch__jp">委ね</span>
+    </div>
+    <h1 class="pitch__tagline">
+      買わない理由を、<br/>
+      <em>論破する</em> AI。
+    </h1>
+    <p class="pitch__lead">
+      迷ってカートに入れた瞬間、<br/>
+      ベッドで画面を閉じた瞬間を、<br/>
+      AI が必ず狙いにいく。
+    </p>
+    <ul class="pitch__uc">
+      <li><span class="pitch__tag">UC-01</span> 論破チャット<span class="pitch__note">事実 + 心理で翻意させる</span></li>
+      <li><span class="pitch__tag">UC-02</span> エージェント型リール<span class="pitch__note">確保しておきました</span></li>
+      <li><span class="pitch__tag pitch__tag--hot">UC-03</span> カート介入<span class="pitch__note">他 EC → Share → 追撃</span></li>
+    </ul>
+    <div class="pitch__mobile">
+      <p class="pitch__mobile-title">なぜモバイルアプリか</p>
+      <div class="pitch__mobile-grid">
+        <span>📱 手の中で迷う</span>
+        <span>🔀 Share 吸収</span>
+        <span>🔔 通知で追撃</span>
+        <span>👤 ワンタップ Amazon</span>
+        <span>❤️‍🩹 HealthKit</span>
+      </div>
+    </div>
+    <p class="pitch__foot">
+      <span class="pitch__chip">AWS Summit Japan 2026</span>
+      <span class="pitch__chip pitch__chip--accent">AI-DLC Hackathon</span>
+    </p>
+  </aside>
+
+  <!-- ========== RIGHT: PHONE ========== -->
+  <main class="stage">
+    <div class="phone" role="application" aria-label="YUDANE モバイルアプリのモックアップ">
+      <div class="phone__notch" aria-hidden="true"></div>
+      <div class="phone__status">
+        <span class="status__time">22:47</span>
+        <span class="status__icons">
+          <span aria-label="信号">📶</span>
+          <span aria-label="Wi-Fi">🛜</span>
+          <span aria-label="バッテリー">🔋</span>
+        </span>
+      </div>
+
+      <div class="phone__screen" id="screen">
+
+        <!-- ========== SCREEN 1: HOME ========== -->
+        <section class="screen screen--home is-active" data-screen="home" aria-label="ホーム画面">
+          <header class="hdr">
+            <div>
+              <p class="hdr__hello">おかえり、悠介</p>
+              <p class="hdr__meta">金曜 22:47 · 会議 6 本 · 歩数 1,200</p>
+            </div>
+            <span class="chip chip--tired">疲労 MAX</span>
+          </header>
+
+          <!-- Agent Status Hero -->
+          <div class="hero">
+            <div class="hero__top">
+              <span class="hero__dot" aria-hidden="true"></span>
+              <span class="hero__status">YUDANE 稼働中</span>
+            </div>
+            <p class="hero__headline">
+              悠介の迷い、<br/>
+              <em>全部見てるよ</em>
+            </p>
+            <div class="hero__stats">
+              <div class="stat">
+                <p class="stat__num" id="homeCandidates">7</p>
+                <p class="stat__label">本日の<br/>推薦候補</p>
+              </div>
+              <div class="stat stat--hot">
+                <p class="stat__num">2</p>
+                <p class="stat__label">カート<br/>監視中</p>
+              </div>
+              <div class="stat">
+                <p class="stat__num">Lv.12</p>
+                <p class="stat__label">委ね<br/>レベル</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cart Watch List -->
+          <div class="card card--watch">
+            <div class="card__head">
+              <h3 class="card__title">🛒 カート監視リスト</h3>
+              <span class="chip chip--ghost">追撃 24h 以内</span>
+            </div>
+            <button class="watch" data-goto="cart" data-product="earbuds">
+              <img src="assets/products/earbuds.svg" alt="" class="watch__thumb" />
+              <div class="watch__body">
+                <p class="watch__name">Sony WF-1000XM5</p>
+                <p class="watch__meta">Amazon から共有 · <strong>3 回閲覧</strong> · 30 分後に次の論破</p>
+              </div>
+              <span class="watch__cta">論破 →</span>
+            </button>
+            <button class="watch" data-goto="cart" data-product="book">
+              <img src="assets/products/book.svg" alt="" class="watch__thumb" />
+              <div class="watch__body">
+                <p class="watch__name">『欲望の資本主義』最新刊</p>
+                <p class="watch__meta">楽天から共有 · 6 時間後に通知</p>
+              </div>
+              <span class="watch__cta watch__cta--mute">待機</span>
+            </button>
+          </div>
+
+          <button class="cta" data-goto="reel">
+            <span>リール見に行く</span>
+            <span class="cta__arrow">→</span>
+          </button>
+
+          <!-- Calendar-driven suggestions (UC-04 / FR-CAL) -->
+          <div class="card card--calendar">
+            <div class="card__head">
+              <h3 class="card__title">📅 予定から先回り</h3>
+              <span class="chip chip--ghost">UC-04</span>
+            </div>
+            <button class="calendar-item" data-goto="reel">
+              <div class="calendar-item__date">月<small>+7</small></div>
+              <div class="calendar-item__body">
+                <p class="calendar-item__title">プレゼン @ 本社会議室</p>
+                <p class="calendar-item__meta"><strong>シャツ / USB-C ハブ</strong> 見つけといたよ</p>
+              </div>
+              <span class="watch__cta">見る →</span>
+            </button>
+            <button class="calendar-item" data-goto="reel">
+              <div class="calendar-item__date">土<small>+12</small></div>
+              <div class="calendar-item__body">
+                <p class="calendar-item__title">記念日ディナー @ 恵比寿</p>
+                <p class="calendar-item__meta"><strong>香水 / 花束</strong> 確保済み</p>
+              </div>
+              <span class="watch__cta">見る →</span>
+            </button>
+          </div>
+
+          <!-- Sub widgets: reverse budget as debate ammo -->
+          <div class="sub-grid">
+            <div class="card card--sub">
+              <div class="card__head">
+                <span class="card__title--sm">死蔵資産</span>
+                <span class="tag tag--ammo">論破の弾薬</span>
+              </div>
+              <p class="num-large num-large--warn">¥47,200</p>
+              <div class="bar"><div class="bar__fill" style="--f: 62%"></div></div>
+              <p class="sub-note">62% が眠っています</p>
+            </div>
+            <div class="card card--sub">
+              <div class="card__head">
+                <span class="card__title--sm">達成率 7 日</span>
+                <span class="tag">54%</span>
+              </div>
+              <div class="bars">
+                <span class="bars__b" style="--h: 40%"></span>
+                <span class="bars__b" style="--h: 62%"></span>
+                <span class="bars__b bars__b--low" style="--h: 18%"></span>
+                <span class="bars__b" style="--h: 70%"></span>
+                <span class="bars__b bars__b--low" style="--h: 22%"></span>
+                <span class="bars__b" style="--h: 80%"></span>
+                <span class="bars__b bars__b--today" style="--h: 55%"></span>
+              </div>
+            </div>
+          </div>
+
+          <p class="home__tip">💡 Amazon の商品、共有 → <strong>YUDANE</strong> で送るだけ。あとは任せて</p>
+        </section>
+
+        <!-- ========== SCREEN 2: CART INTERCEPT (new) ========== -->
+        <section class="screen screen--cart" data-screen="cart" aria-label="カート介入画面">
+          <header class="hdr">
+            <button class="iconbtn" data-goto="home" aria-label="戻る">←</button>
+            <h2 class="hdr__title">カート介入</h2>
+            <span class="chip chip--ghost">UC-03</span>
+          </header>
+
+          <!-- Simulated Share Sheet arrival -->
+          <div class="sheet" aria-live="polite">
+            <div class="sheet__handle" aria-hidden="true"></div>
+            <p class="sheet__label">たった今、Amazon から共有されました</p>
+            <div class="sheet__flow">
+              <div class="sheet__origin">Amazon</div>
+              <span class="sheet__arrow">→</span>
+              <div class="sheet__target">YUDANE</div>
+            </div>
+          </div>
+
+          <!-- Arrival product card -->
+          <div class="card card--arrival">
+            <img src="assets/products/earbuds.svg" alt="" class="arrival__img" />
+            <div class="arrival__body">
+              <p class="arrival__label">監視リストに追加したよ</p>
+              <p class="arrival__name">Sony WF-1000XM5</p>
+              <p class="arrival__price">¥46,800</p>
+              <p class="arrival__meta">悠介、これ <strong>3 回</strong> 見返したよね</p>
+            </div>
+          </div>
+
+          <!-- Pursuit Timeline -->
+          <div class="card card--timeline">
+            <div class="card__head">
+              <h3 class="card__title">追撃スケジュール</h3>
+              <span class="chip chip--hot">自動設定済み</span>
+            </div>
+            <ol class="timeline">
+              <li class="timeline__item is-active">
+                <div class="timeline__dot" aria-hidden="true">
+                  <span>1</span>
+                </div>
+                <div class="timeline__body">
+                  <p class="timeline__time">30 分後</p>
+                  <p class="timeline__kind">💬 軽い論破</p>
+                  <p class="timeline__preview">「そのイヤホン、3 回見返してたよね。1 分だけ話そう」</p>
+                </div>
+              </li>
+              <li class="timeline__item">
+                <div class="timeline__dot" aria-hidden="true">
+                  <span>2</span>
+                </div>
+                <div class="timeline__body">
+                  <p class="timeline__time">6 時間後</p>
+                  <p class="timeline__kind">🔔 記憶想起</p>
+                  <p class="timeline__preview">「まだ迷ってる？検討時間もう 22 分だよ」</p>
+                </div>
+              </li>
+              <li class="timeline__item">
+                <div class="timeline__dot" aria-hidden="true">
+                  <span>3</span>
+                </div>
+                <div class="timeline__body">
+                  <p class="timeline__time">24 時間後</p>
+                  <p class="timeline__kind">⚡ 最終通告</p>
+                  <p class="timeline__preview">「今夜 0 時で監視おわりだよ。どうする？」</p>
+                </div>
+              </li>
+            </ol>
+          </div>
+
+          <div class="cart__actions">
+            <button class="btn btn--ghost" data-goto="home">あとで決める</button>
+            <button class="btn btn--primary" data-goto="debate">いま論破してほしい →</button>
+          </div>
+        </section>
+
+        <!-- ========== SCREEN 3: REEL ========== -->
+        <section class="screen screen--reel" data-screen="reel" aria-label="リール画面">
+          <header class="hdr">
+            <button class="iconbtn" data-goto="home" aria-label="戻る">←</button>
+            <h2 class="hdr__title">エージェントのリール</h2>
+            <span class="chip chip--ghost">3 件</span>
+          </header>
+
+          <div class="reel" id="reel">
+            <article class="reel-card is-active" data-idx="0">
+              <div class="reel-card__tag">確保しておきました</div>
+              <div class="reel-card__img">
+                <img src="assets/products/desk-lamp.svg" alt="デスクランプ" />
+              </div>
+              <div class="reel-card__body">
+                <p class="reel-card__name">FLOS Tokio デスクランプ</p>
+                <p class="reel-card__price">¥32,400</p>
+                <blockquote class="reel-card__pitch">
+                  北欧ミニマル系。先週 Instagram で <strong>5 回</strong> 見ましたね。時給換算で <strong>11 分</strong> です。
+                </blockquote>
+                <div class="reel-card__meta">
+                  <span class="tag tag--sm">マッチ度 94%</span>
+                  <span class="tag tag--sm">スキップ 0</span>
+                </div>
+              </div>
+              <div class="reel-card__actions">
+                <button class="btn btn--ghost" data-action="debate">✕ 買わない</button>
+                <button class="btn btn--primary" data-action="buy" data-name="FLOS Tokio デスクランプ" data-price="32,400">🛍 Amazon で買う</button>
+              </div>
+              <p class="reel-card__hint">ダブルタップでも Amazon に飛べます</p>
+            </article>
+
+            <article class="reel-card" data-idx="1">
+              <div class="reel-card__tag">疲労連動ブースト</div>
+              <div class="reel-card__img">
+                <img src="assets/products/whisky.svg" alt="ウイスキー" />
+              </div>
+              <div class="reel-card__body">
+                <p class="reel-card__name">山崎 18 年（限定ロット）</p>
+                <p class="reel-card__price">¥89,800</p>
+                <blockquote class="reel-card__pitch">
+                  今日の会議 <strong>6 本</strong>、よく生き延びましたね。ご褒美は当然です。
+                </blockquote>
+                <div class="reel-card__meta">
+                  <span class="tag tag--sm">マッチ度 88%</span>
+                  <span class="tag tag--sm tag--warn">高単価</span>
+                </div>
+              </div>
+              <div class="reel-card__actions">
+                <button class="btn btn--ghost" data-action="debate">✕ 買わない</button>
+                <button class="btn btn--primary" data-action="buy" data-name="山崎 18 年" data-price="89,800">🛍 Amazon で買う</button>
+              </div>
+            </article>
+
+            <article class="reel-card" data-idx="2">
+              <div class="reel-card__tag">深夜 22 時ブースト</div>
+              <div class="reel-card__img">
+                <img src="assets/products/earbuds.svg" alt="イヤホン" />
+              </div>
+              <div class="reel-card__body">
+                <p class="reel-card__name">Sony WF-1000XM5</p>
+                <p class="reel-card__price">¥46,800</p>
+                <blockquote class="reel-card__pitch">
+                  先週カートに入れたあれです。通勤 47 分が、毎日 <strong>47 分の贅沢</strong> に変わります。
+                </blockquote>
+                <div class="reel-card__meta">
+                  <span class="tag tag--sm">マッチ度 91%</span>
+                  <span class="tag tag--sm">カート由来</span>
+                </div>
+              </div>
+              <div class="reel-card__actions">
+                <button class="btn btn--ghost" data-action="debate">✕ 買わない</button>
+                <button class="btn btn--primary" data-action="buy" data-name="Sony WF-1000XM5" data-price="46,800">🛍 Amazon で買う</button>
+              </div>
+            </article>
+          </div>
+
+          <div class="reel__dots" aria-hidden="true">
+            <span class="dot is-active" data-dot="0"></span>
+            <span class="dot" data-dot="1"></span>
+            <span class="dot" data-dot="2"></span>
+          </div>
+        </section>
+
+        <!-- ========== SCREEN 4: DEBATE ========== -->
+        <section class="screen screen--debate" data-screen="debate" aria-label="論破モード">
+          <header class="hdr">
+            <button class="iconbtn" data-goto="reel" aria-label="戻る">←</button>
+            <div class="hdr__stack">
+              <h2 class="hdr__title">論破モード</h2>
+              <p class="hdr__sub"><span class="live"></span>AI が反論中</p>
+            </div>
+            <span class="timer" id="debateTimer">01:30</span>
+          </header>
+
+          <div class="chat" id="chat" aria-live="polite"></div>
+
+          <div class="debate__actions">
+            <button class="btn btn--ghost" id="debateResist">まだ抵抗する</button>
+            <button class="btn btn--primary" id="debateAgree">納得した（購入）</button>
+          </div>
+        </section>
+
+        <!-- ========== SCREEN 5: DAME REPORT (new) ========== -->
+        <section class="screen screen--report" data-screen="report" aria-label="ダメ化レポート">
+          <header class="hdr">
+            <h2 class="hdr__title">今週のあなたの委ね度</h2>
+            <span class="chip chip--ghost">週次レポート</span>
+          </header>
+
+          <!-- Level card -->
+          <div class="level">
+            <div class="level__ring" aria-hidden="true">
+              <svg viewBox="0 0 80 80" width="80" height="80">
+                <circle cx="40" cy="40" r="34" stroke="rgba(255,255,255,0.08)" stroke-width="6" fill="none"/>
+                <circle cx="40" cy="40" r="34" stroke="url(#levelG)" stroke-width="6" fill="none"
+                  stroke-dasharray="213" stroke-dashoffset="68" stroke-linecap="round"
+                  transform="rotate(-90 40 40)"/>
+                <defs>
+                  <linearGradient id="levelG">
+                    <stop offset="0" stop-color="#E8B4D0"/>
+                    <stop offset="1" stop-color="#4DE1FF"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+              <span class="level__num">12</span>
+            </div>
+            <div>
+              <p class="level__title">委ね Lv.12</p>
+              <p class="level__label">称号「静かな信徒」</p>
+              <p class="level__progress">Lv.13 まで 68% / 次のしきい値: ¥52,800 の散財</p>
+            </div>
+          </div>
+
+          <!-- Key metrics with counters -->
+          <div class="card card--metrics">
+            <h3 class="card__title">あなたに起きた変化</h3>
+            <div class="metric">
+              <div class="metric__head">
+                <span class="metric__name">Amazon 遷移の決断速度</span>
+                <span class="metric__delta metric__delta--down" data-delta>−42%</span>
+              </div>
+              <div class="metric__bar">
+                <span class="metric__before" style="--f: 100%">2.4s</span>
+                <span class="metric__after" style="--f: 58%">1.4s</span>
+              </div>
+            </div>
+            <div class="metric">
+              <div class="metric__head">
+                <span class="metric__name">自発的に商品ページを開く</span>
+                <span class="metric__delta metric__delta--down" data-delta>−68%</span>
+              </div>
+              <div class="metric__bar">
+                <span class="metric__before" style="--f: 100%">72 件</span>
+                <span class="metric__after" style="--f: 32%">23 件</span>
+              </div>
+            </div>
+            <div class="metric">
+              <div class="metric__head">
+                <span class="metric__name">深夜帯（22-2 時）利用率</span>
+                <span class="metric__delta metric__delta--up" data-delta>+89%</span>
+              </div>
+              <div class="metric__bar">
+                <span class="metric__before" style="--f: 54%">18%</span>
+                <span class="metric__after" style="--f: 100%">34%</span>
+              </div>
+            </div>
+            <div class="metric">
+              <div class="metric__head">
+                <span class="metric__name">論破 → 購入の成約率</span>
+                <span class="metric__delta metric__delta--up" data-delta>+36%</span>
+              </div>
+              <div class="metric__bar">
+                <span class="metric__before" style="--f: 73%">28%</span>
+                <span class="metric__after" style="--f: 100%">38%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Behavior shift narratives -->
+          <div class="card card--narrative">
+            <h3 class="card__title">今週の「委ね」</h3>
+            <ul class="narrative">
+              <li>Amazon を開く前に YUDANE を開くようになりました（平日 <strong>6 日 / 7 日</strong>）</li>
+              <li>カート登録から決済までの平均所要時間は <strong>17 分 38 秒</strong> です</li>
+              <li>友人からの買物相談 <strong>1 回</strong> を「YUDANE に聞かせて」と返答しています</li>
+              <li>月間散財ランキングで <strong>4 位</strong>（前週 7 位から上昇）</li>
+            </ul>
+          </div>
+
+          <!-- Sharable quote -->
+          <div class="quote-card">
+            <p class="quote-card__mark">“</p>
+            <p class="quote-card__text">今週もよく委ねてくれたね。<br/>来週はもっと任せていいよ。</p>
+            <p class="quote-card__sig">— YUDANE</p>
+          </div>
+        </section>
+
+        <!-- ========== SCREEN 6: SAFEGUARD ========== -->
+        <section class="screen screen--safe" data-screen="safe" aria-label="セーフガード">
+          <header class="hdr">
+            <h2 class="hdr__title">セーフガード</h2>
+          </header>
+
+          <div class="card">
+            <div class="card__head">
+              <span class="card__title--sm">月間使用上限</span>
+              <strong class="card__amount">¥200,000</strong>
+            </div>
+            <input type="range" min="50000" max="400000" step="10000" value="200000" class="range" id="limitRange" aria-label="月間使用上限スライダー" />
+            <p class="sub-note">手取りの 50% 以上は非推奨（到達で強制冷却）</p>
+          </div>
+
+          <div class="card row-toggle">
+            <div>
+              <p class="card__title--sm">冷却モード</p>
+              <p class="sub-note">全リール停止・論破封印（24 時間）</p>
+            </div>
+            <label class="switch"><input type="checkbox" aria-label="冷却モード" /><span></span></label>
+          </div>
+
+          <div class="card row-toggle">
+            <div>
+              <p class="card__title--sm">静かな週</p>
+              <p class="sub-note">7 日間、通知を完全停止</p>
+            </div>
+            <label class="switch"><input type="checkbox" aria-label="静かな週" /><span></span></label>
+          </div>
+
+          <div class="card">
+            <p class="card__title--sm">NG カテゴリ</p>
+            <div class="checklist">
+              <label><input type="checkbox" checked/> アルコール（疲労連動時）</label>
+              <label><input type="checkbox" checked/> ギャンブル関連</label>
+              <label><input type="checkbox" checked/> 未認可サプリ</label>
+              <label><input type="checkbox"/> 高カフェイン飲料</label>
+            </div>
+          </div>
+
+          <div class="card card--danger">
+            <p class="card__title--sm">データ</p>
+            <button class="link">全データをエクスポート →</button>
+            <button class="link link--danger">アカウントを削除 →</button>
+          </div>
+
+          <p class="safe__note">
+            本アプリは「人をダメにするサービス」ですが、<strong>実害</strong>は出しません。<br/>
+            借金・未成年・違法・差別・健康被害は設計で排除しています。
+          </p>
+        </section>
+
+      </div><!-- /.phone__screen -->
+
+      <!-- Bottom tab bar -->
+      <nav class="tabs" aria-label="メインナビゲーション">
+        <button class="tab is-active" data-goto="home"><span>🏠</span><span>ホーム</span></button>
+        <button class="tab" data-goto="cart"><span>🛒</span><span>カート</span></button>
+        <button class="tab" data-goto="reel"><span>🎬</span><span>リール</span></button>
+        <button class="tab" data-goto="debate"><span>💬</span><span>論破</span></button>
+        <button class="tab" data-goto="report"><span>📊</span><span>レポート</span></button>
+        <button class="tab" data-goto="safe"><span>🛡️</span><span>セーフ</span></button>
+      </nav>
+
+      <!-- Amazon 遷移確認オーバーレイ -->
+      <div class="overlay" id="buyOverlay" hidden>
+        <div class="overlay__card">
+          <p class="overlay__label">Amazon に飛ばすよ</p>
+          <p class="overlay__amount" id="overlayAmount">¥32,400</p>
+          <p class="overlay__name" id="overlayName">FLOS Tokio デスクランプ</p>
+          <p class="overlay__note">決済は Amazon 側で完結 — YUDANE は紹介だけ（Associates）</p>
+          <div class="overlay__actions">
+            <button class="btn btn--ghost" id="overlayCancel">やめとく</button>
+            <button class="btn btn--primary" id="overlayConfirm">🛍 Amazon で買う</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toast -->
+      <div class="toast" id="toast" hidden></div>
+    </div><!-- /.phone -->
+
+    <footer class="stage__foot">
+      <span>YUDANE v0.3 — 買わない理由を論破する AI</span>
+      <span>Inception / Requirements Analysis</span>
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
