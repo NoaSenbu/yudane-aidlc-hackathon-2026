@@ -1,7 +1,7 @@
 # Unit of Work
 
 > YUDANE を **並行開発可能な 8 つの Unit** に分解した定義書。各 Unit は独立デプロイ可能な単位として設計する。  
-> 参照: [要件書 v0.6](../requirements/requirements.md) / [Application Design](./application-design.md) / [Stories](../user-stories/stories.md) / [UoW Plan](../plans/unit-of-work-plan.md)
+> 参照: [要件書 v0.8](../requirements/requirements.md) / [Application Design](./application-design.md) / [Stories](../user-stories/stories.md) / [UoW Plan](../plans/unit-of-work-plan.md)
 
 ## 確定した分割方針（Q1-Q7 回答反映）
 
@@ -102,7 +102,7 @@ yudane-aidlc-hackathon-2026/
 | 範囲（Mobile） | M-04 DebateScreen |
 | 範囲（Backend） | B-02 DebateLlmService |
 | 外部サービス | Amazon Bedrock (**Claude Haiku 4.5 / Sonnet 4.6**) / Titan Embeddings V2 |
-| 主な責務 | 論破 UI（チャット + タイピング演出 + 90 秒タイマー）/ 事実 + 心理の 2 軸反論プロンプト合成 / ストリーミング配信 / 論破成功ログ / 個別最適化学習 |
+| 主な責務 | 論破 UI（チャット + タイピング演出 + 90 秒タイマー + Amazon 遷移後の肯定フィードバックトースト）/ **M-1（事実 + 心理の 2 軸反論プロンプト合成）と M-2（ストレスレベル推定 → ストレス × ご褒美軸コピー併走 → 肯定フィードバック発火）の並走** / ストリーミング配信 / 論破成功ログ / 個別最適化学習 |
 | 対応 UC | UC-01 |
 | ストーリー | US-01-01〜05（5 本） |
 | デプロイ CDK | `debate-stack.ts` |

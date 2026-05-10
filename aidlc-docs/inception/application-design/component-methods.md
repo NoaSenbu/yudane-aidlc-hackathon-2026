@@ -159,12 +159,24 @@ def start_debate(
     product_id: str,
     trigger: Literal["reel-refuse", "cart-attack", "long-view"],
 ) -> DebateSessionDto: ...
+# ctx を集約して Bedrock Claude Haiku 4.5 へストリーミング開始
+# ctx = preference_vector + calendar_categories + time_of_day + recent_purchases
+#     + spending_depletion_rate + stress_level (low/mid/high、FR-DEBATE-09)
+# mid 以上では M-2 のストレス × ご褒美軸コピーを併走させる
 
 def continue_debate(
     session_id: str,
     user_action: Literal["resist", "agree"],
 ) -> AsyncIterable[DebateTokenDto]: ...
 # 初回トークン 300ms 以下 (要件 §6.2 / FR-DEBATE-03)
+# agree 後は「今日もいい選択だったね」型の肯定フィードバックトーストを発火 (FR-DEBATE-09)
+
+def estimate_stress_level(
+    user_id: str,
+    context: StressSignalsDto,
+) -> Literal["low", "mid", "high"]: ...
+# StressSignalsDto = 直近 7 日の会議密度 / 残業時刻分布 / 深夜帯利用回数 / カレンダー連続予定数
+# FR-DEBATE-09 / M-2 のドーパミン依存回路形成のため併走させるコンテキスト信号
 ```
 
 ### B-03 `ReelRecommendationService`

@@ -121,7 +121,7 @@ Unit of Work（8 Units）との対応。
 
 ## 7. 参照
 
-- [要件書 v0.7 §4.2 / §5](../requirements/requirements.md)
+- [要件書 v0.8 §4.2 / §5](../requirements/requirements.md)
 - [stories.md](../user-stories/stories.md)
 - [unit-of-work.md](../application-design/unit-of-work.md)
 - [unit-of-work-story-map.md](../application-design/unit-of-work-story-map.md)

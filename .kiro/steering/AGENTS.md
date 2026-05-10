@@ -2,11 +2,21 @@
 inclusion: always
 ---
 
-# プロジェクト規則（AGENTS.md）
+# プロジェクト規則（AGENTS.md、コア）
 
 > 本ファイルはすべての対話・成果物で **常に** 適用される。
 >
-> 関連ステアリング: [product.md](./product.md) / [structure.md](./structure.md) / [tech.md](./tech.md) / [hackathon-evaluation-criteria.md](./hackathon-evaluation-criteria.md) / [aws-aidlc-rules/core-workflow.md](./aws-aidlc-rules/core-workflow.md)
+> 常時ロードされる関連 steering: [product.md](./product.md) / [structure.md](./structure.md) / [tech.md](./tech.md) / [hackathon-evaluation-criteria.md](./hackathon-evaluation-criteria.md) / [aws-aidlc-rules/core-workflow.md](./aws-aidlc-rules/core-workflow.md)
+>
+> コンテキスト発火の fileMatch steering:
+>
+> - [tech-typescript.md](./tech-typescript.md)（`*.ts*` で発火）
+> - [tech-python.md](./tech-python.md)（`*.py` で発火）
+> - [tech-cdk.md](./tech-cdk.md)（`infra/**` で発火）
+> - [api-contracts.md](./api-contracts.md)（`shared/schema/**` で発火）
+> - [hackathon-stage-checklists.md](./hackathon-stage-checklists.md)（`aidlc-docs/**` で発火）
+>
+> AI が自発的に readFile で参照する manual steering: [git-ops.md](./git-ops.md) / [dev-commands.md](./dev-commands.md)（発動条件は §10 を参照）
 >
 > ルールが重複する場合、`hackathon-evaluation-criteria.md` > `aws-aidlc-rules/core-workflow.md` > 本ファイル の優先順序とする。
 
@@ -27,7 +37,7 @@ inclusion: always
 - 確認事項を質問する際は、推奨案・背景・目的・選択肢の比較を添えて提示する
 - 成果物を提示する前に、自身でレビュー（整合性・要件充足・誤記）を済ませる
 - 不明点や前提が曖昧な場合は、推測で進めず必ずユーザーに確認する
-- ハッカソンの 4 審査基準（ビジネス意図の明確さ／Unit分解の適切さ／創造性とテーマ適合性／ドキュメント品質）を意思決定の指針とする
+- ハッカソンの 4 審査基準（ビジネス意図の明確さ／Unit 分解の適切さ／創造性とテーマ適合性／ドキュメント品質）を意思決定の指針とする
 
 ---
 
@@ -53,6 +63,7 @@ inclusion: always
 - 仮想環境・コンテナ（venv、poetry、npm、Docker 等）でプロジェクト単位に依存関係を管理する
 - ロックファイル（`package-lock.json`、`poetry.lock` 等）は必ずコミットする
 - 長時間実行コマンド（`npm run dev`、`webpack --watch`、テストの watch モード等）はバックグラウンド実行、またはユーザー側での手動実行を前提とし、対話プロセスをブロックしない
+- 具体的コマンドは [dev-commands.md](./dev-commands.md) を参照（manual steering、§10 の条件で AI が自発的に readFile する）
 
 ---
 
@@ -65,59 +76,15 @@ inclusion: always
 
 ---
 
-## 7. Git 運用
+## 7. Git 運用（ダイジェスト）
 
-### 7.1 ブランチ
+- `main` / `master` へ直接プッシュしない。作業ブランチ → PR で統合
+- `develop` への直接 push は小規模変更に限り許容。Unit を跨ぐ大規模変更 / 破壊的変更 / `shared/schema/` 更新は必ず `feature/...` ブランチ + PR を経由する
+- コミットメッセージは日本語で簡潔に、対象ステージ・変更内容が伝わる粒度で
+- `.gitignore` 対象の機密情報・ビルド成果物を誤コミットしない
+- 破壊的操作（`git push --force`、`git reset --hard`、`main` への直接 commit / push 等）は **事前承認必須**
 
-| ブランチ | 用途 | 直接 push |
-|---|---|---|
-| `main` | 本番相当 | **禁止** |
-| `develop` | 統合 | **禁止**（PR 経由） |
-| `feature/unit-<n>/<topic>` / `fix/<unit>/<topic>` / `chore/<topic>` | 作業 | — |
-
-命名は `unit-of-work.md` の番号と英語 kebab-case。1 ブランチ = 1 PR = 1 関心事。
-
-### 7.2 マージ戦略
-
-| 方向 | 戦略 |
-|---|---|
-| `feature/...` → `develop` | squash merge |
-| `develop` → `main` | merge commit |
-
-マージ順序は [unit-of-work-dependency.md](../../aidlc-docs/inception/application-design/unit-of-work-dependency.md) の DAG に従う（Unit-1 → Unit-2 → コア 3 並行 → サポート 3 並行）。
-
-### 7.3 PR 規則
-
-- タイトル: 日本語、70 文字以内、変更内容が分かる粒度
-- 本文: 変更内容 / 背景 / 動作確認 / 関連 Story ID を記載
-- 必須レビュアー: 同 Unit オーナー以外 1 名以上。コア 3 Unit（Unit-3/4/5）と `shared/schema/` 変更は Member A の Approve 必須
-- PR の粒度: 差分 500 行以内目安（自動生成ファイルは除外）
-
-### 7.4 コミットメッセージ
-
-- 1 行目: 日本語 50 文字以内、prefix なし
-- 本文: 空行を挟んで「なぜ」を記述
-
-### 7.5 破壊的操作
-
-以下は **事前承認必須**:
-
-- `git push --force` / `git push --force-with-lease`
-- `git reset --hard` による公開ブランチの書き換え
-- リモートブランチの強制削除（`git branch -D`）
-- `main` / `develop` への直接 commit
-- 1 PR で 20 ファイル以上の削除
-
-コミット前に差分を確認し、機密情報・無関係な変更が含まれていないことを確かめる。
-
-### 7.6 衝突解決
-
-- API 契約（`shared/schema/`）/ DB スキーマ / `shared/` ライブラリの変更: **Member A 決裁**
-- Unit 内の UI / ビジネスロジック: 各 Unit オーナー決裁
-- 規約例外: 全員合意（PR コメントで記録）
-- 合意不能時は **予選 5/30 を最優先** の観点で判断
-
-`develop` とのコンフリクトは PR 作成者が解消。マージ後 CI が赤くなった場合、作成者が 1 時間以内に revert または fix PR を作成。
+詳細なブランチ戦略・PR 規則・マージ順序・衝突解決・API 契約変更手順は [git-ops.md](./git-ops.md) を参照（manual steering、§10 の条件で AI が自発的に readFile する）。
 
 ---
 
@@ -143,5 +110,22 @@ PR マージ前に以下を全て green にする:
 - SAST Critical / High 0
 - `shared/schema/` 変更時は型生成ファイルが最新（CI 差分なし）+ Schemathesis pass
 
-詳細なツール採用・テストレイヤー構成は [tech.md](./tech.md) §Lint / §API 契約 / §テストレイヤー を参照。
+詳細なツール採用・テストレイヤー構成は [tech.md](./tech.md) §品質ゲート、および言語別 fileMatch steering（[tech-typescript.md](./tech-typescript.md) / [tech-python.md](./tech-python.md) / [tech-cdk.md](./tech-cdk.md)）を参照。
 Unit ごとの Definition of Done・MVP/決勝 Readiness チェックリストは Construction Phase 着手時に per-Unit で作成する。
+
+---
+
+## 10. AI が自発的に参照する manual steering
+
+以下の manual steering は context 節約のため常時注入されない。AI は以下の「発動条件」に該当する文脈を検出したら、ユーザーが `#file.md` を指定していなくても **自発的に readFile ツールで該当ファイルを読み込み、その内容に従って応答する**。発動条件に該当するのに読み込まなかった場合は規約違反とみなす。
+
+| ファイル | 発動条件（これらのキーワード / 文脈を検出したら読む） | 補足 |
+|---|---|---|
+| [git-ops.md](./git-ops.md) | `git` / `commit` / `push` / `pull request` / `PR` / `merge` / `rebase` / `ブランチ` / `branch` / `コンフリクト` / `.gitignore` / `CHANGELOG` / 破壊的 git 操作 / API 契約変更 PR の準備 | git / PR 運用の詳細規約・マージ順序・衝突解決・API 契約 PR の二段階手順など |
+| [dev-commands.md](./dev-commands.md) | `npm` / `poetry` / `pytest` / `vitest` / `cdk` / `ビルド` / `build` / `テスト実行` / `デプロイ` / `deploy` / `環境構築` / `ローカル起動` / `ruff` / `mypy` / `schemathesis` / 破壊的 CLI 操作（`rm -rf`、`cdk destroy` 等） | ビルド / テスト / デプロイ / 破壊的コマンドの一覧と実行方針 |
+
+**運用ルール**:
+
+1. 該当コンテキストを検出したら、実装・コマンド提示・助言の前に対象 steering を readFile する
+2. 既に同一セッション内で読み込んで内容を記憶している場合は再読込不要（ただし 10 ターン以上経過していれば再確認を推奨）
+3. 発動条件が曖昧な場合は、保守的に読み込んでから判断する

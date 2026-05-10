@@ -1,7 +1,7 @@
 # Application Design — Components
 
 > YUDANE のコンポーネント定義（Mobile / Backend / Shared 3 層）  
-> 参照: [要件書 v0.6](../requirements/requirements.md) / [設計プラン](../plans/application-design-plan.md) / [統合ビュー](./application-design.md)
+> 参照: [要件書 v0.8](../requirements/requirements.md) / [設計プラン](../plans/application-design-plan.md) / [統合ビュー](./application-design.md)
 
 ## 設計原則
 
@@ -43,7 +43,7 @@
 | # | コンポーネント | 責務 | トリガー |
 |---|---|---|---|
 | B-01 | `AuthEdgeLambda` | Cognito トリガーのカスタマイズ（サインアップ後処理、トークン clam 付与） | Cognito User Pool トリガー |
-| B-02 | `DebateLlmService` | 論破プロンプト合成（商品メタ + 嗜好 + 時刻 + 予定 + 達成率） + Bedrock ストリーミング | API Gateway → Lambda（REST ストリーミング） |
+| B-02 | `DebateLlmService` | 論破プロンプト合成（商品メタ + 嗜好 + 時刻 + 予定 + 達成率 + **ストレスレベル推定**） + Bedrock ストリーミング（M-1 の事実 + 心理 2 軸反論 + M-2 のストレス × ご褒美軸 + 購買後の肯定フィードバック生成 / FR-DEBATE-02 / FR-DEBATE-09） | API Gateway → Lambda（REST ストリーミング） |
 | B-03 | `ReelRecommendationService` | 嗜好ベクトル × コンテキストから商品候補生成、OpenSearch でベクトル検索 | API Gateway |
 | B-04 | `CartIntakeHandler` | Share 経由の URL 受取、ASIN 抽出、Creators API 呼出、カート監視登録 | API Gateway |
 | B-05 | `CartAttackScheduler` | 登録商品に対する 30m / 6h / 24h 追撃ジョブ作成（EventBridge Scheduler） | Cart 登録イベント（B-04 から同期呼出） |

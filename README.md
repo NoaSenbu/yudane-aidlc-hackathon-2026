@@ -10,23 +10,11 @@ AWS Summit Japan 2026 AI-DLC ハッカソン応募作品。テーマ「人をダ
 
 ---
 
-## 🛋️ 30 秒で刺す
-
-- **誰を**: 過労気味のリモートワーカー（28〜35 歳、月収 34〜45 万円、可処分所得はあるが迷う人）
-- **どう**: Amazon で「欲しいかも」と「買うか迷う」の間にあった *自分で決める間（ま）* を奪う
-- **なぜ**: 迷うたびに AI が事実 + 心理の 2 軸で論破し、2〜3 タップで Amazon 遷移へ流す
-- **最終的に**: 1 年後、「何が欲しい？」と聞かれても自分では答えられず、YUDANE の監視リストを見せるようになる
-- **収益構造**: Amazon Associates の紹介コミッション — **「委ねるほど儲かる」のが正直な自白**
-
-プロダクト名「**YUDANE（委ね）**」は、到達地点そのもの。ユーザーは判断を委ねる達人になる。
-
----
-
 <details>
 <summary>📑 <strong>目次</strong>（クリックで展開）</summary>
 
-1. [🛋️ 30 秒で刺す](#%EF%B8%8F-30-秒で刺す)
-2. [🧭 YUDANE を 1 分 / 5 分 / 30 分で理解する](#-yudane-を-1-分--5-分--30-分で理解する)
+1. [📌 概要](#-概要)
+2. [🎯 コア機能（4 つのユースケース）](#-コア機能4-つのユースケース)
 3. [🎬 体験シーン — 悠介の金曜深夜](#-体験シーン--悠介の金曜深夜)
 4. [💀 ダメ化の軌跡（Degradation Arc）](#-ダメ化の軌跡degradation-arc)
 5. [👤 このアプリで完成した人間像（Year 1 後の悠介）](#-このアプリで完成した人間像year-1-後の悠介)
@@ -45,26 +33,41 @@ AWS Summit Japan 2026 AI-DLC ハッカソン応募作品。テーマ「人をダ
 
 ---
 
-## 🧭 YUDANE を 1 分 / 5 分 / 30 分で理解する
+## 📌 概要
 
-### 1 分（エグゼクティブ向け）
+- **誰に**: 過労気味のリモートワーカー（28〜35 歳、月収 34〜45 万円、可処分所得はあるが迷う人）
+- **何をする**: Amazon で「欲しいかも」と「買うか迷う」の間にあった *自分で決める間（ま）* を AI が奪う
+- **どう奪う**: 迷うたびに AI が事実 + 心理の 2 軸で論破し、2〜3 タップで Amazon に送り出す
+- **何がダメにする**: 論破されるたびに「自分で考えて決める」経験が減り、通知 → タップの反射が形成される。3 か月後には Amazon を自分で開かなくなり、1 年後には「何が欲しい？」に自分の言葉で答えられなくなる。**便利さが判断能力を段階的に奪っていく**
+- **1 年後の姿**: 監視リスト常時 34 件、自発閲覧 −96%、月間散財額 3.5 倍。友人に「何が欲しい？」と聞かれると YUDANE のポートフォリオを見せる
+- **収益**: Amazon Associates の紹介コミッション — 委ねるほど YUDANE が儲かる構造
+- **市場での立ち位置**: 既存 EC アシスタントが「賢い買い物」を支援するのに対し、YUDANE は「迷いを潰して買わせる」方向に振り切った唯一のプロダクト。詳細は [市場ポジショニング](aidlc-docs/inception/requirements/market-positioning.md)
 
-次項の「🎬 体験シーン — 悠介の金曜深夜」を読む。これが全て。23:47 から 00:20 までの 33 分で、悠介は **自分で買うか決める能力** を 1 回分ずつ失っていく。
+プロダクト名「**YUDANE（委ね）**」は、到達地点そのもの。ユーザーは判断を委ねる達人になる。
 
-### 5 分（プロダクトマネージャー向け）
+---
 
-1. [悠介の 1 年退化年表](aidlc-docs/inception/user-stories/persona-journey.md) — Day 1 → Year 1 で何を失うか
-2. [ダメ化効果マトリクス](aidlc-docs/inception/requirements/requirements.md#26-ダメ化効果マトリクスfr--退化軸) — FR × 5 退化軸の加速作用
-3. [NG 発動シナリオ集](aidlc-docs/inception/requirements/ng-scenarios.md) — 倫理境界の実体化
-4. [市場ポジショニング](aidlc-docs/inception/requirements/market-positioning.md) — 3 軸で見る YUDANE のニッチ
+## 🎯 コア機能（4 つのユースケース）
 
-### 30 分（エンジニア向け）
+YUDANE の心臓部は 4 つのユースケース。すべてが連携して「自分で決める間（ま）」を奪う。
 
-- [要件書 v0.7](aidlc-docs/inception/requirements/requirements.md)（10 機能領域 / NG-1〜8 / ダメ化効果マトリクス / Security + PBT 全面適用）
-- [Application Design](aidlc-docs/inception/application-design/application-design.md)（31 コンポーネント + 7 サービス + 4 主要データフロー）
-- [Unit of Work](aidlc-docs/inception/application-design/unit-of-work.md)（8 Units × 28 Story × カバレッジ 100%）
-- [モックアップ検証レポート](aidlc-docs/inception/mockup-validation/mockup-plan.md)（6 画面 × 28 仮説、25 件成立）
-- [論破コピー集](aidlc-docs/inception/mockup-validation/dark-copy-inventory.md)（39 コピー × 心理学メカニズム × 倫理境界判定）
+### UC-01: 論破チャット — 「買わない」を 90 秒で崩す
+
+ユーザーが「買わない」と抵抗したとき、AI が **事実ベース**（時給換算・過去の閲覧回数・分割払い月額）と **心理ベース**（疲労ご褒美・所有感・自己投資）の 2 軸で最大 3 ターン論破する。Amazon Bedrock（Claude Haiku）でストリーミング配信、初回トークン 300ms 以下。90 秒で自動終了し、「🛍 Amazon で買う」ボタンで Amazon アプリへ Deep Link 遷移。コピートーンは敬語ではなく **タメ口の友達系**（「これ絶対好きだろ」「自分にご褒美じゃね？」）。
+
+### UC-02: エージェント型リール — AI が「これ好きでしょ」と差し出す
+
+縦型スワイプ UI で商品カードを無限表示。推薦は **嗜好ベクトル**（遷移履歴 × スキップ履歴）・**カレンダー予定**（向こう 14 日）・**時刻 × 疲労度**（深夜帯・会議本数）・**直近購入履歴** の 4 軸で決定。ダブルタップで即 Amazon 遷移、「買わない」をタップすると論破チャットが起動。ユーザーが自分で Amazon を開いて探す必要をなくし、**「欲しいものを探す習慣」を奪う** 機能。
+
+### UC-03: カート介入 — 迷った商品を 30 分後に追撃する
+
+Amazon アプリの共有メニュー（iOS Share Extension / Android Share Target）から「YUDANE」に商品を送るだけで、ASIN 抽出 → 商品メタデータ取得 → カート監視リストに登録まで 2 秒で完了。その後 **30 分 / 6 時間 / 24 時間** の 3 段階でプッシュ通知を追撃する。
+
+なぜ即座ではなく 30 分待つのか — 共有した直後はまだ「自分で考えたい」という心理的抵抗が最大。30 分の冷却を挟むことで抵抗が緩み、再想起された瞬間に論破が最も効く。6 時間後は日常活動で忘れかけた商品を再浮上させ、24 時間後は購買欲が自然消滅する前の **最後の追撃** として機能する。24 時間後に未決済なら追撃は停止する。
+
+### UC-04: カレンダー連動 — 予定から先回りして「確保しておいたよ」
+
+iOS EventKit / Google Calendar から向こう 14 日の予定を取得（オプトイン必須）。予定タイトル・場所を **端末ローカルで LLM 分類** し、カテゴリのみバックエンドに送信（予定本文はバックエンドに送らない）。「来週プレゼン → シャツと USB-C ハブ」「土曜デート → 香水」のように、**まだ本人が気づいていない購買ニーズ** を先回りで提示。ユーザーの脳に「置き去りにしたら申し訳ない」という罪悪感を形成し、**「自発的に欲しいものを探す習慣」を奪う** 設計。
 
 ---
 
@@ -302,7 +305,7 @@ YUDANE は「ダメにする」を名乗るが、**2 層構造で実害を抑え
 **Inception Phase 完了内訳**:
 
 - Workspace Detection ✅
-- Requirements Analysis（v0.7）✅
+- Requirements Analysis（v0.8）✅
 - User Stories（**28 本** + ペルソナ 2 名 + 非ターゲット 3 名 + 1 年退化年表）✅
 - Workflow Planning（EXECUTE / SKIP 判定済み）✅
 - Application Design（31 コンポーネント + 7 サービス）✅
@@ -312,11 +315,19 @@ YUDANE は「ダメにする」を名乗るが、**2 層構造で実害を抑え
 <details>
 <summary><strong>Construction Phase 規約整備</strong>（書類審査対象外、参考情報）</summary>
 
-並行開発のためのステアリング規約を既存 3 ファイルに統合済（実装・CI・デプロイは Construction 着手後に進める）。
+並行開発のためのステアリング規約を **3 層構造（always / fileMatch / manual）** で整備済。context を最小化しつつ対象ファイル編集時に詳細ルールが自動発火する（実装・CI・デプロイは Construction 着手後に進める）。
 
-- [`.kiro/steering/AGENTS.md`](.kiro/steering/AGENTS.md): Git 運用 / 品質ゲート / 衝突解決
-- [`.kiro/steering/structure.md`](.kiro/steering/structure.md): 命名規則 / コード編集ルール
-- [`.kiro/steering/tech.md`](.kiro/steering/tech.md): Lint・型 / API 契約ガバナンス / テストレイヤー
+**常時注入（always）** — 横断規約・プロダクト文脈:
+
+- [`product.md`](.kiro/steering/product.md) / [`AGENTS.md`](.kiro/steering/AGENTS.md) / [`structure.md`](.kiro/steering/structure.md) / [`tech.md`](.kiro/steering/tech.md) / [`hackathon-evaluation-criteria.md`](.kiro/steering/hackathon-evaluation-criteria.md)
+
+**コンテキスト発火（fileMatch）** — 対象ファイル編集時に自動注入:
+
+- [`tech-typescript.md`](.kiro/steering/tech-typescript.md)（`*.ts*`）/ [`tech-python.md`](.kiro/steering/tech-python.md)（`*.py`）/ [`tech-cdk.md`](.kiro/steering/tech-cdk.md)（`infra/**`）/ [`api-contracts.md`](.kiro/steering/api-contracts.md)（`shared/schema/**`）/ [`hackathon-stage-checklists.md`](.kiro/steering/hackathon-stage-checklists.md)（`aidlc-docs/**`）
+
+**AI 自発 readFile（manual）** — キーワード検出時に AI が自動読込:
+
+- [`git-ops.md`](.kiro/steering/git-ops.md) / [`dev-commands.md`](.kiro/steering/dev-commands.md) — 発動条件は [`AGENTS.md` §10](.kiro/steering/AGENTS.md) 参照
 
 </details>
 
@@ -324,7 +335,7 @@ YUDANE は「ダメにする」を名乗るが、**2 層構造で実害を抑え
 
 ## 📚 ドキュメント
 
-[aidlc-docs/](aidlc-docs/) 配下に全成果物を集約。冒頭の「🧭 1 分 / 5 分 / 30 分で理解する」が読者別の入口。
+[aidlc-docs/](aidlc-docs/) 配下に全成果物を集約。
 
 ### 📁 Inception Phase 全成果物
 
@@ -336,7 +347,9 @@ YUDANE は「ダメにする」を名乗るが、**2 層構造で実害を抑え
 | アプリケーション設計 | [application-design.md](aidlc-docs/inception/application-design/application-design.md) / [components.md](aidlc-docs/inception/application-design/components.md) / [component-methods.md](aidlc-docs/inception/application-design/component-methods.md) / [services.md](aidlc-docs/inception/application-design/services.md) / [component-dependency.md](aidlc-docs/inception/application-design/component-dependency.md) |
 | Unit of Work | [unit-of-work.md](aidlc-docs/inception/application-design/unit-of-work.md) / [unit-of-work-dependency.md](aidlc-docs/inception/application-design/unit-of-work-dependency.md) / [unit-of-work-story-map.md](aidlc-docs/inception/application-design/unit-of-work-story-map.md) |
 | 計画 | [execution-plan.md](aidlc-docs/inception/plans/execution-plan.md) / [application-design-plan.md](aidlc-docs/inception/plans/application-design-plan.md) / [unit-of-work-plan.md](aidlc-docs/inception/plans/unit-of-work-plan.md) / [story-generation-plan.md](aidlc-docs/inception/plans/story-generation-plan.md) / [user-stories-assessment.md](aidlc-docs/inception/plans/user-stories-assessment.md) |
-| Construction 並行開発規約 | [AGENTS.md](.kiro/steering/AGENTS.md)（Git 運用 / 品質ゲート / マイルストーン判定 / 同期プロトコル）/ [structure.md](.kiro/steering/structure.md)（命名規則 / コード編集ルール）/ [tech.md](.kiro/steering/tech.md)（Lint・型・フォーマッタ / API 契約ガバナンス / テストレイヤー） |
+| Construction 並行開発規約（always） | [AGENTS.md](.kiro/steering/AGENTS.md)（横断規約 / Git ダイジェスト / 品質ゲート原則 / AI 自発参照ガイド）/ [structure.md](.kiro/steering/structure.md)（ディレクトリ配置 / Unit 構成）/ [tech.md](.kiro/steering/tech.md)（技術スタック / 開発環境 / 品質ゲート）/ [product.md](.kiro/steering/product.md)（プロダクト概要）/ [hackathon-evaluation-criteria.md](.kiro/steering/hackathon-evaluation-criteria.md)（4 審査基準コア） |
+| Construction 並行開発規約（fileMatch 自動発火） | [tech-typescript.md](.kiro/steering/tech-typescript.md)（`*.ts*`）/ [tech-python.md](.kiro/steering/tech-python.md)（`*.py`）/ [tech-cdk.md](.kiro/steering/tech-cdk.md)（`infra/**`）/ [api-contracts.md](.kiro/steering/api-contracts.md)（`shared/schema/**`）/ [hackathon-stage-checklists.md](.kiro/steering/hackathon-stage-checklists.md)（`aidlc-docs/**`） |
+| Construction 並行開発規約（AI 自発 readFile） | [git-ops.md](.kiro/steering/git-ops.md)（ブランチ / PR / マージ / 衝突解決）/ [dev-commands.md](.kiro/steering/dev-commands.md)（ビルド / テスト / デプロイ / 破壊的コマンド） |
 | プロセス管理 | [aidlc-state.md](aidlc-docs/aidlc-state.md) / [audit.md](aidlc-docs/audit.md) |
 
 ---

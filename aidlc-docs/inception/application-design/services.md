@@ -32,6 +32,8 @@
 ### 責務
 
 - 論破セッションの開始、ストリーミング配信、タイマー監視、終了判定
+- **M-1（判断力の弱体化）と M-2（購買快楽のストレス解消剤化）の併走プロンプト合成**（FR-DEBATE-02 / FR-DEBATE-09）
+- Amazon 遷移後の肯定フィードバック発火（M-2 ドーパミン回路強化 / FR-DEBATE-09）
 - 論破成功時の EXP 加算、嗜好ベクトル学習データ投入
 - セーフガード発動時のクールダウン適用
 
@@ -39,7 +41,11 @@
 
 - **Entry point**: M-04 DebateScreen ↔ `POST /debate-sessions`（B-02）
 - **Core**: B-02 DebateLlmService（Bedrock ストリーミング）
-- **Context 供給**: B-03 ReelRecommendationService の嗜好 / B-07 CalendarPredictionService の予定 / B-11 CreatorsApiClient の商品メタ
+- **Context 供給**:
+  - 嗜好ベクトル: B-03 ReelRecommendationService
+  - 予定カテゴリ: B-07 CalendarPredictionService
+  - 商品メタ: B-11 CreatorsApiClient
+  - **ストレスレベル推定**: B-02 DebateLlmService 内の `estimate_stress_level()` が B-12 AuditLogger の直近 7 日ログ（会議密度・残業時刻分布・深夜帯利用回数）とカレンダー連続予定数から算出（FR-DEBATE-09 / M-2）
 - **Safeguard**: B-09 SafeguardRulesEngine（前段 middleware）
 - **Persistence**: DynamoDB `DebateSessions` テーブル
 - **Downstream**: 論破成功で B-13 AmazonTransitionRecorder → B-10 AssociatesLinkGenerator
@@ -48,13 +54,15 @@
 
 ```
 [M-04 DebateScreen]
-    ↓ POST /debate-sessions (fact + psychology プロンプト生成)
+    ↓ POST /debate-sessions (M-1 事実/心理 + M-2 ご褒美軸の併走プロンプト生成)
 [API Gateway] → [B-09 SafeguardRulesEngine] → [B-02 DebateLlmService]
     → [B-03 getPreferenceVector] → [B-11 getProductMeta] → [B-07 getEvents]
+    → [B-02 estimateStressLevel] ← [B-12 AuditLogger 直近 7 日ログ]
     → Bedrock Invoke (streaming, Claude Haiku 4.5 / Sonnet 4.6)
     → SSE stream to client
     → [M-04 onAgree] → POST /amazon-transitions → [B-13 AmazonTransitionRecorder]
         → [B-10 AssociatesLinkGenerator] → Deep Link → Amazon App
+    → M-04 に「今日もいい選択だったね」肯定フィードバックトースト (FR-DEBATE-09)
 ```
 
 ### 品質要件
@@ -62,6 +70,8 @@
 - 初回トークン 300ms 以下（FR-DEBATE-03）
 - 90 秒タイマー（FR-DEBATE-06）
 - 3 回連続拒否でクールダウン（FR-DEBATE-05 / SVC-06 連動）
+- ストレスレベルが mid 以上ではプロンプトに M-2 のご褒美軸コピーが必ず併走する（FR-DEBATE-09）
+- Amazon 遷移後は 1.2 秒以内に肯定フィードバックトーストが発火する（FR-DEBATE-09 / M-2）
 
 ---
 

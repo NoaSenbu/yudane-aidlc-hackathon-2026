@@ -101,7 +101,7 @@ mockup/
 
 ## 7. 参照ドキュメント
 
-- [要件書 v0.7](../requirements/requirements.md)
+- [要件書 v0.8](../requirements/requirements.md)
 - [ペルソナ](../user-stories/personas.md)
 - [退化年表](../user-stories/persona-journey.md)
 - [Unit of Work](../application-design/unit-of-work.md)
