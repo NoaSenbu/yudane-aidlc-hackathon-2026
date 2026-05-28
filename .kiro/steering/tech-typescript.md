@@ -33,7 +33,24 @@ fileMatchPattern: '*.ts*'
 
 - コンポーネントは **関数コンポーネント + Hooks** のみ。クラスコンポーネント禁止
 - Side effect は `useEffect` / `useLayoutEffect` 以外での実行禁止
-- Style は `StyleSheet.create` または `NativeWind`。インラインスタイルは単純な一時用途のみ
+- Style は **NativeWind v4**（Tailwind トークン）を第一選択。`StyleSheet.create` は v4 で表現できないアニメーション等の補助用途に限定。インラインスタイルは禁止
+
+### 3.1 デザインシステムとスタイリング基盤（C-1 = A 確定）
+
+- **採用**: NativeWind v4 + Tailwind 設計トークン
+- **トークン集中管理先**: `mobile/tailwind.config.js`（Member A が Unit-1 Platform で整備）
+- **モックアップとの 1:1 移植**: `mockup/styles.css` の HEX 値（Indigo `#4F4DDC` / cold rose `#E8B4D0` / cyan `#4DE1FF` 他）をそのまま `tailwind.config.js` の `theme.extend.colors` にミラーリング
+- **Claude Design 出力との同期**: `mockup/index.html` を SSOT として、Claude Design が生成した Tailwind クラスは `tailwind.config.js` のトークンに合わせて Member A が PR で吸収
+- **採用しないもの**: Tamagui / React Native Paper / 自作 StyleSheet（[parallel-dev-prerequisites.md C-1](../../aidlc-docs/construction/plans/parallel-dev-prerequisites.md) の選択肢 B/C/D）
+
+### 3.2 開発ワークフロー（C-5 = A 確定: Expo Dev Client + EAS Build）
+
+- **採用**: Expo SDK 52+ の Dev Client（New Architecture デフォルト ON）+ EAS Build（クラウドビルド）
+- **Bare React Native は不採用**: ローカル Xcode / Android Studio 環境差を Expo に集約することで Member A〜D の環境差ゼロ化を狙う
+- **Share Extension（iOS）/ Share Target（Android）**: Expo Config Plugin として実装（Member D の Unit-5 Cart Intercept 担当）。`@bacons/expo-share-extension` 等の OSS プラグインを利用、必要に応じてカスタム Plugin を作成
+- **AWS End User Messaging Push（APNs / FCM）**: `expo-notifications` 経由でトークン取得を半自動化
+- **配布**: 開発中 = Expo Dev Client、予選デモ = Dev Client、決勝 = EAS Build → TestFlight / Internal Testing
+- **EAS 課金回避策**: 月 30 ビルド超過時は `eas build --local`（ローカル Xcode 必須）にフォールバック
 
 ## 4. 命名規則
 
