@@ -142,6 +142,36 @@ export async function* startDebate(...) { }
 
 CI で自動計測。未達 PR はマージ不可。
 
+### 10.1 TDD サイクル（Outside-In、Mobile features 必須）
+
+[AGENTS.md §12](./AGENTS.md#12-tdd-開発スタイル全-unit-必須) の TDD 開発スタイルを TypeScript 側で具体化:
+
+| Phase | やること | ツール |
+|---|---|---|
+| **Red** | 失敗する `vitest` example test を 1 ケース書く | `vitest` `expect` |
+| **Green** | テストが通る最小コードを書く（仮実装可） | 実装ファイル |
+| **Refactor** | 重複排除・命名整理・抽象化、テストは触らない | エディタ |
+| **PBT 補強** | `fast-check` の `fc.assert(fc.property(...))` を同テストファイルに追加 | `fast-check` |
+
+#### Outside-In の流れ（Mobile 例）
+
+```
+Test 1 (Red): screen-level test → describe('DebateScreen') で UI 期待動作を書く
+Test 2 (Red): hook-level test → useDebateSession の戻り値を検証
+Test 3 (Red): service-level test → SSE 解析関数の単体検証
+   ↓ 各 Red を 1 つずつ Green に倒していく
+   ↓ 内側に向かって実装が組み上がる
+最後に PBT で property を補強
+```
+
+#### TDD 例外（テストファースト緩和、AGENTS.md §12.3）
+
+- Mockup HTML → RN コンポーネントの機械的移植
+- 純粋な型定義 / DTO 宣言（振る舞いなし）
+- 設定ファイル（`tailwind.config.js` / `babel.config.js` / `app.config.js` 等）
+
+例外時は PR description に「TDD 例外: ◯◯」と明記。
+
 ## 11. セキュリティ（SECURITY Extension 抜粋）
 
 - ユーザー入力は **Zod で検証必須**。無検証の `JSON.parse(request.body)` 禁止

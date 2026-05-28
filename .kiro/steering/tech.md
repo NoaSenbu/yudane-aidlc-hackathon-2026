@@ -49,6 +49,7 @@ Construction フェーズ（Unit ごとの実装）は書類審査後に着手�
 
 - **Security Baseline**: SECURITY-01〜15 すべて適用（要件書 §6.4 参照）
 - **Property-Based Testing**: fast-check（TypeScript / React Native）+ Hypothesis（Python 3.13 Lambda）で PBT-01〜10 を全面適用（要件書 §6.5 参照）
+- **TDD 開発スタイル**: 全 Unit で Red → Green → Refactor → PBT 補強のサイクルを必須（[AGENTS.md §12](./AGENTS.md#12-tdd-開発スタイル全-unit-必須)）。Mobile = Outside-In / Backend = クラシック / CDK = Snapshot TDD のハイブリッド方式
 
 詳細は `.kiro/aws-aidlc-rule-details/extensions/` 配下を参照。
 

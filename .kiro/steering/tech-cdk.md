@@ -115,6 +115,58 @@ api.root.addResource('debate-sessions').addMethod(
 
 Snapshot の破壊的変更は PR description で必ず差分を説明。
 
+### 6.1 Snapshot TDD（CDK 必須）
+
+[AGENTS.md §12](./AGENTS.md#12-tdd-開発スタイル全-unit-必須) の TDD 開発スタイルを CDK 側で具体化:
+
+| Phase | やること | ツール |
+|---|---|---|
+| **Red** | `Template.fromStack(stack)` で期待プロパティを `hasResourceProperties` で書く（最小 1 リソース） | `aws-cdk-lib/assertions` |
+| **Green** | Stack に該当リソースを追加して assertion 通過 | `lib/*-stack.ts` |
+| **Refactor** | KMS / TTL / IAM ポリシー等の細目を整理、テストは触らない | エディタ |
+| **Snapshot 固定** | cdk-nag を pass する状態で `toMatchSnapshot()` で全体を fixture 化 | `jest` |
+
+#### Snapshot TDD の流れ（CDK 例）
+
+```typescript
+// Step 1 (Red): infra/test/platform-stack.test.ts
+import { Template } from 'aws-cdk-lib/assertions';
+import * as cdk from 'aws-cdk-lib';
+import { PlatformStack } from '../lib/platform-stack';
+
+describe('PlatformStack', () => {
+  test('DebateRateLimits テーブルを含む', () => {
+    const app = new cdk.App();
+    const stack = new PlatformStack(app, 'TestStack', { envName: 'dev' });
+    const template = Template.fromStack(stack);
+    template.hasResourceProperties('AWS::DynamoDB::Table', {
+      TableName: 'yudane-dev-debate-rate-limits',
+      BillingMode: 'PAY_PER_REQUEST',
+    });
+  });
+
+  test('IdempotencyKeys テーブルを含む', () => {
+    // 同様
+  });
+
+  test('cdk synth は cdk-nag をパスする', () => {
+    // AwsSolutionsChecks rule pack を満たすことを検証
+  });
+});
+
+// Step 2 (Green): infra/lib/platform-stack.ts に DynamoDB Table を追加
+// Step 3 (Refactor): KMS / TTL / pointInTimeRecoverySpecification / DeletionProtection の細目を追加
+// Step 4 (Snapshot 固定): cdk-nag pass 後に Template.fromStack(stack).toJSON() で snapshot fixture 化
+```
+
+#### TDD 例外（テストファースト緩和、AGENTS.md §12.3）
+
+- `cdk.context.json` の宣言的設定
+- `bin/yudane.ts` のエントリポイント（Stack インスタンス化のみ）
+- SSM Parameter Store の値登録のみの操作
+
+例外時は PR description に「TDD 例外: ◯◯」と明記。
+
 ## 7. セキュリティ（SECURITY Extension 抜粋）
 
 - IAM ポリシーは最小権限の原則。`*` resource / action の付与は理由コメント必須

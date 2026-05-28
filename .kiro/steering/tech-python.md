@@ -119,6 +119,46 @@ def start_debate(user_id: str, product_asin: str, context: DebateContext) -> Asy
 - PBT: PBT-01〜10 各カテゴリに対し 1 つ以上のプロパティ実装
 - Contract Test: Schemathesis で全エンドポイントの契約違反レスポンス 0
 
+### 10.1 TDD サイクル（クラシック / Detroit、Backend Lambda 必須）
+
+[AGENTS.md §12](./AGENTS.md#12-tdd-開発スタイル全-unit-必須) の TDD 開発スタイルを Python 側で具体化:
+
+| Phase | やること | ツール |
+|---|---|---|
+| **Red** | 失敗する `pytest` example test を 1 ケース書く | `pytest` `assert` |
+| **Green** | テストが通る最小コードを書く（仮実装可、戻り値直書きでも OK） | 実装ファイル |
+| **Refactor** | 重複排除・命名整理・抽象化、テストは触らない | エディタ |
+| **PBT 補強** | `hypothesis` の `@given(...)` を同テストファイルに追加 | `hypothesis` |
+
+#### クラシック TDD の流れ（Backend Lambda 例）
+
+```
+Test 1 (Red): 純粋関数 1 つ → 戻り値の最小ケース
+Test 2 (Red): エラーケース → ValidationError 期待
+Test 3 (Red): エッジケース → 境界値 / null / 空配列
+   ↓ 各 Red を 1 つずつ Green に倒す
+   ↓ Mock 最小限、内部から組み立てる
+最後に Hypothesis で @given(strategy) を property 化
+```
+
+#### TDD 例外（テストファースト緩和、AGENTS.md §12.3）
+
+- Pydantic v2 の `BaseModel` 純粋宣言（フィールドのみ、`@field_validator` なし）
+- 単純な定数定義 / 設定（`SAFEGUARD_LIMITS` 等）
+- Lambda Powertools の boilerplate import 部分
+- 自動生成された型ファイル（`backend/src/common/models/api.py`）
+
+例外時は PR description に「TDD 例外: ◯◯」と明記。
+
+#### PBT との統合（PBT-01〜10 と TDD の関係）
+
+| PBT カテゴリ | TDD サイクル中の位置 |
+|---|---|
+| PBT-01 Round-trip | Refactor 後の補強で `@given` を追加 |
+| PBT-02 Invariant | Green が通った直後に property を追加 |
+| PBT-06 Stateful | RuleBasedStateMachine を Refactor 後に追加 |
+| PBT-08 Shrinking | 失敗時に `--hypothesis-seed` でリプレイ可能に
+
 ## 11. セキュリティ（SECURITY Extension 抜粋）
 
 - ユーザー入力は **Pydantic v2 で検証必須**。無検証の `json.loads(request_body)` 禁止

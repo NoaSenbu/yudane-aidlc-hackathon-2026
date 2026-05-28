@@ -86,6 +86,39 @@ Unit-1 で必要なテスト:
 
 詳細なテストレイヤーとカバレッジは [tech.md §6 品質ゲート](../../../../.kiro/steering/tech.md) を参照。
 
+### TDD 開発スタイル（全コンポーネント必須、AGENTS.md §12 反映）
+
+本 Unit のすべてのコンポーネント実装は **Red → Green → Refactor → PBT 補強** の 4 フェーズサイクルで進める（[AGENTS.md §12](../../../../.kiro/steering/AGENTS.md#12-tdd-開発スタイル全-unit-必須)）。
+
+| コンポーネント | 主スタイル | TDD サイクルの具体例 |
+|---|---|---|
+| M-01 AppShell | Outside-In TDD | Red: NavigationContainer の起動 expect → Green: 最小 Provider 配置 → Refactor: 6 タブ追加 → PBT: Deep Link 不正入力の property |
+| M-12 ApiClient | Outside-In TDD | Red: GET の自動リトライ test → Green: fetch ラッパ → Refactor: 指数バックオフ → PBT: 5xx 連続時のリトライ回数 property（PBT-04 Idempotency 系）|
+| M-13 Telemetry | Outside-In TDD | Red: track 1 件で flush しない test → Green: バッファ実装 → Refactor: 5 件 flush → PBT: AsyncStorage 永続キュー round-trip（PBT-01）|
+| B-12 AuditLogger | クラシック TDD | Red: log 関数の JSON 形式 test → Green: print 1 行 → Refactor: 構造化 + PII マスキング → PBT: PII フィールド検出（PBT-07 Generator quality）|
+| B-14 TelemetryIngestionService | クラシック TDD | Red: Idempotency Key 重複検知 test → Green: redis.set NX → Refactor: Firehose 投入 → PBT: 同 batch_id 重複時の整合性（PBT-02 Invariant）|
+| S-01 AsinExtractor | クラシック TDD | Red: 正常 ASIN 抽出 test → Green: 正規表現 1 つ → Refactor: 大文字統一 + 例外パターン → PBT: 任意 URL での出力長さ property（PBT-07）|
+| S-03 SafeguardPolicy | クラシック TDD | Red: 月間上限 evaluate test → Green: if 文 1 つ → Refactor: warn / block の閾値 → PBT: 任意金額での decision の整合性（PBT-02）|
+| Platform Stack (CDK) | Snapshot TDD | Red: `template.hasResourceProperties` で DebateRateLimits 期待 → Green: Stack に追加 → Refactor: KMS / TTL / DeletionProtection → Snapshot 固定 |
+
+#### Outside-In の流れ（M-12 ApiClient 例）
+
+```
+Test 1 (Red): apiFetch('/v1/users/abc') が 200 を返す → Green: fetch ラッパ
+Test 2 (Red): 5xx で 3 回リトライする → Green: try-catch + setTimeout
+Test 3 (Red): 4xx は即 throw → Green: HTTP status による分岐
+Test 4 (Red): POST + Idempotency-Key でヘッダ付与 → Green: Headers セット
+Test 5 (PBT): fc.assert(任意の path で X-Correlation-Id が ULID 形式)
+```
+
+#### TDD 例外（本 Unit）
+
+- M-01 AppShell の `mockup/index.html` からの初期 RN 移植（機械的変換）
+- TelemetryEvent 等の TypeScript / Python 型定義の純粋宣言部分
+- `infra/lib/platform-stack.ts` の SSM Parameter 登録のみの操作
+
+例外採用時は PR description に「TDD 例外: ◯◯」と明記する。
+
 ## Correctness Properties
 
 本 Unit が満たすべき不変条件:

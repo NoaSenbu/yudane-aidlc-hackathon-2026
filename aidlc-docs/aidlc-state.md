@@ -92,6 +92,8 @@
 
 ### Member 別の開始可能タスク（Stage 1 = いま push 後、Mock を別途利用）
 
+> **🧪 TDD ルール（[AGENTS.md §12](../.kiro/steering/AGENTS.md#12-tdd-開発スタイル全-unit-必須) 反映）**: 以下のタスクはすべて **Red → Green → Refactor → PBT 補強** の 4 フェーズで進める。Mobile = Outside-In / Backend = クラシック / CDK = Snapshot TDD。例外は §12.3 のリスト参照（Mockup HTML 移植 / 純粋型定義 / 設定ファイル等）。AI Code Generation はテストファイルを必ず先に生成（§12.4）。
+
 #### Member A（Unit-1 Platform → Unit-2 Auth & Profile）
 
 **いま並行で進める**:

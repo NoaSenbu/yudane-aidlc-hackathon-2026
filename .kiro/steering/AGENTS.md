@@ -179,3 +179,129 @@ Unit ごとの Definition of Done・MVP/決勝 Readiness チェックリスト�
 - ブロッカー検出時は **Issue に `blocker` ラベル + Slack `#yudane-emergency` 即時投稿**
 - 24 時間以内に解消しない場合は週次同期で議題化、Member A が代替案を提示
 - 同じアプローチで 2 回以上失敗した場合は方針見直し（[§4 デバッグ・問題解決](#4-デバッグ問題解決) に従う）
+
+---
+
+## 12. TDD 開発スタイル（全 Unit 必須）
+
+YUDANE は **TDD（Test-Driven Development）** で開発する。Mobile は Outside-In、Backend はクラシック、CDK は Snapshot 先行のハイブリッド方式（論点 1 = C 確定、2026-05-28）。
+
+### 12.1 基本サイクル（Red → Green → Refactor → PBT 補強）
+
+1. **Red**: 失敗する example test を 1 つ書く（最小単位、1 ケース）
+2. **Green**: テストが通る最小コードを書く（仮実装で OK、関数 1 行でも可）
+3. **Refactor**: 重複排除・命名整理・抽象化（テストは触らない）
+4. **PBT 補強**: 該当 PBT カテゴリがあれば Property-Based Test を `@given` / `fc.assert` で追加（論点 2 = A 統合、PBT は TDD サイクルの最後で補強）
+
+### 12.2 適用範囲（領域別の主スタイル）
+
+| 領域 | 主スタイル | TDD 必須範囲 |
+|---|---|---|
+| Mobile features (`mobile/src/features/*`) | Outside-In TDD | UI コンポーネント / hooks / service layer。API Mock 駆動で外側から書き下ろす |
+| Backend Lambda (`backend/src/*`) | クラシック TDD（Detroit / Chicago） | ビジネスロジック / DTO 検証 / エラーハンドリング。Mock 最小限、内部から組み立てる |
+| Shared library (`shared/*`) | クラシック TDD | 全関数（S-01 AsinExtractor / S-03 SafeguardPolicy 等） |
+| CDK Infra (`infra/*`) | Snapshot TDD | Stack 単位、`cdk synth` の snapshot を先に書き Green を作る |
+
+### 12.3 TDD 例外（テストファースト強制を緩和、論点 5）
+
+以下のケースは Green を先に書いてもよい（テストは並走 or 後追いで OK）:
+
+- **Mockup HTML → RN への機械的移植**（`mockup/index.html` の DOM を RN コンポーネントに置換するだけ、ロジック変更なし）
+- **型定義 / DTO の宣言のみ**（Pydantic v2 / TypeScript `type` の純粋な構造定義、振る舞いなし）
+- **設定ファイル**（`cdk.context.json` / `package.json` / `pyproject.toml` 等の宣言的設定）
+- **OpenAPI YAML スケルトン**（契約定義そのもので、Schemathesis が後から検証）
+
+例外を選択した場合は PR description で「TDD 例外: ◯◯のため」と明示する。
+
+### 12.4 AI Code Generation での TDD（論点 3 の C 確定）
+
+AI が Code Generation で実装する場合、**必ず以下の順序で生成する**:
+
+1. **テストファイル**（Red 状態の `expect` / `assert`、最小 1 ケース）
+2. **実装ファイル**（Green 状態の最小コード）
+3. **PBT property**（該当する PBT カテゴリがあれば `@given` / `fc.assert` を同テストファイルに追加）
+4. **Refactor**（必要なら）
+
+各ファイル間で diagnostics エラーゼロを確認してから次に進む。AI が一気に実装ファイルを生成して後付けでテストを書く運用は禁止。
+
+### 12.5 PR レベルのルール（論点 3 の B 確定）
+
+- 同 PR 内にテストが含まれていれば、人間の作業順序は問わない（テスト先 / 実装先 / 並走 すべて OK）
+- ただし **テストなしの実装 PR は merge 不可**（既存品質ゲート §9 と整合）
+- カバレッジ目標 Line 80%+ / Branch 70%+ は維持（Unit Test に PBT を加算した合算値で計測）
+- TDD 例外（§12.3）に該当するファイルは coverage の対象外宣言が可能（`coveragerc` / `vitest.config` で除外）
+
+### 12.6 TDD と既存品質ゲートの整合
+
+- §9 品質ゲートとの関係: TDD は **品質ゲートを満たすための開発手法**。両者は競合せず、TDD で書いたテストが §9 の green 条件を満たせば PR マージ可
+- §6.5 PBT Extension との関係: TDD サイクルの 4 番目「PBT 補強」で PBT-01〜10 を満たす（論点 2 = A 統合）
+- §6.4 SECURITY Extension との関係: テストでも認証情報・PII を直接記載しない（モック値も `secret-test-value` 等の伏字推奨）
+
+### 12.7 適用例
+
+#### TypeScript（Outside-In TDD、Mobile）
+
+```typescript
+// Step 1 (Red): mobile/src/features/debate/__tests__/use-debate-session.test.ts
+import { renderHook, waitFor } from '@testing-library/react-native';
+import { useDebateSession } from '../use-debate-session';
+
+test('論破セッション開始で初回トークンが届く', async () => {
+  const { result } = renderHook(() => useDebateSession({ asin: 'B01ABC' }));
+  await result.current.start();
+  await waitFor(() => expect(result.current.tokens).toContain('時給換算'));
+});
+
+// Step 2 (Green): mobile/src/features/debate/use-debate-session.ts
+export function useDebateSession({ asin }) {
+  const [tokens, setTokens] = useState<string[]>([]);
+  const start = async () => { setTokens(['時給換算 11 分']); };
+  return { tokens, start };
+}
+
+// Step 3 (Refactor): SSE 接続実装に置換、Mock サーバーで動かす
+// Step 4 (PBT): fast-check で「ASIN 形式の任意入力で 0 件以上のトークンが返る」を property 化
+```
+
+#### Python（クラシック TDD、Backend Lambda）
+
+```python
+# Step 1 (Red): backend/tests/debate/test_estimate_stress_level.py
+from debate.handlers import estimate_stress_level
+
+def test_low_stress_returns_low():
+    signals = StressSignalsDto(meeting_density=2, late_hours=0, midnight_usage=0)
+    assert estimate_stress_level("user-1", signals) == "low"
+
+# Step 2 (Green): backend/src/debate/handlers.py
+def estimate_stress_level(user_id, signals):
+    return "low"
+
+# Step 3 (Refactor): 実際の閾値判定ロジックに置換
+# Step 4 (PBT): Hypothesis で @given(stress_signals_strategy()) を property 化
+@given(stress_signals_strategy())
+def test_estimate_stress_level_always_returns_valid_label(signals):
+    result = estimate_stress_level("user-1", signals)
+    assert result in {"low", "mid", "high"}
+```
+
+#### CDK（Snapshot TDD、Infra）
+
+```typescript
+// Step 1 (Red): infra/test/platform-stack.test.ts
+import { Template } from 'aws-cdk-lib/assertions';
+
+test('PlatformStack は DebateRateLimits テーブルを含む', () => {
+  const app = new cdk.App();
+  const stack = new PlatformStack(app, 'TestStack', { envName: 'dev' });
+  const template = Template.fromStack(stack);
+  template.hasResourceProperties('AWS::DynamoDB::Table', {
+    TableName: 'yudane-dev-debate-rate-limits',
+    BillingMode: 'PAY_PER_REQUEST',
+  });
+});
+
+// Step 2 (Green): infra/lib/platform-stack.ts に DebateRateLimits を追加
+// Step 3 (Refactor): KMS / TTL / PITR の細目を追加
+// Step 4 (Snapshot): cdk-nag 検査を pass する状態でスナップショット fixture 化
+```
