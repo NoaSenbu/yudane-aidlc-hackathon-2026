@@ -40,14 +40,15 @@
 ### コンポーネント構成
 
 - **Entry point**: M-04 DebateScreen ↔ `POST /debate-sessions`（B-02）
-- **Core**: B-02 DebateLlmService（Bedrock ストリーミング）
+- **Core**: B-02 DebateLlmService（Bedrock ストリーミング、**VPC 外配置 + SnapStart 適用** / [Unit-1 Functional Design Q5 確定](../../construction/unit-1-platform/functional-design/functional-design-plan.md#q5-vpc-構成lambda-vpc-配置の有無)）
 - **Context 供給**:
-  - 嗜好ベクトル: B-03 ReelRecommendationService
+  - 嗜好ベクトル: B-03 ReelRecommendationService、ただし B-02 は **DynamoDB `PreferenceVectors` テーブルから直接 GetItem**（Q5 = B 確定で Redis 介在を排除）
   - 予定カテゴリ: B-07 CalendarPredictionService
-  - 商品メタ: B-11 CreatorsApiClient
+  - 商品メタ: B-11 CreatorsApiClient（Redis 6h キャッシュ、VPC 内）
   - **ストレスレベル推定**: B-02 DebateLlmService 内の `estimate_stress_level()` が B-12 AuditLogger の直近 7 日ログ（会議密度・残業時刻分布・深夜帯利用回数）とカレンダー連続予定数から算出（FR-DEBATE-09 / M-2）
-- **Safeguard**: B-09 SafeguardRulesEngine（前段 middleware）
-- **Persistence**: DynamoDB `DebateSessions` テーブル
+- **論破レート制限**: DynamoDB `DebateRateLimits` テーブルの `UpdateItem ADD` で原子的カウンタ（Q5 = B 確定で Redis 代替、[Unit-1 data-model.md §3.1](../../construction/unit-1-platform/functional-design/data-model.md)）
+- **Safeguard**: B-09 SafeguardRulesEngine（前段 Lambda Authorizer に統合、Q2 = C ハイブリッド）
+- **Persistence**: DynamoDB `DebateSessions` / `DebateMessages` テーブル
 - **Downstream**: 論破成功で B-13 AmazonTransitionRecorder → B-10 AssociatesLinkGenerator
 
 ### オーケストレーションパターン
@@ -232,20 +233,30 @@ Amazon Transition (B-13)
 
 ### コンポーネント構成
 
-- **Core**: B-09 SafeguardRulesEngine（全 API Lambda の前段 authorizer）
-- **Policy**: S-03 SafeguardPolicy（モバイル側でも同じ判定を走らせる UX 整合）
-- **Persistence**: DynamoDB `SafeguardStates`（ユーザーごとの使用状況）
+- **Core**: B-09 SafeguardRulesEngine（**Unit-1 Q5 セルフレビュー後修正（2026-05-27）で責務縮小**: 管理 UI / バッチ処理 / 監査ログ専用。API Gateway 前段の判定処理は Lambda Authorizer に統合される）
+- **Lambda Authorizer**: S-03 SafeguardPolicy を直接 import + DynamoDB `SafeguardStates` / `DebateRateLimits` を直接参照（Redis 介在ゼロ、論破ストリーミング系全体を VPC 外で完結させるため。詳細は [Unit-1 functional-design.md §3.1 / §4.2](../../construction/unit-1-platform/functional-design/functional-design.md)）
+- **Policy**: S-03 SafeguardPolicy（モバイル側でも同じ判定を走らせる UX 整合 + Lambda Authorizer でも同一ライブラリを利用）
+- **Persistence**: DynamoDB `SafeguardStates`（ユーザーごとの使用状況）/ `DebateRateLimits`（連続拒否カウンタ）
 
 ### オーケストレーションパターン
 
 ```
 [任意の Amazon 遷移リクエスト / 論破開始リクエスト]
     ↓ API Gateway
-[Authorizer or middleware] → [B-09 SafeguardRulesEngine]
-    ↓ S-03 SafeguardPolicy.decideAllow
-    ↓ allow → 通常処理継続
-    ↓ block → 冷却モード画面 or セーフガード画面に誘導
-    ↓ warn → 確認ダイアログ（M-07 から手動解除のログ保持）
+[Lambda Authorizer]
+    ↓ S-03 SafeguardPolicy.evaluateMonthlyLimit() / evaluateCooldown()（直接 import）
+    ↓ DynamoDB SafeguardStates / DebateRateLimits（直接 GetItem）
+    ↓ allow → IAM Policy: Allow + context.safeguard=ok → 通常処理継続
+    ↓ block → IAM Policy: Deny → 403 ProblemDetails
+    ↓ warn → IAM Policy: Allow + context.safeguard=warn → 通常処理 + warning header
+
+[B-09 SafeguardRulesEngine Lambda（責務縮小後）]
+    ↓ 管理 UI から呼ばれる:
+    ↓   GET /v1/safeguard/status（状態取得）
+    ↓   PATCH /v1/safeguard/monthly-limit（上限変更）
+    ↓   POST /v1/safeguard/cooldown（手動 ON/OFF）
+    ↓ バッチジョブ:
+    ↓   月次集計 / 監査ログ書き出し
 ```
 
 ---

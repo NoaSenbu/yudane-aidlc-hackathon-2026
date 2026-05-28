@@ -153,6 +153,8 @@ def on_pre_token_generation(event: CognitoPreTokenGenerationEvent) -> dict: ...
 
 ### B-02 `DebateLlmService`
 
+> **Unit-1 Functional Design Q5 確定（2026-05-27）**: B-02 は VPC 外配置 + SnapStart 適用、Redis 依存を排除し DynamoDB の `DebateRateLimits` テーブルに置換。詳細は [Unit-1 data-model.md §3.1](../../construction/unit-1-platform/functional-design/data-model.md) と [Unit-1 functional-design-plan.md §Q5](../../construction/unit-1-platform/functional-design/functional-design-plan.md) を参照。
+
 ```python
 def start_debate(
     user_id: str,
@@ -163,6 +165,7 @@ def start_debate(
 # ctx = preference_vector + calendar_categories + time_of_day + recent_purchases
 #     + spending_depletion_rate + stress_level (low/mid/high、FR-DEBATE-09)
 # mid 以上では M-2 のストレス × ご褒美軸コピーを併走させる
+# 嗜好ベクトルは DynamoDB PreferenceVectors テーブルから GetItem（Redis 不使用、Q5 確定）
 
 def continue_debate(
     session_id: str,
@@ -177,6 +180,25 @@ def estimate_stress_level(
 ) -> Literal["low", "mid", "high"]: ...
 # StressSignalsDto = 直近 7 日の会議密度 / 残業時刻分布 / 深夜帯利用回数 / カレンダー連続予定数
 # FR-DEBATE-09 / M-2 のドーパミン依存回路形成のため併走させるコンテキスト信号
+
+def increment_debate_attempt(
+    user_id: str,
+    hour_bucket: str,  # ISO8601 1 時間粒度（例 "2026-05-27T03:00Z"）
+) -> int: ...
+# DynamoDB DebateRateLimits テーブルへの原子的 UpdateItem ADD attempts :1
+# 戻り値: 当該 1 時間内の累積試行回数。3 を超えた場合は B-09 SafeguardRulesEngine で
+# クールダウン判定（FR-DEBATE-05、Q5 = B 確定で Redis INCR を DynamoDB ADD に置換）
+
+# === SnapStart 対応（Q5 確定）===
+# Lambda コールドスタート短縮のため SnapStart を有効化
+# CDK 側で `snapStart: ON_PUBLISHED_VERSIONS` + Alias 必須
+# UUID / random seed 等は @register_after_restore Hook で再生成
+from snapstart import register_after_restore
+@register_after_restore
+def restore_state() -> None:
+    # snapshot 共有による一意性問題を回避
+    global _request_id_seed
+    _request_id_seed = secrets.token_hex(16)
 ```
 
 ### B-03 `ReelRecommendationService`
