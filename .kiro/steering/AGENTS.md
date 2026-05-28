@@ -70,7 +70,8 @@ inclusion: always
 ## 6. ファイル・ドキュメント
 
 - ファイル操作はワークスペース内に限定し、外部パスへの書き込み・削除は行わない
-- アプリケーションコードはワークスペース直下、ドキュメントは `aidlc-docs/` 配下に配置し、両者を混在させない
+- アプリケーションコードはワークスペース直下、AI-DLC 公式成果物は `aidlc-docs/` 配下、チーム運用ドキュメント（Backlog 等）は `doc/` 配下に配置し、3 者を混在させない（詳細は [structure.md](./structure.md) §1）
+- 「後回し」「見送り」「将来検討」「留保された設計オプション」と判断した項目は、判断と同じ作業ターンで [doc/backlog.md](../../doc/backlog.md) に必須 4 項目（項目名 / 出典 / 後付けトリガー / 優先度）で追記する（詳細は [structure.md](./structure.md) §6.1）
 - 図・ダイアグラムは Markdown 内の Mermaid 記法を第一選択とし、補助として ASCII 図も可とする
 - Markdown はリンク切れ・文法エラー・レンダリング崩れがない状態で提出する
 
@@ -129,3 +130,52 @@ Unit ごとの Definition of Done・MVP/決勝 Readiness チェックリスト�
 1. 該当コンテキストを検出したら、実装・コマンド提示・助言の前に対象 steering を readFile する
 2. 既に同一セッション内で読み込んで内容を記憶している場合は再読込不要（ただし 10 ターン以上経過していれば再確認を推奨）
 3. 発動条件が曖昧な場合は、保守的に読み込んでから判断する
+
+---
+
+## 11. チーム同期プロトコル
+
+4 名 Member A〜D が並行で 8 Units を進めるため、進捗・ブロッカー・契約変更を毎日 / 毎週同期する。
+
+### 11.1 タスク管理ツール（I-5 = A 確定）
+
+- **採用**: GitHub Projects（kanban）
+- **理由**: 同 Repo で完結 / Issue と PR の自動連携 / 28 ストーリーをそのまま Issue 化できる / 4 名の追加コストゼロ
+- **Issue 化の粒度**: 28 ストーリー（[stories.md](../../aidlc-docs/inception/user-stories/stories.md)）を 1 Issue = 1 Story として Member A が Day 1 に一括登録
+- **ラベル**: `unit-1` 〜 `unit-8` / `priority-high` / `priority-medium` / `priority-low` / `extension-security` / `extension-pbt` / `blocker`
+- **Status**: `Todo` / `In Progress` / `Review` / `Done`
+- **採用しないもの**: Slack のみのステータス共有（Issue 化なし）/ Notion / Linear / Trello（[parallel-dev-prerequisites.md I-5](../../aidlc-docs/construction/plans/parallel-dev-prerequisites.md) の選択肢 B/C）
+
+### 11.2 同期タイミング
+
+| 種別 | タイミング | 形式 | 議題 |
+|---|---|---|---|
+| 日次同期（朝会） | 毎日 10:00（JST） | Slack スタンプ + GitHub Projects 更新 | 昨日の進捗 / 今日のタスク / ブロッカー |
+| 週次同期（振り返り） | 金曜 17:00 | 30 分ミーティング | 完了 Story / 未完 Story / マージ順序の調整 / 翌週の優先度 |
+| 緊急同期 | 随時 | Slack `#yudane-emergency` チャンネル | API 契約破壊的変更 / 本番障害 / セキュリティインシデント |
+
+### 11.3 コミュニケーションチャネル
+
+| チャネル | 用途 |
+|---|---|
+| Slack `#yudane-general` | 雑談 / お知らせ |
+| Slack `#yudane-dev` | 技術相談 / コードレビュー依頼 |
+| Slack `#yudane-emergency` | 緊急対応専用、1 時間以内応答 |
+| GitHub Issue | タスク管理 / 議論ログ |
+| GitHub PR | コードレビュー / マージ承認 |
+
+### 11.4 マイルストーン判定（書類審査 / MVP / 決勝）
+
+各マイルストーンの Readiness は週次同期で判定する。
+
+| マイルストーン | 期限 | 判定基準 |
+|---|---|---|
+| 書類審査 | 2026-05-10 | Inception 完了（達成済み） |
+| 予選 MVP | 2026-05-30 | E2E 3 シナリオ（E2E-01〜03）pass / 主要 Story 15 / 28 完了 |
+| 決勝 | 2026-06-26 | AWS prd デプロイ済 / 全 Story 28 完了 / cdk-nag green |
+
+### 11.5 ブロッカー対応
+
+- ブロッカー検出時は **Issue に `blocker` ラベル + Slack `#yudane-emergency` 即時投稿**
+- 24 時間以内に解消しない場合は週次同期で議題化、Member A が代替案を提示
+- 同じアプローチで 2 回以上失敗した場合は方針見直し（[§4 デバッグ・問題解決](#4-デバッグ問題解決) に従う）
