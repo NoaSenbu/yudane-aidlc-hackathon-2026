@@ -1,0 +1,24 @@
+{
+  "name": "@yudane/infra",
+  "version": "0.1.0",
+  "private": true,
+  "description": "YUDANE インフラ（AWS CDK v2 / TypeScript）",
+  "bin": {
+    "yudane-infra": "bin/app.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "synth": "cdk synth",
+    "diff": "cdk diff",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.170.0",
+    "cdk-nag": "^2.34.0",
+    "constructs": "^10.4.2"
+  },
+  "devDependencies": {
+    "aws-cdk": "^2.170.0",
+    "vitest": "^2.1.8"
+  }
+}

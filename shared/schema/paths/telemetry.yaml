@@ -1,0 +1,42 @@
+telemetry:
+  post:
+    operationId: ingestTelemetry
+    tags: [platform]
+    summary: クライアントテレメトリのバッチ取込
+    description: M-13 からのイベントを受け取り EMF + S3 へ投入（B-14、TEL-06）
+    parameters:
+      - $ref: '../components/parameters/common.yaml#/CorrelationId'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/common.yaml#/TelemetryEnvelope'
+          examples:
+            batch:
+              value:
+                schemaVersion: '1.0.0'
+                clientSentAt: '2026-05-30T00:00:00Z'
+                events:
+                  - name: screen_view
+                    occurredAt: '2026-05-30T00:00:00Z'
+                    props:
+                      screen: home
+    responses:
+      '202':
+        description: 受理（accepted / dropped 件数を返す）
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/common.yaml#/IngestResult'
+            examples:
+              result:
+                value:
+                  accepted: 1
+                  dropped: 0
+      '400':
+        $ref: '../components/responses/problem-details.yaml#/ProblemDetails'
+      '401':
+        $ref: '../components/responses/problem-details.yaml#/Unauthorized'
+      '429':
+        $ref: '../components/responses/problem-details.yaml#/RateLimited'

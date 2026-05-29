@@ -1,0 +1,14 @@
+{
+  "name": "@yudane/telemetry-contracts",
+  "version": "0.1.0",
+  "private": true,
+  "description": "S-04 TelemetryContracts — メトリクス命名 / イベントカタログ / PII 分類（default-deny）",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.8"
+  }
+}

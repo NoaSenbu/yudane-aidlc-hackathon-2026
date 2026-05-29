@@ -1,0 +1,19 @@
+{
+  "name": "@yudane/schema",
+  "version": "0.1.0",
+  "private": true,
+  "description": "YUDANE OpenAPI 3.1 契約（SSOT）と型生成（S-02 SchemaRegistry）",
+  "type": "module",
+  "main": "types/api.ts",
+  "scripts": {
+    "schema:bundle": "redocly bundle openapi.yaml -o dist/openapi.bundled.yaml",
+    "schema:gen:ts": "openapi-typescript openapi.yaml -o types/api.ts",
+    "schema:lint": "redocly lint openapi.yaml",
+    "mock:api": "prism mock openapi.yaml -p 4010"
+  },
+  "devDependencies": {
+    "@redocly/cli": "^1.27.0",
+    "@stoplight/prism-cli": "^5.12.0",
+    "openapi-typescript": "^7.4.4"
+  }
+}

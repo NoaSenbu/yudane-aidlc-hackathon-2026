@@ -1,0 +1,82 @@
+name: CI
+
+# 品質ゲート（AGENTS.md §9 / tech.md §6）。PR と develop/main への push で実行。
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  frontend:
+    name: Frontend / Shared (TypeScript)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Schema 型生成の差分チェック（生成ファイルが最新か）
+        run: |
+          npm run schema:gen:ts
+          git diff --exit-code shared/schema/types/api.ts
+      - name: Test（vitest + fast-check）
+        run: npm run test
+
+  backend:
+    name: Backend (Python 3.13)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: pipx install poetry
+      - run: poetry install
+      - name: Lint（ruff）
+        run: poetry run ruff check .
+      - name: Format check（ruff format）
+        run: poetry run ruff format --check .
+      - name: Type check（mypy --strict）
+        run: poetry run mypy --strict src
+      - name: Test（pytest + hypothesis）
+        run: poetry run pytest
+      - name: PII フィールド検査（FR-CAL-05 / NG-7）
+        run: bash ../scripts/check-pii-fields.sh
+
+  infra:
+    name: Infra (CDK)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - name: Synth（cdk-nag AwsSolutionsChecks 自動検査）
+        run: npx cdk synth -c env=dev
+      - name: Test（CDK assertions）
+        run: npm run test
+
+  sbom:
+    name: SBOM / SCA (SECURITY-10)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Dependency review
+        uses: actions/dependency-review-action@v4
+        if: github.event_name == 'pull_request'

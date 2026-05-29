@@ -1,0 +1,40 @@
+# Unit-7 Safeguard のパス骨格（Q1=refinedA）。詳細は Unit-7 が非破壊で追記。
+safeguard:
+  get:
+    operationId: getSafeguardSettings
+    tags: [safeguard]
+    summary: セーフガード設定取得（骨格、UC-08）
+    parameters:
+      - $ref: '../components/parameters/common.yaml#/CorrelationId'
+    responses:
+      '200':
+        description: セーフガード設定
+        content:
+          application/json:
+            schema:
+              type: object
+      '401':
+        $ref: '../components/responses/problem-details.yaml#/Unauthorized'
+  patch:
+    operationId: updateSafeguardSettings
+    tags: [safeguard]
+    summary: セーフガード設定更新（骨格、月間上限 / 冷却 / NG カテゴリ）
+    parameters:
+      - $ref: '../components/parameters/common.yaml#/CorrelationId'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+    responses:
+      '200':
+        description: 更新後設定
+        content:
+          application/json:
+            schema:
+              type: object
+      '401':
+        $ref: '../components/responses/problem-details.yaml#/Unauthorized'
+      '403':
+        $ref: '../components/responses/problem-details.yaml#/Forbidden'

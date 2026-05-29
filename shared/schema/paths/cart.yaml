@@ -1,0 +1,51 @@
+# Unit-5 Cart Intercept のパス骨格（Q1=refinedA）。詳細は Unit-5 が非破壊で追記。
+cartWatchItems:
+  post:
+    operationId: intakeCartItem
+    tags: [cart]
+    summary: Share 受信 → 監視登録（骨格、UC-03、FR-CART-01）
+    parameters:
+      - $ref: '../components/parameters/common.yaml#/CorrelationId'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              sharedUrl:
+                type: string
+                description: Amazon 共有 URL（S-01 で ASIN 抽出）
+    responses:
+      '201':
+        description: 監視登録完了
+      '400':
+        $ref: '../components/responses/problem-details.yaml#/ProblemDetails'
+      '401':
+        $ref: '../components/responses/problem-details.yaml#/Unauthorized'
+
+cartWatchItem:
+  get:
+    operationId: getCartWatchItem
+    tags: [cart]
+    summary: 監視アイテム取得（骨格）
+    parameters:
+      - name: itemId
+        in: path
+        required: true
+        schema:
+          type: string
+      - $ref: '../components/parameters/common.yaml#/CorrelationId'
+    responses:
+      '200':
+        description: 監視アイテム
+        content:
+          application/json:
+            schema:
+              type: object
+      '401':
+        $ref: '../components/responses/problem-details.yaml#/Unauthorized'
+      '403':
+        $ref: '../components/responses/problem-details.yaml#/Forbidden'
+      '404':
+        $ref: '../components/responses/problem-details.yaml#/ProblemDetails'

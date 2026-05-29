@@ -1,0 +1,103 @@
+# Unit-2 Auth & Profile のパス骨格（Q1=refinedA）。
+# URL + メソッド + 共通レスポンスのみ凍結。詳細フィールドは Unit-2 が非破壊で追記する。
+userProfile:
+  post:
+    operationId: createUserProfile
+    tags: [auth]
+    summary: オンボーディング情報登録（骨格）
+    description: 予算感・NG カテゴリ・負債フラグ等を登録（詳細は Unit-2 が追記、SVC-05）
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+      - $ref: '../components/parameters/common.yaml#/CorrelationId'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            description: オンボーディング情報（Unit-2 が定義）
+    responses:
+      '201':
+        description: 作成
+      '400':
+        $ref: '../components/responses/problem-details.yaml#/ProblemDetails'
+      '401':
+        $ref: '../components/responses/problem-details.yaml#/Unauthorized'
+      '403':
+        $ref: '../components/responses/problem-details.yaml#/Forbidden'
+
+user:
+  get:
+    operationId: getUser
+    tags: [auth]
+    summary: ユーザー取得（骨格）
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+      - $ref: '../components/parameters/common.yaml#/CorrelationId'
+    responses:
+      '200':
+        description: ユーザー
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/common.yaml#/User'
+      '401':
+        $ref: '../components/responses/problem-details.yaml#/Unauthorized'
+      '403':
+        $ref: '../components/responses/problem-details.yaml#/Forbidden'
+      '404':
+        $ref: '../components/responses/problem-details.yaml#/ProblemDetails'
+  patch:
+    operationId: updateUser
+    tags: [auth]
+    summary: ユーザー更新（骨格）
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+      - $ref: '../components/parameters/common.yaml#/CorrelationId'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+    responses:
+      '200':
+        description: 更新後ユーザー
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/common.yaml#/User'
+      '401':
+        $ref: '../components/responses/problem-details.yaml#/Unauthorized'
+      '403':
+        $ref: '../components/responses/problem-details.yaml#/Forbidden'
+  delete:
+    operationId: deleteUser
+    tags: [auth]
+    summary: アカウント削除（骨格、FR-AUTH-06）
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+      - $ref: '../components/parameters/common.yaml#/CorrelationId'
+    responses:
+      '204':
+        description: 削除完了
+      '401':
+        $ref: '../components/responses/problem-details.yaml#/Unauthorized'
+      '403':
+        $ref: '../components/responses/problem-details.yaml#/Forbidden'

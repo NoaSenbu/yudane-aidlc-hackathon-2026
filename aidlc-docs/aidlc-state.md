@@ -8,8 +8,8 @@
 - **Submission Deadline**: 2026-05-10
 - **Project Type**: Greenfield
 - **Start Date**: 2026-05-07T00:00:00Z
-- **Current Phase**: 🔵 INCEPTION PHASE
-- **Current Stage**: 🎉 INCEPTION PHASE 完了→ Construction Phase 着手可能（予選 5/30 に向けて）
+- **Current Phase**: 🟢 CONSTRUCTION PHASE
+- **Current Stage**: Unit-1 Platform / Code Generation Part 2 完了 — 承認待ち
 - **User Language**: Japanese
 
 ## Workspace State
@@ -41,7 +41,13 @@
   - AGENTS.md: Git 運用 / 品質ゲート / MVP・決勝 Readiness / 同期プロトコル
   - structure.md: 識別子命名規則 / コード編集ルール
   - tech.md: Lint・型・フォーマッタ / API 契約ガバナンス / テストレイヤー
-- [ ] Per-Unit Loop (pending)
+- [ ] Per-Unit Loop（進行中: Unit-1 Platform）
+  - **Unit-1 Platform**
+    - [x] Functional Design（承認済み、2026-05-29）
+    - [x] NFR Requirements（承認済み、2026-05-29）
+    - [x] NFR Design（承認済み、2026-05-29）
+    - [x] Infrastructure Design（承認済み、2026-05-29）
+    - [ ] Code Generation（進行中 — Part 1 計画）
 - [ ] Functional Design (EXECUTE, per-unit)
 - [ ] NFR Requirements (EXECUTE, per-unit)
 - [ ] NFR Design (EXECUTE, per-unit)

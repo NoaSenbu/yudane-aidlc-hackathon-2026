@@ -1,0 +1,36 @@
+{
+  "name": "yudane",
+  "version": "0.1.0",
+  "private": true,
+  "description": "YUDANE（委ね） — 買わない理由を論破する AI エージェント・コマース。モノレポルート",
+  "license": "SEE LICENSE IN LICENSE",
+  "workspaces": [
+    "shared/schema",
+    "shared/asin-extractor",
+    "shared/safeguard-policy",
+    "shared/telemetry-contracts",
+    "mobile",
+    "infra"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit",
+    "schema:gen:ts": "npm run schema:gen:ts --workspace shared/schema",
+    "test": "npm run test --workspaces --if-present"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.18.0",
+    "@typescript-eslint/parser": "^8.18.0",
+    "eslint": "^9.17.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.2"
+  }
+}
