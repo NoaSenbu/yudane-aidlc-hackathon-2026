@@ -80,6 +80,69 @@
 
 ---
 
+### B-501. B-06 NotificationDispatcher の通知コピー LLM 動的生成
+
+| 項目 | 内容 |
+|---|---|
+| **項目名** | 追撃通知（30m / 6h / 24h）のコピーを Bedrock Claude Haiku 4.5 で動的生成し、商品メタ + ユーザー嗜好 + ステップ情報からパーソナライズする |
+| **出典** | [Unit-5 Cart Intercept Functional Design Plan §Q3](../aidlc-docs/construction/unit-5-cart-intercept/functional-design/functional-design-plan.md) 回答 = A（MVP テンプレート → 決勝 LLM） |
+| **当初推奨案（採用済み）** | A（MVP）：30m / 6h / 24h の各ステップに 5〜10 パターンの「友達系トーン」テンプレートを用意し、商品名・価格・ユーザー名を埋め込む |
+| **見送り理由** | 予選 5/30 までの工数制約で LLM 通知コピー生成 + NG-6（脅迫禁止）モデレーションパイプラインは +2d。テンプレート 10 パターンで予選デモのバリエーションは確保可能 |
+| **暫定運用** | `backend/src/cart/notification_templates.py` に 30 パターン（10 × 3 ステップ）を静的定義。商品名・価格・残時間をプレースホルダで差し込む |
+| **後付け導入トリガー** | 以下のいずれかで導入検討<br>1. 決勝 6/26 に向けて M-2（ストレス × ご褒美軸の個別最適化）強化が必要となった場合<br>2. MVP デモ後のフィードバックで「通知が定型的」「もっとパーソナル感が欲しい」が過半<br>3. ストーリー US-03-02 AC-2 の「軽い論破 / 記憶想起 / 最終通告のトーン使い分け」がテンプレートでは不十分と判定された場合 |
+| **優先度** | **中**（決勝向けの差別化要素、M-2 の核心） |
+| **概算工数** | Bedrock Haiku 4.5 呼出 + プロンプトテンプレート + NG-6 出力モデレーション + Hypothesis PBT = **2d**（Member D / Member B 後半） |
+| **想定追加コスト** | Haiku 4.5 入力 1K tokens × 通知 1 件 ≒ $0.0001、月 1 万通知で $1 程度 |
+
+---
+
+### B-502. クリップボード検知（US-03-03）の MVP 実装
+
+| 項目 | 内容 |
+|---|---|
+| **項目名** | フォアグラウンド復帰時にクリップボードを読み取り Amazon URL があればサジェストする機能（US-03-03） |
+| **出典** | [Unit-5 Cart Intercept Functional Design Plan §Q6](../aidlc-docs/construction/unit-5-cart-intercept/functional-design/functional-design-plan.md) 回答 = B（MVP 見送り、決勝で実装） |
+| **当初推奨案（採用済み）** | B：MVP では Share Extension（US-03-01）が UC-03 の主導線として十分機能するため見送り、決勝で UIPasteControl（iOS）対応含めて実装 |
+| **見送り理由** | (1) US-03-01 Share Extension が UC-03 の核心動作であり予選デモで十分なインパクト、(2) iOS 16+ の paste 許可ダイアログが毎回出る UX 問題、(3) UIPasteControl（ボタン型）の Expo / RN 対応状況が不明確で要調査、(4) 工数 -1d で他のストーリーに集中 |
+| **暫定運用** | クリップボード検知機能は実装しない。Share Extension のみで UC-03 を完結。US-03-03 は「決勝で実装予定」として stories.md にもマーキングは不要（既に「サブ機能」位置づけ） |
+| **後付け導入トリガー** | 以下のいずれかで実装<br>1. 決勝 6/26 に向けて UC-03 の進化アピールが必要となった場合<br>2. UIPasteControl の Expo SDK 52+ 公式対応が確認できた場合<br>3. ユーザーテストで「Share Extension の操作が面倒」フィードバックが過半<br>4. 里奈ペルソナ（B）の「Share Extension すら面倒」体験を実装で示したい場合 |
+| **優先度** | **低**（決勝向けの差別化要素、Share Extension で代替可能） |
+| **概算工数** | iOS UIPasteControl 対応調査 + Native Module 拡張 + Android 通常 Clipboard API + サジェスト UI + 24h 拒否記録 = **1.5〜2d**（Member D） |
+
+---
+
+### B-503. ダミーカタログ（`backend/src/cart/_dummy_catalog.py`）の削除
+
+| 項目 | 内容 |
+|---|---|
+| **項目名** | Amazon Approved Mobile Application 申請承認後のダミーカタログ削除と Creators API 本接続への完全移行 |
+| **出典** | [Unit-5 Cart Intercept Functional Design §3.4 ダミーカタログ仕様](../aidlc-docs/construction/unit-5-cart-intercept/functional-design/functional-design.md) / 要件書 §8 A-10 |
+| **当初推奨案（採用済み）** | Approved 承認前は `backend/src/cart/_dummy_catalog.py` で 10 商品の固定データを返却、`USE_DUMMY_CATALOG` 環境変数で B-11 CreatorsApiClient と切替 |
+| **見送り理由** | Amazon Approved Mobile Application 申請が決勝（2026-06-26）前に必須だが、申請承認には数週間〜1 ヶ月を要する見込み。書類審査・予選（5/30）期間中はダミーで代替する |
+| **暫定運用** | dev 環境 / prd 環境とも 6/15 までは `USE_DUMMY_CATALOG=true`、Creators API 本接続は 6/15 以降に有効化判定 |
+| **後付け導入トリガー** | 以下のいずれかで削除実施<br>1. Amazon Approved Mobile Application 承認通知（要件書 §8 A-10 申請完了後）<br>2. Creators API の本番接続テストが green（IT-08 の dummy 版 → 実 API 版で同等動作）<br>3. 決勝後のプロダクト化判断 |
+| **優先度** | **中**（Amazon Approved 承認次第、決勝デモはダミーで実行可能） |
+| **概算工数** | `_dummy_catalog.py` 削除 + B-11 CreatorsApiClient の本実装テスト + USE_DUMMY_CATALOG 環境変数フラグ削除 + ダミー商品 4 件の S3 SVG ホスティング解除 = **0.5d**（Member D） |
+| **削除と同時に実施する確認事項** | (1) すべての E2E テスト（E2E-03 / E2E-03b）が実 Creators API 経由で pass、(2) Cache hit 率が 95% 以上で安定、(3) Creators API レート制限超過アラームが新規セットされている |
+
+---
+
+### B-504. APNs Production Certificate 取得（Apple Developer Program 登録）
+
+| 項目 | 内容 |
+|---|---|
+| **項目名** | prd 環境の Push 通知配信用 APNs Production Certificate 取得 + Apple Developer Program 登録（$99/年） |
+| **出典** | [Unit-5 Cart Intercept Infrastructure Design Plan §3 Q5 v3 改訂](../aidlc-docs/construction/plans/unit-5-cart-intercept-infrastructure-design-plan.md) / [requirements.md §6.1 リージョン](../aidlc-docs/inception/requirements/requirements.md) |
+| **当初推奨案（採用済み）** | dev = APNs Sandbox cert（Apple Developer 不要）+ prd = APNs Production cert（Apple Developer Program 必須）、SSM パス `/yudane/{env}/cart/eum-application-id` で別 Application 管理 |
+| **見送り理由** | Apple Developer Program は年間契約 $99 USD で経費承認必須、書類審査（2026-05-10）/ 予選（2026-05-30）期間中は dev cert のみで Sandbox 配信を実機検証する。prd cert は決勝デモ（2026-06-26）の直前に整備 |
+| **暫定運用** | 予選 MVP は dev 環境 + Sandbox cert + 個人開発者の Apple ID で実機検証、prd デモは Apple Developer Program 登録完了後に APNs Production cert を取得し End User Messaging に登録 |
+| **後付け導入トリガー** | 以下のすべてが揃った時点で実施<br>1. Member A が経費承認（$99 × 1 年）<br>2. Member D が Apple Developer Program 登録 → Keys タブで `.p8` Authentication Key 生成<br>3. End User Messaging Push の APNs Channel に Production Cert を登録（CDK で `CfnAPNSChannel` 設定）<br>4. 決勝デモ 2 週間前（2026-06-12）までに完了 |
+| **優先度** | **高**（決勝デモのコア体験 = Push 通知配信に必須、登録遅延でブロッカー化リスク） |
+| **概算工数** | Apple Developer Program 登録（オンライン申請、Apple 審査 24-48h）+ `.p8` Key 生成 + CDK `CfnAPNSChannel` 統合 + APNs Production への送信動作確認 = **0.5d**（Member D） |
+| **ブロッカー判定** | 2026-06-12 までに登録未完了の場合は Member A が緊急エスカレーション（[AGENTS.md §11.5](../.kiro/steering/AGENTS.md)）、決勝デモシナリオから Push 通知パートを縮退（dev cert で Sandbox 配信のみ表示する代替プラン） |
+
+---
+
 ## 3. Nice to have（決定不要、将来検討）
 
 > [parallel-dev-prerequisites.md §3](../aidlc-docs/construction/plans/parallel-dev-prerequisites.md) で「決定不要、参考」と判断した項目のうち、再評価の余地があるものを記録。

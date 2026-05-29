@@ -9,7 +9,7 @@
 - **Project Type**: Greenfield
 - **Start Date**: 2026-05-07T00:00:00Z
 - **Current Phase**: 🟢 CONSTRUCTION PHASE
-- **Current Stage**: 🎉 Unit-1 + Unit-2 完了（Member A 前半フェーズ完了）→ コミット → Unit-3 Debate UI SSOT を Direction D「黒服のコンシェルジュ」に切替完了（2026-05-30）。Code Generation Phase 1 Part 2（実装着手）前
+- **Current Stage**: 🎉 Unit-1 + Unit-2 完了（Member A 前半フェーズ完了）→ Unit-3 Debate UI SSOT を Direction D「黒服のコンシェルジュ」に切替完了（2026-05-30）+ Unit-5 Cart Intercept Infrastructure Design Part 2 完了（2026-05-29）。Unit-3 は Code Generation Phase 1 Part 2（実装着手）前 / Unit-5 は Code Generation ステージ移行待ち
 - **User Language**: Japanese
 
 ## Workspace State
@@ -104,12 +104,27 @@
       - **Step 構成**: Step 1 Infra Snapshot TDD / Step 2 SSM Loader / Step 3 Domain Models / Step 4 Cooldown DDB Adapter / Step 5 main.py 最小実装 / Step 6 Mobile AgentCore Client / Step 7 Mobile Event Parser / Step 8 疎通確認
       - **多巡セルフレビュー（3 巡）**（Critical 2 + Major 4 + 1 + 0 件 = 計 7 件を 3 巡で修正、`parse_jwt_actor_id` の責務を Step 4 → Step 5 へ移動 / `bedrock_kwargs={}` 仕様確認注記 / RuntimeEndpoint live test 追加 / `agentcore invoke --dev` モード明示 / vitest `vi.stubEnv` モック方法明示 / SSM model-id 動的反映の再起動待ち追記 / **Step 3/4 順序逆転を解消（Domain Models を Step 3 へ繰り上げ、Cooldown を Step 4 へ）** / **CDK で `kms.Key.fromKeyArn()` での復元を明示** / Cognito MFA 未設定リスクの緩和策表現改善）
     - [ ] Code Generation Phase 1 Part 2 実装着手（pending、Step 1〜8 を Part 2 で順次実行）
-  - **Unit-4 Reel / Unit-5 Cart Intercept**（コア 3 並行、pending）
+  - **Unit-4 Reel**（コア 3 並行、pending）
+  - **Unit-5 Cart Intercept**（進行中、Functional Design / NFR Requirements / NFR Design / Infrastructure Design 完了、Code Generation ステージ移行待ち、2026-05-29）
   - **Unit-6 Calendar / Unit-7 Safeguard / Unit-8 Dame Report**（サポート 3 並行、pending）
 - [ ] Functional Design (EXECUTE, per-unit)
+  - [x] Unit-1 Platform Functional Design Part 1 Planning（2026-05-27、Q1〜Q10 確定）
+  - [x] Unit-1 Platform Functional Design Part 2 Generation（2026-05-27、main 由来 + 4 ファイル新規 + 4 ファイル既存更新）
+  - [ ] Unit-2 Auth & Profile（pending）
+  - [ ] Unit-3 Debate（Part 1 Planning 進行中、2026-05-28、Q1〜Q15 提示済、main マージで前提見直し必要）
+  - [ ] Unit-4 Reel（コア並行、pending）
+  - [x] Unit-5 Cart Intercept Functional Design Part 1 Planning（2026-05-28、Q1〜Q8 全て推奨どおり確定）
+  - [x] Unit-5 Cart Intercept Functional Design Part 2 Generation（2026-05-28、4 ファイル新規 + backlog 2 件追記）
+  - [ ] Unit-6 Calendar / Unit-7 Safeguard / Unit-8 Dame Report（サポート 3 並行、pending）
 - [ ] NFR Requirements (EXECUTE, per-unit)
+  - [x] Unit-5 Cart Intercept NFR Requirements Part 1 Planning（2026-05-28、Q1〜Q10 確定、2 段階再検証で 10 件修正）
+  - [x] Unit-5 Cart Intercept NFR Requirements Part 2 Generation（2026-05-28、nfr-requirements.md + tech-stack-decisions.md）
 - [ ] NFR Design (EXECUTE, per-unit)
+  - [x] Unit-5 Cart Intercept NFR Design Part 1 Planning（2026-05-28、Q1〜Q6 確定、再検証で 3 件修正）
+  - [x] Unit-5 Cart Intercept NFR Design Part 2 Generation（2026-05-28、nfr-design-patterns.md + logical-components.md）+ 1 巡目セルフレビュー 5 件修正（Issue BBBB/CCCC/DDDD/EEEE/FFFF）+ 2 巡目セルフレビュー 6 件修正（Issue GGGG/HHHH/IIII/JJJJ/KKKK/LLLL、watching_orphaned 全文書整合 + retry_count 属性追加 + retry batch シーケンス図 §7 追加 + コスト試算更新 + Mock 戦略追記 + M-05 可視化方針）
 - [ ] Infrastructure Design (EXECUTE, per-unit)
+  - [x] Unit-5 Cart Intercept Infrastructure Design Part 1 Planning（2026-05-29、Q1〜Q10 確定 v3、再検証 2 巡目で v1 → v2 → v3 と 8 件修正・補強）
+  - [x] Unit-5 Cart Intercept Infrastructure Design Part 2 Generation（2026-05-29、infrastructure-design.md + deployment-architecture.md、1 巡目セルフレビュー 2 件修正、B-504 backlog 登録、diagnostics エラーゼロ）
 - [ ] Code Generation (EXECUTE, per-unit)
 - [ ] Build and Test (EXECUTE)
 
