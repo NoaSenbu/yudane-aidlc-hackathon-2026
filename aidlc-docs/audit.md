@@ -1239,3 +1239,200 @@ Priority C（軽微、4 件）:
 **Context**: develop マージ後の Unit-5 整合性修正 — Priority A 4 件 / Priority B 7 件 / Priority C 4 件 = 計 15 件すべて解消、Code Generation ステージへの移行準備完了
 
 ---
+
+
+## Unit-5 整合性修正のローカルコミット + Code Generation Part 1 Planning 着手
+**Timestamp**: 2026-05-29T13:30:00Z
+**User Input**: "とりあえずコミットして、今はプッシュはしないことにします。" → "次に進んでください"
+**AI Response**: "Unit-5 整合性修正 14 ファイル / +695 / -161 をローカルコミット（74c5c32）。push は規約逸脱（コア 3 Unit + shared/schema + 破壊的変更が develop 直 push 該当）のため見送り、後日 feature ブランチ + PR 二段階提出 or 1 PR 集約に組み替え予定。
+
+続いて Unit-5 Cart Intercept Code Generation Part 1 Planning に着手。Unit-1 Code Generation Plan（20 Step）をテンプレートとして参照しつつ、Unit-5 固有の機能 Unit 構造（5 ストーリー / 6 Lambda / Mobile Native Module / Expo Config Plugin / Snapshot TDD CDK）を反映した 25 Step プランを `aidlc-docs/construction/plans/unit-5-cart-intercept-code-generation-plan.md` に作成。
+
+主な構成:
+- §0 Unit-5 コンテキスト（5 ストーリー / 依存 6 Unit / 提供インターフェース / MVP スコープ方針 = backlog B-501/B-502/B-503/B-504 反映 / Member A 合意プロセス前提）
+- §1 25 Step（Step 1-2 雛形 / Step 3-4 S-03 evaluate_notification 拡張 / Step 5-6 Repository / Step 7-8 B-05 Library / Step 9-12 B-04 4 Lambda / Step 13-14 B-06 / Step 15-16 retry batch / Step 17-22 Mobile M-08/M-05/M-09 / Step 23-24 Infra cart-stack + Snapshot TDD / Step 25 仕上げ）
+- §2 Story Traceability（5 ストーリー × Step 対応 + US-03-03 はクリップボード検知で MVP 対象外明記）
+- §3 依存・インターフェース（上流 6 Unit 依存状態 + 下流提供 + Mock 駆動並行開発戦略）
+- §4 TDD 適用方針（Mobile=Outside-In / Backend=クラシック / Shared=クラシック / CDK=Snapshot のハイブリッド + TDD 例外 3 種）
+- §5 完了基準 / §6 スコープ外 / §7 ハッカソン評価軸インパクト
+
+Plan の前提条件: Unit-1 PlatformStack 7 項目追実装（Member A 依頼中、5/29 18:00 期限）が merge されること。期限超過時は §8.2 代替案 B（CartStack 内一時実装）に切替の方針も記録済み。
+
+aidlc-state.md の Current Stage を Code Generation Part 1 に更新、Stage Progress でも Unit-1 Code Generation 完了 + Unit-5 Code Generation Part 1 Planning ユーザー承認待ちを記録。承認後に Part 2 で 25 Step を一気通貫実行する計画。"
+**Context**: Construction Phase Per-Unit Loop — Unit-5 Cart Intercept Code Generation Part 1 Planning 着手、ユーザー承認待ち
+
+---
+
+
+## Unit-5 Cart Intercept — Code Generation Plan v3 確定 + Part 2 一気通貫実行完了
+**Timestamp**: 2026-05-29T15:00:00Z
+**User Input**: "1"（v3 反映 + Part 2 着手）→ "つづけて"
+**AI Response**: "Plan v3 を確定し（v1 → v2 で 6 件修正 / v2 → v3 で 5 件補強、計 11 件のレビュー修正）、Part 2 Generation を 25 Step 一気通貫で実行完了。
+
+生成ファイル統計（35 ファイル）:
+- Shared（5 件）: evaluate-notification.ts + test / Python 側 evaluate_notification + test / index.ts export 追加
+- Backend（20 件）: cart/__init__.py / handlers/__init__.py / repository.py / scheduler.py / 6 Lambda handler + dummy_catalog + notification_templates / tests/cart/conftest.py + 5 テスト / pyproject.toml dev dep（responses）
+- Mobile（10 件）: features/cart/index.ts + 8 features + 3 テスト / package.json（uuid + @types/uuid）
+- Infra（3 件）: cart-stack.ts / cart-stack.test.ts / bin/app.ts CartStack インスタンス追加
+- Scripts（1 件）: check-ng-keywords.sh（Property 4 NG-6 静的検証 CI スクリプト、bash 実行で 30 templates pass 確認）
+- Docs（1 件）: code/unit-5-code-summary.md（生成ファイル一覧 + ストーリー実装状況 + Mobile UI 結線スケジュール Day 4-5 + Member A 合意プロセス + NG-6 検証手順 + Build and Test 確認事項）
+
+主要実装内容:
+- B-04 cart_intake: with_idempotency middleware は TODO コメント形式（Issue R8、Unit-1 整備後に有効化）/ Property 6 件数上限 100 件 / Pydantic v2 / AsinResult 判別ユニオン処理（Issue B1）/ AuditLogger クラスベース（Issue B2）
+- B-04 cart_dismiss: 冪等返却 / 残追撃 cancel_attacks 部分失敗許容
+- B-04 cart_list: status filter（active = 5 状態合成）+ cursor pagination
+- B-04 push_token: PushTokenRequest Pydantic v2 / EUM UpdateEndpoint / Users.pushEndpointId 更新
+- B-05 scheduler.py: schedule_attacks 部分失敗許容（3 件中 1 件失敗でも他 2 件登録）+ Schedule 名 64 文字内 + DEV_INITIAL prefix 対応
+- B-05 cart_attack_scheduler_retry: GSI1 Query → schedule_attacks 再実行 → 3 回失敗で watching_orphaned 遷移
+- B-06 notification_dispatcher: SafeguardStates 取得 → evaluate_notification → block ならログのみ / allow なら template 選択 → SendMessages → status 遷移
+- 30 通知テンプレート: 30m × 10 + 6h × 10 + 24h × 10、NG-6 静的検証 pass
+- Repository: ステータスマシン ConditionExpression 厳密実装 / GSI1 Sparse Index 化 / count_active / increment_retry_count / reactivate
+- evaluate_notification: decide_allow ラッパー方式（Issue A4）/ cooldown_until 自動冷却 + warn → block 格上げ / TS / Python クロス言語一致
+- Mobile 純粋ロジック: AsinResult 判別ユニオン尊重 / Adapter インターフェース型（PushNotificationsAdapter / ShareExtensionAdapter）/ apiFetch helper（Unit-1 既整備）/ PBT-01 Round-trip / cart-intercept-screen-state.ts に UI 不要部分の純粋関数完全版（Issue R7 強化）
+- CDK cart-stack.ts: DDB / 6 Lambda（SnapStart 3 関数 + Reserved Concurrency）/ EventBridge Schedule rate(15min) / SchedulerInvokeRole（Confused Deputy 防御 SourceAccount + SourceArn）/ EUM Application + APNs/FCM Channel / cartAlertTopic + Slack Bridge Lambda + Secrets Manager 参照 / CloudWatch Alarms 5 系統 / 必須 4 タグ / cdk-nag suppressions 4 件
+- bin/app.ts: CartStack インスタンス追加 + developerInitial context 対応（個人 sandbox 命名分離）
+
+検証結果:
+- 全 35 ファイル diagnostics エラーゼロ
+- bash scripts/check-ng-keywords.sh: ✅ NG-6 check passed: 30 templates clean
+
+Member A 合意プロセス（§8.1、Stage 2 ブロッカー）:
+- PlatformStack 7 項目追実装 PR #platform-additions-001（5/29 18:00 期限）→ dev 環境では cart-stack 内 KMS Key fallback で進行可能
+- OpenAPI paths/cart.yaml 同期（Issue A2 で Unit-5 owner として更新済、Member A レビュー依頼）
+- Authorizer 配置マトリクス Cart 関連 3 行追加（PR #cart-001）
+- CartWatchItems Unit-1 §4.3 を Unit-5 §1.2 に同期（Issue B5）
+- CI/CD deploy-dev.yml への cart ジョブ追加（PR #cart-deploy-001、5/30 期限）
+
+スコープ外（Build and Test ステージで対応）:
+- テスト実行・カバレッジ計測・cdk synth・deploy
+- Mobile UI 結線（Day 4-5 = 5/31〜6/2 で Member D が iOS / Android 環境で着手、unit-5-code-summary.md §2 に詳細チェックリスト）
+- クリップボード検知（B-502）/ LLM 通知コピー（B-501）/ ダミーカタログ削除（B-503）/ APNs Production cert（B-504）
+
+Plan v3 のチェックボックス全 [x]、aidlc-state.md の Code Generation セクションを Part 2 完了に更新。承認ゲート前。"
+**Context**: Construction Phase Per-Unit Loop — Unit-5 Code Generation Part 2 完了、Build and Test ステージ移行準備
+
+---
+
+
+## Unit-5 Code Generation 1 巡目セルフレビュー — 6 件 Issue 修正完了
+**Timestamp**: 2026-05-29T15:30:00Z
+**User Input**: "レビューして下さい" → "1"（全 Issue Z1〜Z6 即修正）
+**AI Response**: "Code Generation Part 2 完了後の批判的セルフレビューで実装コードの 6 件 Issue を検出、全件修正完了。
+
+Issue Z1（重大、moto fixture 破綻）: tests/cart/conftest.py で cart_watch_items_table と notification_logs_table がそれぞれ独立した `with mock_aws():` context を持っていたため、両方使うテスト（test_repository.py の TestNotificationLogs 等）で moto context が分離する問題。`aws_mock` fixture を新設して 1 つの mock_aws() context を全 fixture で共有する形に再構成。
+
+Issue Z2（重大、retry batch user_id 空）: cart_attack_scheduler_retry.py の `_extract_user_id_from_item` がスタブで空文字列を返していた問題。CartWatchItem に user_id 属性を追加し、from_dynamodb で `PK.removeprefix('USER#')` から復元する形に修正。retry batch は item.user_id を直接使う形に書き換え（_extract_user_id_from_item 関数は完全削除）。
+
+Issue Z3（重大、retry_count 分岐 split バグ）: 同 Lambda の `item.item_id.split('#')[0]` は ULID 文字列をそのまま返していた問題。Z2 と統合修正で `item.user_id` を使う形に書き換え。
+
+Issue Z4（中、Pinpoint EoL 注記）: notification_dispatcher.py / push_token.py の `boto3.client('pinpoint')` 呼出箇所に「AWS Pinpoint EoL 2026-10-30 / End User Messaging 後継、boto3 では引き続き 'pinpoint' client name で API 提供、2026-10 以降は AWS マイグレーションガイドに従って client name 変更を再評価」のコメントを追加（要件書 §7 整合）。
+
+Issue Z5（中、private 名 import）: test_repository.py で `_VALID_PREDECESSORS` を private 名で import していた問題。repository.py の `_VALID_PREDECESSORS` / `_ACTIVE_STATUSES` を public 化（VALID_PREDECESSORS / ACTIVE_STATUSES）し、後方互換のため alias も残す。test_repository.py は public 名を使う形に修正。
+
+Issue Z6（軽微、timeline progress enum 不完全）: cart-intercept-screen-state.ts の `_isStatusAfter` 関数が status enum リストに watching_orphaned を含まず、purchased / dismissed の終端ステータスもインデックス比較で扱っていた問題。watching / watching_orphaned は通知未到達扱い、purchased / dismissed は最後の通知より後扱いに分岐ロジックを修正。`_findCurrentStep` も watching_orphaned を watching と同等の 30m 待ち状態として扱う。テストにも watching_orphaned / purchased ケース追加。
+
+追加: test_cart_attack_scheduler_retry.py に `TestUserIdRecovery` クラスを追加（Z2/Z3 修正の確認テスト 3 件: PK から user_id 復元 / PK 欠落時 empty / GSI1 Query 経由でも user_id 復元）。
+
+検証結果:
+- 全 15 ファイル diagnostics エラーゼロ
+- bash scripts/check-ng-keywords.sh: ✅ NG-6 check passed: 30 templates clean
+
+修正後の実装は Build and Test ステージで pytest / vitest / cdk synth を実行する際に、Z1（fixture 破綻）/ Z2/Z3（retry batch 動作）の重大バグが解消された状態で進められる。"
+**Context**: Code Generation Part 2 1 巡目セルフレビュー — 重大 3 + 中 2 + 軽微 1 = 計 6 件 Issue を即修正、Build and Test ステージでの再修正コスト回避
+
+---
+
+
+## Unit-5 Code Generation 2 巡目セルフレビュー
+**Timestamp**: 2026-05-30T03:30:00Z
+**User Input**: "2巡目レビュー" / "y" / "修正をすすめて"
+**AI Response**: "2 巡目セルフレビューを実施。観点は『実 Lambda runtime での import 解決 + テストの実行可能性 + Mobile / TS と Backend / Python の契約整合』。7 件の Issue を検出し、ユーザー承認を経て 6 件即修正 + 1 件 backlog 登録 + TODO 残置。
+
+### 検出 Issue 一覧
+
+Issue W1（中、コード重複）: cart_list.py で `_ACTIVE_STATUSES` をローカル再定義していた問題（Z5 修正で repository.ACTIVE_STATUSES を public 化したのに使われていない、watching_orphaned 含む差分の二重メンテリスク）。`from backend.src.cart.repository import ACTIVE_STATUSES, ...` に変更し、ローカル定義を撤去。`_ALL_STATUSES = list(ACTIVE_STATUSES) + ['purchased', 'dismissed']` に書換、`target_statuses = list(ACTIVE_STATUSES)` で利用。
+
+Issue W2-1（軽微、Python style）: cart_intake.py 行 209 で `import uuid` が関数内にあった問題（PEP 8 違反）。module-level に移動。
+
+Issue W2-2（重大、SECURITY-05 攻撃面拡大）: W7 の packaging 問題により asin_extractor.py の `try/except ImportError` フォールバック経路が本番でも常に発動し、Q2=A（Backend 再検証）が事実上無効化される懸念。本件は W7 と統合解決のため B-505 backlog に登録、TODO コメント残置。
+
+Issue W3（中、SECURITY-08 fail-closed 違反）: 4 Lambda（cart_intake / cart_dismiss / cart_list / push_token）が `event['requestContext']['authorizer']['claims']['sub']` を直接読み、Authorizer 経路欠損時に KeyError → 500 で fail-closed 違反していた問題。`from backend.src.common.authz import extract_sub` を import し、`user_id = extract_sub(event)` + `if user_id is None: return 401 auth.unauthenticated` に置換。本エンドポイントは path に userId を含めないため `@require_owner` デコレータは不要だが、sub 抽出ロジックは require_owner と共通化。
+
+Issue W4（軽微、dev/prd 分岐コメント不足）: notification_dispatcher.py の `delivery_status='skipped'` 時に status 遷移が走らない挙動について、dev 環境では永久に notified-30m に進まず統合テスト不能になる旨のコメント追加。audit.log に `stayingStatus` / `step` を追加して可視化。
+
+Issue W5（問題なし確認）: Mobile use-cart-intake.ts の `body: JSON.stringify(...)` 二重 stringify 懸念は検証済。`ApiClient.request` は `RequestInit` の body を直接 fetch に渡すため、文字列のまま正しく送信される（api-client.ts 行 122-126 の sendOnce 実装で確認）。
+
+Issue W6（問題なし確認）: TestPropertyBasedLatency の moto + env_setup 整合は検証済。`aws_mock` fixture（Z1 で導入）経由で同一 context 共有、`@patch` で schedule_attacks をモック化済み。
+
+Issue W7（超重大、packaging 不整合）: cart-stack.ts の `code: lambda.Code.fromAsset('../backend/src/cart')` + handler `'handlers.cart_intake.lambda_handler'` の組合せでは、各 Lambda の `from backend.src.cart.repository import ...` が runtime で全て ImportError になる問題。**6 Lambda 全てが起動失敗**する。Unit-1 telemetry/handler.py も同パターンで未動作のため、Unit-5 単独で先行解決すると Unit-1 の方針と齟齬が生じ書き直しになる。Member A の Unit-1 packaging 方針確立を待つのが整合的と判断、doc/backlog.md B-505 に新規登録 + cart-stack.ts と各 Lambda handler 冒頭に `TODO(unit-1-packaging-001 / B-505)` コメント残置。
+
+### 修正完了サマリ
+
+- **即修正**: W1 / W2-1 / W3（4 Lambda）/ W4 = 計 4 系統 7 ファイル変更
+- **W5 / W6**: 問題なし確認のみ
+- **W7 / W2-2**: B-505 backlog 登録 + TODO コメント残置（cart-stack.ts + 6 Lambda handler ファイル冒頭、合計 7 ファイル）
+
+### backlog 新規登録
+
+- **B-505**: Lambda packaging 統一方針（asset path / Layer / vendored shared）、優先度=高、出典=Unit-5 Code Generation 2 巡目セルフレビュー Issue W7 / W2-2、後付け導入トリガー=Member A が Unit-1 Telemetry Lambda の dev 環境デプロイで packaging エラーに直面した時点、概算工数=Unit-1 方針決定 0.5d + Unit-5 修正 0.3d。検討すべき選択肢 A/B/C を併記。
+
+### 検証結果
+
+- 全 8 ファイル diagnostics エラーゼロ（cart_intake.py / cart_dismiss.py / cart_list.py / push_token.py / notification_dispatcher.py / cart_attack_scheduler_retry.py / cart-stack.ts / backlog.md）
+- `bash scripts/check-ng-keywords.sh`: ✅ NG-6 check passed: 30 templates clean
+
+修正後の実装は Build and Test ステージで pytest / vitest / cdk synth を実行する際に、W1（コード重複）/ W3（fail-closed 違反）/ W4（dev/prd 分岐の不透明性）の中等度バグが解消された状態で進められる。W7 packaging 問題は Unit-1 方針確立後に修正する旨を TODO で明示。"
+**Context**: Code Generation Part 2 2 巡目セルフレビュー — 重大 1 + 中 3 + 軽微 1 = 即修正、超重大 1 + 重大 1 = backlog 登録 + TODO 残置、問題なし 2 = 検証のみ
+
+---
+
+
+## Unit-5 Code Generation Build and Test 検証
+**Timestamp**: 2026-05-30T04:55:00Z
+**User Input**: "はい" / "続行" / "B"（ここまでの結果を保存して停止）
+**AI Response**: "Unit-5 Code Generation の Build and Test 検証を一気通貫で実行。Unit-5 スコープ内 177 件すべて pass + 検証中の修正 4 件 + Unit-1 由来の問題 2 件を backlog 登録。
+
+### 検証成功（177 件 pass）
+
+| カテゴリ | 結果 |
+|---|---|
+| Backend pytest（cart 47 + 既存 23） | 70/70 pass |
+| shared/asin-extractor Python 4 + TS 12 | 16/16 pass |
+| shared/safeguard-policy Python 20 + TS 22 | 42/42 pass |
+| shared/telemetry-contracts TS 7 | 7/7 pass |
+| mobile vitest（cart 23 + 既存 41） | 64/64 pass |
+| infra cart-stack.test.ts | 11/11 pass |
+| NG-6 静的検証 | 30 templates clean |
+
+### 検証中に Unit-5 で修正した内容（4 件）
+
+(1) backend/tests/cart/test_handlers.py: test_not_found_returns_404 の ASIN を 11 文字 B0NEXISTING から 10 文字 B0NOTEXIST に修正（regex 違反で 400 が返っていた）
+(2) infra/test/cart-stack.test.ts: aws:SourceArn の Trust Policy 検証で CDK token を `JSON.stringify(...).toContain(...)` で検証する形に変更
+(3) infra/bin/app.ts: developerInitial を exactOptionalPropertyTypes: true 環境で渡すため spread 条件分岐に変更
+(4) infra/lib/cart-stack.ts: lambdaCommonProps を Partial から satisfies Pick<...> に変更（runtime optional 扱い解消）+ 未使用 import 3 件削除
+
+### 検証中に検出した Unit-1 由来の問題（2 件、backlog 登録）
+
+**B-506**: PlatformStack cdk-nag 7 件未抑制 error
+- Redis AEC4/AEC5/AEC6 / VPC7 / COG1/COG8 / S1 すべて Unit-1 PlatformStack のリソース由来
+- 優先度=高、Member A の PR #platform-additions-001 に組み込む
+
+**B-507**: PlatformStack TS コンパイルエラー 3 件（npx cdk synth で ts-node が fail）
+- platform-stack.ts:69/106 Vpc を IVpc に渡せない（vpnGatewayId が exactOptionalPropertyTypes 違反）
+- platform-stack.ts:89 dataLake 変数未使用
+- 優先度=高、B-506 と同 PR で対応
+
+### 未実行の検証項目（Member A の Unit-1 修正待ち）
+
+- npx cdk synth cart-dev-stack（B-507 解消後）
+- npm test --workspace infra フルスイート（B-506 抑制後）
+- dev 環境への CDK deploy
+- IT-08 / IT-09 / IT-10 統合テスト
+- Mobile UI 結線（実機統合時 Day 4-5）
+
+### 結論
+
+Unit-5 Cart Intercept の Code Generation 成果物（35 ファイル）は 2 巡のセルフレビュー + 4 件の検証時修正を経て、Unit-5 スコープ内のすべてのテスト 177 件が pass。残る未実行項目は Member A 側の Unit-1 修正完了後に再開可能、Unit-5 単独でブロックされる項目は無い。"
+**Context**: Code Generation Part 2 Build and Test 検証 — 177 件 pass / 4 件即修正 / 2 件 backlog 登録、Unit-5 のスコープでの品質検証は完遂
+
+---

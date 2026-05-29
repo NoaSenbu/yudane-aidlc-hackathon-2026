@@ -143,6 +143,55 @@
 
 ---
 
+### B-506. PlatformStack の cdk-nag 7 件 error 抑制または修正
+
+| 項目 | 内容 |
+|---|---|
+| **項目名** | Unit-1 PlatformStack の cdk-nag が 7 件の未抑制 error を出力し、`infra/test/platform-stack.test.ts` の "cdk-nag の未抑制エラーがない" テストが fail |
+| **出典** | [Unit-5 Code Generation Build and Test 検証 2026-05-30](../aidlc-docs/audit.md) — `npm test --workspace infra` 実行時に検出 |
+| **検出した 7 件 error** | (1) Redis: AwsSolutions-AEC4 Multi-AZ なし<br>(2) Redis: AwsSolutions-AEC5 デフォルトポート使用<br>(3) Redis: AwsSolutions-AEC6 Redis AUTH なし<br>(4) PlatformVpc: AwsSolutions-VPC7 VPC Flow Log なし<br>(5) UserPool: AwsSolutions-COG1 パスワードポリシー不十分<br>(6) UserPool: AwsSolutions-COG8 プラスティアでない<br>(7) DataLakeBucket: AwsSolutions-S1 S3 サーバーアクセスログなし |
+| **当初推奨案** | 各 error について以下のいずれかで対応する: (a) 設定変更で解消（VPC Flow Log 追加、S3 Access Logs 追加、UserPool パスワードポリシー強化）/ (b) NagSuppressions で正当な理由付きで抑制（dev 環境で Multi-AZ 不要 / Redis AUTH は IAM 認証で代替 等） |
+| **見送り理由（Unit-5 視点）** | Unit-5 Cart Intercept のレビュー範囲外。Unit-1 PlatformStack の責務であり Member A 側で対応する。Unit-5 の `cart-stack.ts` は cdk-nag 抑制を完備しており、`infra/test/cart-stack.test.ts` 11/11 pass している |
+| **暫定運用** | `infra/test/platform-stack.test.ts` の "cdk-nag の未抑制エラーがない" テストは現在 fail。`bin/app.ts` 経由で PlatformStack を依存に含むスタック（CartStack 等）の `cdk synth` 時にも synth は通るが、cdk-nag warning が混在する状態 |
+| **後付け導入トリガー** | 以下のいずれかで対応開始<br>1. Member A の Unit-1 Platform Stack 完成 PR `#platform-additions-001` に組み込み（最有力）<br>2. dev 環境への CDK deploy 前に必須化（cdk-nag は deploy 時に検査されるため）<br>3. 決勝向け prd 環境構築時（要件書 §7 SECURITY-15 cdk-nag green 必須） |
+| **優先度** | **高**（Unit-1 完成 PR に組み込む必要があり、Member A の Stage 3 完了条件） |
+| **概算工数** | 設定変更（VPC Flow Log + S3 Access Logs + UserPool パスワードポリシー強化）= 1d / NagSuppressions 7 件 + 理由コメント = 0.5d、合計 1〜1.5d（Member A） |
+
+---
+
+### B-507. PlatformStack の TypeScript exactOptionalPropertyTypes 違反修正
+
+| 項目 | 内容 |
+|---|---|
+| **項目名** | Unit-1 PlatformStack の TypeScript コンパイルエラー 3 件（`cdk synth` 実行時の ts-node コンパイルで失敗） |
+| **出典** | [Unit-5 Code Generation Build and Test 検証 2026-05-30](../aidlc-docs/audit.md) — `npx cdk synth cart-dev-stack` 実行時に検出 |
+| **検出したエラー** | (1) `lib/platform-stack.ts:69` TS2375: `Vpc` を `IVpc` に渡せない（`vpnGatewayId: string \| undefined` が `string` に assignable でない、`exactOptionalPropertyTypes: true` 起因）<br>(2) `lib/platform-stack.ts:106` TS2375: 上と同じ Vpc → IVpc 違反<br>(3) `lib/platform-stack.ts:89` TS6133: `dataLake` 変数が未使用 |
+| **影響** | `tsconfig.base.json` で `exactOptionalPropertyTypes: true` が設定されているため、AWS CDK 内部型（`IVpc.vpnGatewayId?: string`）と衝突。**`vitest run test/platform-stack.test.ts` は通るが、`cdk synth` の ts-node モードでは fail**。これは vitest が Vite の transformer 経由でコンパイルする一方、`cdk synth` は ts-node で厳密にコンパイルするため判定が異なる |
+| **当初推奨案** | (a) `vpnGatewayId: undefined` を spread 条件分岐で省略（`...(opts.vpnGatewayId !== undefined ? { vpnGatewayId: opts.vpnGatewayId } : {})`）/ (b) `infra/tsconfig.json` で `exactOptionalPropertyTypes: false` に override（CDK との相性悪い設定の見直し）/ (c) `dataLake` を `_dataLake` にリネーム（未使用 → ignored 扱い） |
+| **見送り理由（Unit-5 視点）** | Unit-5 Cart Intercept のレビュー範囲外。`bin/app.ts` 経由で PlatformStack を import する関係で `cdk synth cart-dev-stack` 時にも露出するが、CartStack 自体のコードは `exactOptionalPropertyTypes: true` 環境で全 TS エラーを修正済み（`developerInitial` の spread 条件分岐 + `lambdaCommonProps: satisfies Pick<...>` パターン） |
+| **暫定運用** | Unit-5 単独テスト（`vitest run test/cart-stack.test.ts`）は 11/11 pass。`cdk synth cart-dev-stack` は PlatformStack の TS エラーで blocked、Member A の修正待ち |
+| **後付け導入トリガー** | Member A の Unit-1 Platform Stack 完成 PR `#platform-additions-001` に組み込み（B-506 と同じタイミング） |
+| **優先度** | **高**（B-506 と合わせて Member A の Stage 3 完了条件） |
+| **概算工数** | 推奨案 (a) + (c) で 0.5d（Member A） |
+
+---
+
+### B-505. Lambda packaging 統一方針（asset path / Layer / vendored shared）
+
+| 項目 | 内容 |
+|---|---|
+| **項目名** | Backend Lambda の packaging 統一（`backend.src.*` 絶対 import + `shared/*/python/` の vendoring 戦略） |
+| **出典** | [Unit-5 Code Generation 2 巡目セルフレビュー Issue W7 / W2-2](../aidlc-docs/construction/unit-5-cart-intercept/code/unit-5-code-summary.md) |
+| **当初推奨案** | (1) `lambda.Code.fromAsset` の対象を **リポジトリルート** にし、handler を `backend.src.cart.handlers.cart_intake.lambda_handler` 形式で指定 + `shared/*/python/` を Lambda Layer として packaging（または bundling 時に `vendor/` へコピー）<br>(2) Member A が Unit-1 の Telemetry Lambda で同じ問題を抱えているため、**Unit-1 packaging 方針**を先行確立し、Unit-5 / Unit-3 / Unit-4 等が追従する |
+| **見送り理由** | Code Generation 当初は handler パスを `handlers.xxx.handler` の単純形で書き、`backend.src.cart.repository` import が runtime で解決できない packaging 問題が顕在化。Unit-1 telemetry/handler.py も同パターンで未動作のため、**Unit-5 単独で先行解決すると Unit-1 の方針と齟齬が生じ書き直し**になる。Unit-1 で方針確立後に Unit-5 を追従修正するのが整合的 |
+| **暫定運用** | (1) cart-stack.ts と各 Lambda handler 冒頭に `TODO(unit-1-packaging-001): Member A の Unit-1 packaging 方針確立後に修正` コメントを残置<br>(2) ローカルテスト（pytest）は `backend/conftest.py` の sys.path = リポジトリルート で動作するため import 健全性は担保済み<br>(3) `shared/asin-extractor/python/asin_extractor.py` の `try/except ImportError` フォールバックは **dev 環境ローカル動作のため**のセーフネット、本番 Lambda 環境では packaging 修正後に削除予定 |
+| **後付け導入トリガー** | 以下のいずれかで実装開始<br>1. Member A が Unit-1 Telemetry Lambda の dev 環境デプロイで packaging エラーに直面した時点（**最有力、2026-05-29〜5/30 想定**）<br>2. Unit-1 / Unit-5 のいずれかで `cdk deploy` 後の Lambda 起動テストで `ImportError` が顕在化した時点<br>3. CI に `cdk synth` + `lambda invoke` の dry-run job を追加した時点 |
+| **優先度** | **高**（Unit-1 / Unit-3 / Unit-4 / Unit-5 すべての Backend Lambda が動作するための必須条件、決勝デプロイ前にブロッカー化） |
+| **概算工数** | (1) Unit-1 packaging 方針決定（asset = リポジトリルート + handler = 完全修飾形 + Layer 戦略）= **0.5d**（Member A）<br>(2) Unit-5 の cart-stack.ts asset path + handler 文字列書換 + asin_extractor.py の `try/except ImportError` 削除 = **0.3d**（Member D） |
+| **検討すべき選択肢** | A: asset = リポジトリルート + handler 完全修飾（最小工数、bundle サイズ大）<br>B: Lambda Layer に `shared/*/python/` を分離（bundle 効率最適、CDK 構成複雑化）<br>C: bundling 時に `shared/*/python/` を asset 配下にコピー（中庸、Layer なし） |
+
+---
+
 ## 3. Nice to have（決定不要、将来検討）
 
 > [parallel-dev-prerequisites.md §3](../aidlc-docs/construction/plans/parallel-dev-prerequisites.md) で「決定不要、参考」と判断した項目のうち、再評価の余地があるものを記録。

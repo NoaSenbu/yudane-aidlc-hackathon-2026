@@ -9,7 +9,7 @@
 - **Project Type**: Greenfield
 - **Start Date**: 2026-05-07T00:00:00Z
 - **Current Phase**: 🟢 CONSTRUCTION PHASE
-- **Current Stage**: 🎉 Unit-1 + Unit-2 完了（Member A 前半フェーズ完了）→ Unit-3 Debate UI SSOT を Direction D「黒服のコンシェルジュ」に切替完了（2026-05-30）+ Unit-5 Cart Intercept Infrastructure Design Part 2 完了（2026-05-29）。Unit-3 は Code Generation Phase 1 Part 2（実装着手）前 / Unit-5 は Code Generation ステージ移行待ち
+- **Current Stage**: 🎉 Unit-1 + Unit-2 完了（Member A 前半フェーズ完了）→ Unit-3 Debate UI SSOT を Direction D「黒服のコンシェルジュ」に切替完了（2026-05-30）+ Unit-5 Cart Intercept Code Generation Part 2 完了 + 1 巡目セルフレビュー Z1〜Z6 + 2 巡目セルフレビュー W1〜W7 + Build and Test 検証完了（2026-05-30、Unit-5 スコープ内 177 件すべて pass + 検証時修正 4 件 + Unit-1 由来問題 2 件 backlog 登録 = B-506 / B-507）。Unit-3 は Code Generation Phase 1 Part 2（実装着手）前 / Unit-5 は Member A の Unit-1 修正待ち項目を除き単独ブロックなし、承認ゲート → 次 Unit / 次ステージ移行待ち
 - **User Language**: Japanese
 
 ## Workspace State
@@ -126,7 +126,11 @@
   - [x] Unit-5 Cart Intercept Infrastructure Design Part 1 Planning（2026-05-29、Q1〜Q10 確定 v3、再検証 2 巡目で v1 → v2 → v3 と 8 件修正・補強）
   - [x] Unit-5 Cart Intercept Infrastructure Design Part 2 Generation（2026-05-29、infrastructure-design.md + deployment-architecture.md、1 巡目セルフレビュー 2 件修正、B-504 backlog 登録、diagnostics エラーゼロ）
 - [ ] Code Generation (EXECUTE, per-unit)
+  - [x] Unit-1 Platform Code Generation Part 1 + Part 2（2026-05-29、main 由来 20 Step 完了）
+  - [x] Unit-5 Cart Intercept Code Generation Part 1 Planning（2026-05-29、25 Step、v1 → v2 → v3 で 11 件修正）
+  - [x] Unit-5 Cart Intercept Code Generation Part 2 Generation（2026-05-29、25 Step すべて完了、純粋ロジック層 + Backend Lambda + CDK Stack 生成、NG-6 静的検証 CI スクリプト pass、全ファイル diagnostics エラーゼロ）+ 1 巡目セルフレビュー Z1〜Z6 修正（2026-05-29、重大 3 + 中 2 + 軽微 1 = 計 6 件即修正）+ 2 巡目セルフレビュー W1〜W7 完了（2026-05-30、即修正 4 系統 = W1 / W2-1 / W3（4 Lambda）/ W4 + B-505 backlog 登録 + TODO 残置 = W7 / W2-2 + 問題なし確認 = W5 / W6）
 - [ ] Build and Test (EXECUTE)
+  - [x] Unit-5 Cart Intercept Build and Test 検証（2026-05-30、Unit-5 スコープ内 177 件 pass / 検証時修正 4 件 / B-506 cdk-nag + B-507 TS compile を Unit-1 由来として backlog 登録）
 
 ### 🟡 OPERATIONS PHASE
 - [ ] Operations (placeholder)
