@@ -1,0 +1,18 @@
+{
+  "enabled": true,
+  "name": "Markdown 保存でリンク・Mermaid 検証",
+  "description": "aidlc-docs/ または doc/ の Markdown 保存時に、リンク切れと Mermaid 図の文法エラーをチェックする",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "aidlc-docs/**/*.md",
+      "doc/**/*.md",
+      "README.md"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "編集された Markdown ファイルに対し、以下を検証してください。\n\n1. **相対リンク切れ**: `[テキスト](相対パス)` 形式のリンクが実在するか確認（外部 URL は対象外）\n2. **Mermaid 文法**: ` ```mermaid ` ブロックがあれば、ノード ID・矢印記法・括弧の対応・予約語衝突がないか確認\n3. **見出しレベル**: H1 が 1 つ、見出しの飛びがないか確認\n4. **特殊文字エスケープ**: テーブル内の `|` やコードブロック外の `<` `>` が適切にエスケープされているか確認\n5. **steering ルール整合**: structure.md §6 のドキュメント編集ルール（追記のみの audit.md / 状態追跡の aidlc-state.md など）に違反していないか確認\n\n問題があれば該当行とともに報告し、修正案を提示してください。問題なければ「ドキュメント品質 OK」と報告するだけで構いません。"
+  }
+}

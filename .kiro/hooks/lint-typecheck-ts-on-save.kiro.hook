@@ -1,0 +1,18 @@
+{
+  "enabled": true,
+  "name": "TS/TSX 保存で Lint + 型チェック",
+  "description": "mobile/ または infra/ 配下の TypeScript / TSX を保存したら、対応するワークスペースで ESLint と tsc --noEmit を実行する",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "mobile/**/*.ts",
+      "mobile/**/*.tsx",
+      "infra/**/*.ts"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "編集された TypeScript / TSX ファイルのパスを確認し、対応するワークスペース（mobile/ または infra/）で以下を実行してください。\n\n1. `mobile/` 配下なら `mobile/` ディレクトリで `npm run lint` と `npx tsc --noEmit` を実行\n2. `infra/` 配下なら `infra/` ディレクトリで `npm run lint` と `npx tsc --noEmit` を実行\n3. 結果のエラー / 警告をすべて要約し、AGENTS.md §9 の品質ゲート（Lint エラー 0 / 型エラー 0）を満たしているか判定して報告\n\nスクリプトがまだ未整備の場合（package.json に lint / typecheck が無い等）は、その旨を報告して中断してください。勝手に scaffolding しないこと。"
+  }
+}

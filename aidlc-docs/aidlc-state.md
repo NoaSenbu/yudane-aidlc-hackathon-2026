@@ -9,7 +9,7 @@
 - **Project Type**: Greenfield
 - **Start Date**: 2026-05-07T00:00:00Z
 - **Current Phase**: 🟢 CONSTRUCTION PHASE
-- **Current Stage**: main → develop マージ完了（Unit-1 完成 + ステアリング develop 採用 + Unit-3 Functional Design Part 1 進行中、2026-05-29）
+- **Current Stage**: Unit-3 Debate Code Generation Phase 1 Plan 完了（1 ファイル新規作成 + 多巡セルフレビュー、2026-05-30）。Code Generation Part 2（実装着手）前
 - **User Language**: Japanese
 
 ## Workspace State
@@ -63,8 +63,43 @@
     - **参考ドキュメント**: develop 系の `functional-design-plan.md` / `functional-design.md` / `data-model.md` / `openapi-skeleton-plan.md` / `sequence-diagrams.md`（Q1〜Q10 検討プロセスの記録として残置、main 正本との差分は audit に記載）
   - **Unit-2 Auth & Profile**（pending）
   - **Unit-3 Debate**（進行中）
-    - [x] Functional Design Part 1 Planning（2026-05-28、Q1〜Q15 提示、main マージで一部前提見直し必要）
-    - [ ] Functional Design Part 2 Generation（pending、main 側 Unit-1 確定を踏まえて Q1〜Q15 再検討）
+    - [x] Functional Design Part 1 Planning v1（2026-05-28、Q1〜Q15 提示、develop 系前提）
+    - [x] Functional Design Part 1 Planning v2（2026-05-29、main 整合、自前 Lambda + DDB + Lambda Streaming 案）
+    - [x] Functional Design Part 1 Planning v3（2026-05-29、**AgentCore Runtime + Memory + Identity 全面採用版**、Q1〜Q17）
+    - [x] Functional Design Part 1 Planning v3.2（2026-05-29、**通常運用版全採用 = オプション C**、Q1〜Q17 確定。L1 機能面の穴 3 件（Q11/Q13/Q12）を MVP の段階で塞ぐ。custom Strategy / PBT 全面 / SSM 切替 / 3 RuntimeEndpoint を追加）
+    - [x] Functional Design Part 1 Planning v3.3（2026-05-29、**セルフレビュー修正版**、Critical 6 件 + Major 6 件を一括修正。設計判断自体に変更なし、ドキュメント整合性のみ向上）
+    - [x] task-breakdown.md（2026-05-29、Phase 1〜6 実装計画 + P0/P1/P2 優先度マトリクス + 5/30 暫定構成 + リスク 7 件 + 依存 DAG）+ v1.1 修正（v3.3 整合）
+    - [x] Functional Design Part 2 Generation（2026-05-29、6 ファイル）
+      - business-logic-model.md（ALG-DEBATE-START / ALG-COOLDOWN-* / ALG-STRESS / ALG-PROMPT / ALG-MEMORY-* / ALG-AFFIRMATION / ALG-GRACEFUL-SHUTDOWN / ALG-MOD / ALG-S3-EXPORT の 11 アルゴリズム）
+      - business-rules.md（DEBATE / COOLDOWN / PROMPT / STRESS / MEMORY / MOD / AUTHZ / STREAM / ENDPOINT / SSM / PBT の 11 区分 + 設定値カタログ）
+      - domain-entities.md（Mermaid クラス図 + Pydantic v2 / TypeScript 型定義 + 13 DTO + Memory / DDB データモデル）
+      - strands-agent-design.md（ファイル構造 + main.py 実装方針 + Strands Agent 設定 + タイマー実装 + Q15 起動方法 + Property 1〜5）
+      - prompt-composition.md（M-1 + M-2 併走テンプレート 4 ブロック + compose.py 実装 + PBT 重点 property + プロンプト改善ロードマップ）
+      - sequence-diagrams.md（Mermaid シーケンス 8 種: 翻意 / クールダウン / graceful shutdown / 多層モデレーション / Memory 学習 / Year 1 退化レポート / クールダウン解除 / env 切替）
+    - [x] **多巡セルフレビュー完了（2026-05-29、7 巡で Critical 9 件 + Major 8 件を修正、全 8 ファイル diagnostics エラーゼロ）**
+    - [x] **NFR Requirements ステージ完了（2026-05-29、2 ファイル）**
+      - nfr-requirements.md（性能 / コスト / カバレッジ / セキュリティ / 倫理担保 / PBT / 可用性 / 観測 / A11y の 9 区分、Extension コンプライアンスサマリ）
+      - tech-stack-decisions.md（AgentCore + Strands + Bedrock の Unit-3 固有スタック実体化、Direct Code Deploy / Memory Strategy / RuntimeEndpoint / SSM 7 個）
+    - [x] **NFR Design ステージ完了（2026-05-29、2 ファイル + 多巡セルフレビュー）**
+      - logical-components.md（LC-D-01〜12 の 12 論理コンポーネント定義 + Mermaid 依存図 + NFR Requirements 対応サマリ）
+      - nfr-design-patterns.md（PAT-D-PERF / COST / ETHICS / RESIL / OBS / SEC の 6 区分 21 パターン + FMEA + マイルストーン別優先度）
+      - **多巡セルフレビュー**（2 巡で Critical 4 + Major 6 + 1 件を修正、kill-switch ヘルパー経由統一 / Mobile 側 actor_id 取得経路明示 / DDBError try/except 整合 / A11Y 帰属修正 / 定数名カタログ参照 / FMEA Sonnet 切替 N/A 化 / PAT-D-COST-04 を P0 へ昇格 / NFR ID 表記統一 / NC2-2 削除）
+    - [x] **Infrastructure Design ステージ完了（2026-05-30、2 ファイル + 多巡セルフレビュー）**
+      - infrastructure-design.md（AgentCore Runtime + Memory + Bedrock Guardrails + Cooldowns DDB + S3 Memory Export + IAM 個別 + SSM 8 個 + CloudWatch Alarms 5 種 + 論理 → 物理マッピング表）
+      - deployment-architecture.md（dev/staging/prd の 3 環境戦略 + SSM 経由連携 + CI/CD フロー + cdk-nag Suppression 方針 + 物理アーキテクチャ図 Mermaid + カナリアリリース手順 + ロールバック手順 + GO/NO-GO チェックリスト + コスト見積もり）
+      - **多巡セルフレビュー（6 巡）**（Critical 8 + Major 13 + Minor 1 = **計 22 件を 6 巡で修正**）
+        - 1 巡目: Critical 4 + Major 5（タイマー責任主体 / Unit-7 削除権限 / E2E ID 整合 / Memory P0/P1 段階 / Alarms 出典 / 環境別 RuntimeEndpoint Phase / Bedrock コスト式 / Mermaid シンタックス）
+        - 2 巡目: Critical 1 + Major 1（SSM 昇格メカニズム / Unit-7/8 並列デプロイ）
+        - 3 巡目: Major 1 + Minor 1（Memory custom P1 明示 / lifecycleConfiguration コメント）
+        - 4 巡目（**重要**）: Critical 3 + Major 2（**Mobile-SSM 直接読み と Cognito Identity Pool 不採用の矛盾を発見、EAS Build 時 EXPO_PUBLIC_* 環境変数注入方式に統一** / カナリアトラフィック振り分け OTA 段階配信明示 / Memory IAM actor_id 単位分離不可能性明示）
+        - 5 巡目: Major 1（Phase 5 開始日 6/13 vs 6/14 vs 6/15 混在解消、6/13 に統一）+ Minor 1（許容）
+        - 6 巡目: Major 2（staging 検証期間 6/13 起点 / 決勝 Readiness 6/15 前倒し目標 6/14 整合）
+        - **計 22 件のクロスステージ矛盾を全て解消**（Functional Design / NFR Requirements / NFR Design / Infrastructure Design の 4 ステージ + shared-infrastructure / Unit-1 連携の整合性チェック完了）
+    - [x] **Code Generation Phase 1 Plan 完了（2026-05-30、1 ファイル + 多巡セルフレビュー）**
+      - `aidlc-docs/construction/plans/unit-3-debate-code-generation-phase1-plan.md`（Phase 1 期間 5/31〜6/2、Member B 担当、Step 1〜8 詳細化、TDD サイクル、ファイル一覧、依存関係、リスク表、ハッカソン評価軸インパクト）
+      - **Step 構成**: Step 1 Infra Snapshot TDD / Step 2 SSM Loader / Step 3 Domain Models / Step 4 Cooldown DDB Adapter / Step 5 main.py 最小実装 / Step 6 Mobile AgentCore Client / Step 7 Mobile Event Parser / Step 8 疎通確認
+      - **多巡セルフレビュー（3 巡）**（Critical 2 + Major 4 + 1 + 0 件 = 計 7 件を 3 巡で修正、`parse_jwt_actor_id` の責務を Step 4 → Step 5 へ移動 / `bedrock_kwargs={}` 仕様確認注記 / RuntimeEndpoint live test 追加 / `agentcore invoke --dev` モード明示 / vitest `vi.stubEnv` モック方法明示 / SSM model-id 動的反映の再起動待ち追記 / **Step 3/4 順序逆転を解消（Domain Models を Step 3 へ繰り上げ、Cooldown を Step 4 へ）** / **CDK で `kms.Key.fromKeyArn()` での復元を明示** / Cognito MFA 未設定リスクの緩和策表現改善）
+    - [ ] Code Generation Phase 1 Part 2 実装着手（pending、Step 1〜8 を Part 2 で順次実行）
   - **Unit-4 Reel / Unit-5 Cart Intercept**（コア 3 並行、pending）
   - **Unit-6 Calendar / Unit-7 Safeguard / Unit-8 Dame Report**（サポート 3 並行、pending）
 - [ ] Functional Design (EXECUTE, per-unit)
