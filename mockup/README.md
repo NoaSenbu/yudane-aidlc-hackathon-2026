@@ -89,3 +89,39 @@ mockup/
 - 主な対応: UC-01〜04 のコア UC、FR-DEBATE / FR-REEL / FR-CART / FR-CAL / FR-FUNNEL、Degradation Arc、Before/After、収益モデル（Amazon Associates）
 - 倫理ライン §9 NG-8 — オーバーレイの注記に「YUDANE は紹介だけ（Associates）」を明示
 - モックアップは要件書の §5 を逸脱しないことを原則とする
+
+
+## デザインツール: Claude Design（SSOT）
+
+本モックアップは **Claude Design**（Anthropic Labs、2026-04-17 リリース）を SSOT デザインツールとして採用する。Figma / Sketch / Adobe XD は採用しない。詳細決定の経緯は [parallel-dev-prerequisites.md §N-1](../aidlc-docs/construction/plans/parallel-dev-prerequisites.md) と [.kiro/steering/tech.md §2 デザインツール行](../.kiro/steering/tech.md) を参照。
+
+### 運用ルール
+
+- **SSOT**: 本ディレクトリ配下（`mockup/index.html` ほか）に Claude Design からエクスポートした HTML / CSS / JS を反映する
+- **デザイントークン**: 色 / フォント / スペーシング等のトークンは NativeWind v4 の `mobile/tailwind.config.js`（Construction Phase で生成）を一次の真実とする。Claude Design 出力で発生したトークン揺れは Member A が PR で吸収する
+- **モックアップ HEX → Tailwind トークン**: `mockup/styles.css` の HEX 値（Indigo `#4F4DDC` / cold rose `#E8B4D0` / cyan `#4DE1FF` 他）を `tailwind.config.js` の `theme.extend.colors` にミラーリング（Member A が Unit-1 Platform で実施）
+- **担当**: Member A が Claude Design アカウント（Pro 以上）を保有。新規画面 / 改良依頼は Member A 経由でリクエスト
+- **採用しない**: Figma / Sketch / Adobe XD（二重管理を避ける）
+
+### バージョン管理: Claude Design セッション履歴
+
+Claude Design で生成 / 改良した画面は、再現性確保のため以下を記録する:
+
+| 画面 | Claude Design セッション URL | 主要プロンプト要約 | 反映コミット |
+|---|---|---|---|
+| ホーム v0.4 | （セッション URL） | （プロンプト要約） | （commit hash） |
+| カート介入 v0.4 | （セッション URL） | （プロンプト要約） | （commit hash） |
+| リール v0.4 | （セッション URL） | （プロンプト要約） | （commit hash） |
+| 論破チャット v0.4 | （セッション URL） | （プロンプト要約） | （commit hash） |
+| ダメ化レポート v0.4 | （セッション URL） | （プロンプト要約） | （commit hash） |
+| セーフガード v0.4 | （セッション URL） | （プロンプト要約） | （commit hash） |
+
+> 各セッション URL は Claude Pro ユーザーのみアクセス可能。チーム外への共有は Anthropic 利用規約に従う。
+> v0.4 までは Claude Design 不採用時代の手書き HTML のため、セッション URL は空欄でよい。**v0.5 以降の更新で Claude Design を使った場合に必須記録**。
+
+### 既存資産の扱い（v0.4 → v0.5 移行時）
+
+- v0.4 までの `mockup/` 配下の HTML / CSS / JS は Claude Design 不採用時代の手書きアセット
+- v0.5 以降は Claude Design 経由で新規生成 / 改良するが、現存の v0.4 資産を破壊せず incremental に更新する
+- Claude Design の出力が NativeWind v4 のトークンと整合しない場合は Member A が PR で吸収
+

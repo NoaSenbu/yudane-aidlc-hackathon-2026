@@ -15,8 +15,16 @@ inclusion: always
 ## 1. ディレクトリ配置原則
 
 - **アプリケーションコード**: ワークスペース直下（`mobile/`、`backend/`、`infra/`、`shared/`）
-- **ドキュメント**: `aidlc-docs/` 配下のみ
-- **両者を混在させない**（AGENTS.md §ファイル・ドキュメント 規約）
+- **AI-DLC 公式成果物（ドキュメント）**: `aidlc-docs/` 配下のみ
+- **チーム運用ドキュメント（Backlog 等）**: `doc/` 配下のみ
+- **3 者を混在させない**（AGENTS.md §ファイル・ドキュメント 規約）
+
+`aidlc-docs/` と `doc/` は役割で明確に分ける:
+
+| 配置 | 内容 | 例 |
+|---|---|---|
+| `aidlc-docs/` | AI-DLC ワークフローが生成・参照する公式成果物。Inception / Construction / Operations 各フェーズの設計成果物、対話履歴、ステージ進捗 | `inception/requirements/requirements.md` / `construction/plans/parallel-dev-prerequisites.md` / `audit.md` / `aidlc-state.md` |
+| `doc/` | AI-DLC ワークフロー外のチーム運用ドキュメント。後回し・見送り判断の集約、運用手順、チーム規約等 | `backlog.md` |
 
 ---
 
@@ -71,6 +79,9 @@ yudane-aidlc-hackathon-2026/
 │   ├── styles.css
 │   ├── app.js
 │   └── assets/{brand, products}/*.svg
+│
+├── doc/                               # 📋 チーム運用ドキュメント（AI-DLC 外）
+│   └── backlog.md                     # 後回し・見送り・将来検討の集約（必須 4 項目: 項目名 / 出典 / 後付けトリガー / 優先度）
 │
 └── .kiro/                             # Kiro 用設定・ステアリング
     ├── steering/                      # 常時適用ルール + fileMatch + manual
@@ -133,6 +144,34 @@ Unit of Work に従い、モノレポで以下を展開する。
 - `aidlc-docs/audit.md` は **追記のみ**（上書き禁止）
 - `aidlc-docs/aidlc-state.md` は各ステージの EXECUTE / SKIP / 承認履歴を必ず更新
 - 書類審査の 4 評価軸（ビジネス意図 / Unit 分解 / 創造性 / ドキュメント品質）を常に意識
+
+### 6.1 Backlog 運用ルール（必須）
+
+並列開発前提の決定 / Per-Unit 設計 / Inception の各ステージで「**後回し**」「**見送り**」「**将来検討**」「**留保された設計オプション**」と判断した項目は、**判断と同じ作業ターンで** [doc/backlog.md](../../doc/backlog.md) に追記する。
+
+**各エントリは必ず以下の 4 項目を含む**:
+
+| 必須項目 | 内容 |
+|---|---|
+| **項目名** | 何を議論したか（簡潔な見出し） |
+| **出典** | どの議論・ドキュメント・ステージで判断したか（相対リンクで参照可能にする） |
+| **後付け導入トリガー** | どんな条件・指標が満たされたら再評価するか（数値・期限・イベントを具体化） |
+| **優先度** | 高 / 中 / 低（再評価の緊急度） |
+
+推奨項目（書ける範囲で記載）: 当初推奨案 / 見送り理由 / 暫定運用 / 概算工数。
+
+**運用手順**:
+
+1. 見送り判断 → 同ターンで `doc/backlog.md` にエントリ追記
+2. 元の議論ドキュメント（例: `parallel-dev-prerequisites.md`）には backlog の該当エントリへの相対リンクを必ず張る
+3. 後付け導入が決定された場合は `doc/backlog.md` から削除せず「**ステータス: 採用済み（YYYY-MM-DD）**」を末尾に追記
+4. 採用判断ロジックの変更は `aidlc-docs/audit.md` に追記
+
+**禁止事項**:
+
+- 見送り判断を `aidlc-docs/` 配下のみに記録して `doc/backlog.md` への登録を省略すること
+- backlog エントリで 4 必須項目（項目名 / 出典 / 後付けトリガー / 優先度）のいずれかを省略すること
+- 後付け導入時に backlog エントリを削除すること（履歴は履歴として残す）
 
 ---
 

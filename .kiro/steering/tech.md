@@ -30,7 +30,7 @@ Construction フェーズ（Unit ごとの実装）は書類審査後に着手�
 
 | レイヤ | 採用技術 | 備考 |
 |---|---|---|
-| モバイル | React Native 0.76+ (New Architecture) + TypeScript 5.x + AWS SDK v3 | Fabric + TurboModules 前提 |
+| モバイル | React Native 0.76+ (New Architecture) + TypeScript 5.x + AWS SDK v3 | Fabric + TurboModules 前提。**Expo Dev Client + EAS Build** で開発・配布（Expo SDK 52+）。Bare RN は不採用 |
 | 状態管理 | TanStack Query（サーバー状態）+ Zustand（クライアント状態） | |
 | 認証 | Amazon Cognito + Amplify JavaScript v6 の **Auth モジュールのみ** + TOTP MFA | `amazon-cognito-identity-js` は非推奨のため不採用。Data/Functions/CLI も不採用 |
 | API | API Gateway (REST) + AWS Lambda (Python 3.13) | |
@@ -41,6 +41,7 @@ Construction フェーズ（Unit ごとの実装）は書類審査後に着手�
 | IaC | AWS CDK (TypeScript, v2 系最新) + Node.js 22 LTS | Amplify CLI は不採用、Cognito User Pool も CDK で直接管理 |
 | CI/CD | GitHub Actions + SBOM（Snyk / Dependabot） | SECURITY-10 準拠 |
 | リージョン | `ap-northeast-1` | |
+| デザインツール | **Claude Design**（Anthropic Labs、2026-04-17 リリース） | 自然言語対話で HTML/CSS/JS を生成。SSOT は `mockup/index.html` に統一、Figma 不採用。Anthropic 主軸スタック（Bedrock Claude Haiku 4.5 + Claude Design）と整合。デザイントークンは NativeWind v4 の `tailwind.config.js` 側で集中管理 |
 
 ---
 
@@ -48,6 +49,7 @@ Construction フェーズ（Unit ごとの実装）は書類審査後に着手�
 
 - **Security Baseline**: SECURITY-01〜15 すべて適用（要件書 §6.4 参照）
 - **Property-Based Testing**: fast-check（TypeScript / React Native）+ Hypothesis（Python 3.13 Lambda）で PBT-01〜10 を全面適用（要件書 §6.5 参照）
+- **TDD 開発スタイル**: 全 Unit で Red → Green → Refactor → PBT 補強のサイクルを必須（[AGENTS.md §12](./AGENTS.md#12-tdd-開発スタイル全-unit-必須)）。Mobile = Outside-In / Backend = クラシック / CDK = Snapshot TDD のハイブリッド方式
 
 詳細は `.kiro/aws-aidlc-rule-details/extensions/` 配下を参照。
 
@@ -61,6 +63,7 @@ Construction フェーズ（Unit ごとの実装）は書類審査後に着手�
 - Stripe / Square 等の決済サンドボックス（決済は Amazon 側で完結）
 - Flutter / Dart（v0.3 以降 React Native に変更）
 - Step Functions（時間差制御は EventBridge Scheduler 単独）
+- **Figma / Sketch / Adobe XD**（デザインツールは Claude Design 単独 SSOT、二重管理を避ける。詳細は [doc/backlog.md](../../doc/backlog.md) でなく本ファイル §2 デザインツール行を参照）
 
 ---
 
