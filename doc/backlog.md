@@ -80,6 +80,50 @@
 
 ---
 
+### B-203. ストレス推定共有関数の正本配置（shared / platform）
+
+| 項目 | 内容 |
+|---|---|
+| **項目名** | Reel（B-03）と Debate（B-02）が共有する `estimate_stress_level()` の正本配置と切り出し先の確定 |
+| **出典** | [Unit-4 Reel Functional Design Plan §Q3](../aidlc-docs/construction/plans/unit-4-reel-functional-design-plan.md) 回答 = A（共有純関数化） |
+| **当初推奨案** | ストレス推定ロジックを Unit-1/共通の純関数として切り出し、Reel と Debate が同一関数で `low/mid/high` を算出（判定一致・重複実装回避） |
+| **見送り理由（保留理由）** | 正本を `shared/`（TS/Python 両実装）に置くか `backend` 共通（Python のみ）に置くかは、Reel が論破前のフィード生成でサーバー算出する前提（Q3=A / REEL-STRESS-04）と Debate の利用箇所を突き合わせて Member A と確定する必要がある。Unit-4 の Functional Design 時点では「同一関数を呼ぶ」前提のみ固定し、物理配置は保留 |
+| **暫定運用** | Unit-4 は `StressLevel` を共有関数から得る前提で設計（domain-entities §2.1 / REEL-STRESS-01〜05）。実装着手時は backend 内の共通モジュールに仮置きし、Debate 着手と同期して正本化 |
+| **後付け導入トリガー** | 以下のいずれかで確定<br>1. Unit-3 Debate の Functional Design / Code Generation で `estimate_stress_level()` の入出力が確定したとき<br>2. Reel と Debate のストレス判定差異が観測されたとき<br>3. Mobile 側でもストレス表示が必要になり TS 実装が要るとき（shared 化が必須化） |
+| **優先度** | **中**（Unit-3 と Unit-4 の実装合流前に確定が必要） |
+| **概算工数** | 共通関数の切り出し + 配置 + 両 Unit からの参照差し替え = 0.5〜1d（Member A + Member B/C 調整） |
+
+---
+
+### B-204. Reel 推薦のベクトル検索（Titan Embeddings + OpenSearch）導入
+| 項目 | 内容 |
+|---|---|
+| **項目名** | B-03 ReelRecommendationService の候補生成を購入履歴ヒューリスティックから Titan Embeddings V2 + OpenSearch Serverless のベクトル近傍検索へ拡張 |
+| **出典** | [Unit-4 Reel Functional Design Clarification CL-1](../aidlc-docs/construction/plans/unit-4-reel-functional-design-clarification.md) 回答 = A（MVP は購入履歴ベース、ベクトル検索は決勝で導入） |
+| **当初推奨案** | components.md の B-03 当初設計どおり、嗜好ベクトルを埋め込みクエリにして OpenSearch で近傍商品を候補化 |
+| **見送り理由** | 予選 5/30 までの実装・インフラ負荷を抑えるため、MVP は購入履歴のカテゴリ/ブランド一致 + 共購買ヒューリスティック（CL-1=A）で候補生成。OpenSearch Serverless 依存と埋め込みパイプラインを予選から外して軽量化・テスト容易化 |
+| **暫定運用** | MVP は ALG-RANK の候補生成段をカテゴリ/ブランド一致 + 共購買で実装（REEL-RANK-01）。リランク（決定論的スコアリング）は MVP から適用（CL-2=A）。OpenSearch は使わない |
+| **後付け導入トリガー** | 以下のいずれかで導入検討<br>1. 決勝 6/26 に向けて推薦精度の差別化が必要と判断されたとき<br>2. MVP デモで「推薦が浅い/関連性が弱い」フィードバックが過半<br>3. 購入履歴が十分蓄積し、ヒューリスティックの上限が見えたとき |
+| **優先度** | **中**（決勝の完成度・ビジネス価値で効く可能性） |
+| **概算工数** | Titan Embeddings 埋め込みパイプライン + OpenSearch Serverless インデックス + B-03 候補生成差し替え = 2〜3d（Member C + Member A インフラ支援） |
+
+---
+
+### B-205. Reel ラベル/コピーの非同期後追い生成（プレースホルダ → 差し替え）
+
+| 項目 | 内容 |
+|---|---|
+| **項目名** | リールカードの所有感ラベル/推薦コメント（ALG-PITCH/LABEL）を同期生成からプレースホルダ即返し → 非同期後追い差し替えに変更 |
+| **出典** | [Unit-4 Reel NFR Design Plan §Q3 / 矛盾解消3](../aidlc-docs/construction/plans/unit-4-reel-nfr-design-plan.md)（後追いは FD ドメインモデルと未整合のため MVP では不採用） |
+| **当初推奨案（採用済み = 同期）** | MVP は同期生成に統一。ソフト期限 350ms 内にテンプレートフォールバックで必ず非空ラベルを返す（FD: `ReelCard.ownershipLabel`/`pitch` は必須・同期） |
+| **見送り理由** | 後追い差し替えには `ownershipLabel`/`pitch` の nullable 化 + 差し替えチャネル（再取得 or SSE）+ クライアント UI の差し替え対応が必要で、FD ドメインモデル・`GET /v1/reel` レスポンス契約の変更を伴う。MVP のレイテンシ予算は同期 + フォールバックで達成可能なため、複雑化を避けて見送り |
+| **暫定運用** | 同期生成 + 350ms ソフト期限 + テンプレートフォールバック（R-PAT-LLM-01）。LLM ハードタイムアウト 1.5s |
+| **後付け導入トリガー** | 以下のいずれかで検討<br>1. 決勝でフィード初回描画 p95 が目標（500ms）を LLM ラベルが律速して超過<br>2. LLM ラベルの品質を上げるため生成時間を延ばしたい（後追いなら初回描画を阻害しない）<br>3. 事前生成キャッシュ（人気商品）でも吸収しきれない場合 |
+| **優先度** | **低**（同期 + フォールバックで MVP・決勝の予算を達成見込み） |
+| **概算工数** | ドメインモデル nullable 化 + 差し替えチャネル（SSE or ポーリング）+ Mobile UI 差し替え = 1.5〜2d（Member C） |
+
+---
+
 ## 3. Nice to have（決定不要、将来検討）
 
 > [parallel-dev-prerequisites.md §3](../aidlc-docs/construction/plans/parallel-dev-prerequisites.md) で「決定不要、参考」と判断した項目のうち、再評価の余地があるものを記録。

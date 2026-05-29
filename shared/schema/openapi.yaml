@@ -109,3 +109,16 @@ components:
       $ref: './components/schemas/common.yaml#/User'
     CalendarEvent:
       $ref: './components/schemas/common.yaml#/CalendarEvent'
+    # --- Unit-4 Reel ---
+    ProductMeta:
+      $ref: './components/schemas/reel.yaml#/ProductMeta'
+    OwnershipLabel:
+      $ref: './components/schemas/reel.yaml#/OwnershipLabel'
+    ReelCard:
+      $ref: './components/schemas/reel.yaml#/ReelCard'
+    ReelPage:
+      $ref: './components/schemas/reel.yaml#/ReelPage'
+    AmazonTransitionRequest:
+      $ref: './components/schemas/reel.yaml#/AmazonTransitionRequest'
+    ExpAward:
+      $ref: './components/schemas/reel.yaml#/ExpAward'

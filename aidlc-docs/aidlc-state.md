@@ -9,7 +9,7 @@
 - **Project Type**: Greenfield
 - **Start Date**: 2026-05-07T00:00:00Z
 - **Current Phase**: 🟢 CONSTRUCTION PHASE
-- **Current Stage**: main → develop マージ完了（Unit-1 完成 + ステアリング develop 採用 + Unit-3 Functional Design Part 1 進行中、2026-05-29）
+- **Current Stage**: Unit-4 Reel Code Generation Part 2 完了（reel 実装・テスト・CDK 生成、Backend 40 件 pass、承認待ち、2026-05-30）
 - **User Language**: Japanese
 
 ## Workspace State
@@ -65,7 +65,22 @@
   - **Unit-3 Debate**（進行中）
     - [x] Functional Design Part 1 Planning（2026-05-28、Q1〜Q15 提示、main マージで一部前提見直し必要）
     - [ ] Functional Design Part 2 Generation（pending、main 側 Unit-1 確定を踏まえて Q1〜Q15 再検討）
-  - **Unit-4 Reel / Unit-5 Cart Intercept**（コア 3 並行、pending）
+  - **Unit-4 Reel**（進行中）
+    - [x] Functional Design Part 1 Planning（2026-05-30、`feature/unit-4-reel` ブランチ作成 + Q1〜Q10 提示 + CL-1/2/3 clarification、全回答受領）
+    - [x] Functional Design Part 2 Generation（2026-05-30、`construction/reel/functional-design/` に domain-entities / business-logic-model / business-rules / frontend-components の 4 種生成、承認済み 2026-05-30）
+    - [x] NFR Requirements Part 1 Planning（2026-05-30、Q1〜Q10 提示、全 A 回答受領）
+    - [x] NFR Requirements Part 2 Generation（2026-05-30、`construction/reel/nfr-requirements/` に nfr-requirements / tech-stack-decisions 生成、承認済み 2026-05-30。再レビューで 5 件修正済み）
+    - [x] NFR Design Part 1 Planning（2026-05-30、Q1〜Q10 提示、全 A 回答受領）
+    - [x] NFR Design Part 2 Generation（2026-05-30、`construction/reel/nfr-design/` に nfr-design-patterns / logical-components 生成、矛盾 3 件解消 + 過剰設計・矛盾 2 件再修正、承認済み 2026-05-30）
+    - [x] Infrastructure Design Part 1 Planning（2026-05-30、Q1〜Q7 提示、全 A 回答受領）
+    - [x] Infrastructure Design Part 2 Generation（2026-05-30、`construction/reel/infrastructure-design/` に infrastructure-design / deployment-architecture 生成、Unit-1 基盤を SSM 参照で再利用、承認待ち）
+    - [x] Infrastructure Design Part 2 Generation（2026-05-30、`construction/reel/infrastructure-design/` に infrastructure-design / deployment-architecture 生成、Unit-1 基盤を SSM 参照で再利用、承認済み 2026-05-30。横断矛盾 3 件修正済み）
+    - [ ] Code Generation Part 1 Planning（2026-05-30、`unit-4-reel-code-generation-plan.md` 10 ステップ提示、承認待ち）
+    - [ ] Code Generation Part 2 Generation（pending）
+    - [x] Code Generation Part 1 Planning（2026-05-30、`unit-4-reel-code-generation-plan.md` 10 ステップ提示、レビュー修正 3 件後承認）
+    - [x] Code Generation Part 2 Generation（2026-05-30、shared/schema + backend/src/reel + mobile/src/features/reel + infra/lib/reel-stack 生成。Backend ロジック+PBT 40 件 pass 実行確認。承認待ち）
+      - **cross-unit 依頼**: platform-stack の `api-id`/`api-root-resource-id` SSM 公開（Member A）、OpenSearch コレクション追加（決勝）
+  - **Unit-5 Cart Intercept**（コア 3 並行、pending）
   - **Unit-6 Calendar / Unit-7 Safeguard / Unit-8 Dame Report**（サポート 3 並行、pending）
 - [ ] Functional Design (EXECUTE, per-unit)
 - [ ] NFR Requirements (EXECUTE, per-unit)

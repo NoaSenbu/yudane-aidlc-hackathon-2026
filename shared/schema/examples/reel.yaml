@@ -1,0 +1,68 @@
+# Unit-4 Reel の Prism Mock / 契約テスト用 examples（api-contracts §7.1、Member C 責務）。
+getReelPage:
+  summary: 深夜ブースト付きリールページ
+  value:
+    cards:
+      - cardId: card-01J9ABC
+        product:
+          asin: B0EXAMPLE1
+          title: ワイヤレスノイズキャンセリングイヤホン
+          priceYen: 32800
+          imageUrl: https://example.invalid/img/earbuds.jpg
+          reviewSummary: 静寂性が高評価
+        pitch: 今日の会議6本、よく戦った。ご褒美は当然じゃね？
+        ownershipLabel:
+          text: 確保しておきました
+          rationale: 先週よく見てたやつ
+          source: llm
+        tags: ['頑張ったあなたへ']
+        origin: late-night-boost
+        isHighPriceBoost: true
+      - cardId: card-01J9ABD
+        product:
+          asin: B0EXAMPLE2
+          title: アロマディフューザー
+          priceYen: 4980
+          imageUrl: https://example.invalid/img/diffuser.jpg
+          reviewSummary: 寝室向けに人気
+        pitch: これ、あなた好きでしょう
+        ownershipLabel:
+          text: ○○ さんのために見つけといた
+          rationale: 同じブランドをリピートしてる
+          source: llm
+        tags: []
+        origin: purchase-related
+        isHighPriceBoost: false
+    nextCursor: eyJzZWVuIjpbIkIwRVhBTVBMRTEiXX0
+    generatedAt: '2026-05-30T13:00:00Z'
+
+recordTransitionRequest:
+  summary: リールからの Amazon 遷移記録
+  value:
+    cardId: card-01J9ABC
+    asin: B0EXAMPLE1
+    context: reel
+    clientTransitionId: 01J9XYZ-CLIENT-IDEMPOTENT
+
+recordTransitionResult:
+  summary: EXP 加算結果（初回）
+  value:
+    awarded: 1
+    totalExp: 42
+    duplicate: false
+
+recordTransitionDuplicate:
+  summary: 冪等キー重複（再加算なし）
+  value:
+    awarded: 0
+    totalExp: 42
+    duplicate: true
+
+safeguardBlocked:
+  summary: 月間上限到達でブロック（409）
+  value:
+    type: https://api.yudane.app/errors/safeguard.monthly-limit-exceeded
+    title: 今月の上限に達しました
+    status: 409
+    detail: セーフガードにより遷移をブロックしました
+    instance: /v1/amazon-transitions
