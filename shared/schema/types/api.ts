@@ -56,6 +56,40 @@ export interface components {
       };
       confidence?: number;
     };
+    UserProfile: {
+      userId: string;
+      monthlyDisposableYen?: number;
+      monthlySavingsYen?: number;
+      favoriteBrands?: string[];
+      ngCategories?: string[];
+      hasDebt?: boolean;
+      associatesDisclosureAcknowledged?: boolean;
+      onboardingStep?: number;
+      profileCompleted?: boolean;
+    };
+    SafeguardSettings: {
+      monthlyLimitYen: number;
+      currentBudgetUsedYen?: number;
+      remainingYen?: number;
+      flags?: {
+        cooldownOn?: boolean;
+        quietWeek?: boolean;
+        hasDebt?: boolean;
+      };
+      debtReleaseRequestedAt?: string | null;
+    };
+    Achievement: {
+      exp: number;
+      level: number;
+      titles?: string[];
+      currentStreakDays?: number;
+    };
+    HomeSnapshot: {
+      candidateCount?: number;
+      cartWatchCount?: number;
+      yudaneLevel?: number;
+      remainingBudgetYen?: number;
+    };
   };
 }
 
@@ -66,3 +100,7 @@ export type TelemetryEnvelope = components['schemas']['TelemetryEnvelope'];
 export type IngestResult = components['schemas']['IngestResult'];
 export type User = components['schemas']['User'];
 export type CalendarEvent = components['schemas']['CalendarEvent'];
+export type UserProfile = components['schemas']['UserProfile'];
+export type SafeguardSettings = components['schemas']['SafeguardSettings'];
+export type Achievement = components['schemas']['Achievement'];
+export type HomeSnapshot = components['schemas']['HomeSnapshot'];

@@ -9,7 +9,7 @@
 - **Project Type**: Greenfield
 - **Start Date**: 2026-05-07T00:00:00Z
 - **Current Phase**: 🟢 CONSTRUCTION PHASE
-- **Current Stage**: Unit-3 Debate UI SSOT を Direction D「黒服のコンシェルジュ」に切替完了（2026-05-30）。Code Generation Phase 1 Part 2（実装着手）前
+- **Current Stage**: 🎉 Unit-1 + Unit-2 完了（Member A 前半フェーズ完了）→ コミット → Unit-3 Debate UI SSOT を Direction D「黒服のコンシェルジュ」に切替完了（2026-05-30）。Code Generation Phase 1 Part 2（実装着手）前
 - **User Language**: Japanese
 
 ## Workspace State
@@ -42,6 +42,7 @@
   - AGENTS.md: Git 運用 / 品質ゲート / MVP・決勝 Readiness / 同期プロトコル
   - structure.md: 識別子命名規則 / コード編集ルール
   - tech.md: Lint・型・フォーマッタ / API 契約ガバナンス / テストレイヤー
+- [ ] Per-Unit Loop（進行中: Unit-2 Auth & Profile）
 - [x] Backlog 運用ルールの整備（`doc/backlog.md` 新設 + structure.md §1/§6.1 + AGENTS.md §6 更新、2026-05-27）
 - [x] 並列開発前提の決定事項（parallel-dev-prerequisites.md、Critical 5 + Important 5 + N-1 確定、2026-05-27）
   - C-1=A NativeWind v4 / C-2=B Haiku 4.5 単独・Sonnet 4.6 backlog / C-3=A Member A 一括ドラフト / C-4=C 単一アカウント suffix / C-5=A Expo Dev Client + EAS Build
@@ -53,16 +54,18 @@
 - [x] **main → develop マージ完了**（2026-05-29、Unit-1 Platform 実装 140 ファイルを develop に取り込み、ステアリング拡張は develop 版を維持）
 - [x] **UI SSOT を Direction D「黒服のコンシェルジュ」に切替**（2026-05-30、`aidlc-docs/construction/unit-3-debate/YUDANE Concierge (Direction D) (offline).html` を Construction 以降の正本に。旧 `mockup/index.html` v0.4 は Inception 期参考資料として残置。tech.md §1/§2/§4 / mockup/README.md / 新規 design-system/direction-d-design-system.md / 新規 unit-3-debate/functional-design/frontend-design.md / Phase 1 Plan §0 + Step 7.3 / doc/backlog.md B-301 を一括更新、diagnostics エラーゼロ）
 - [ ] Per-Unit Loop（進行中）
-  - **Unit-1 Platform**（完了 ✅）
-    - [x] Functional Design（承認済み、2026-05-29）
-    - [x] NFR Requirements（承認済み、2026-05-29）
-    - [x] NFR Design（承認済み、2026-05-29）
-    - [x] Infrastructure Design（承認済み、2026-05-29）
-    - [x] Code Generation Part 2 完了（2026-05-29）
-    - **正本ドキュメント**: `aidlc-docs/construction/unit-1-platform/{functional-design, nfr-requirements, nfr-design, infrastructure-design, code}/`（main 由来）
-    - **正本実装**: `mobile/` / `backend/` / `infra/` / `shared/`（main 由来、TDD で生成済み）
-    - **参考ドキュメント**: develop 系の `functional-design-plan.md` / `functional-design.md` / `data-model.md` / `openapi-skeleton-plan.md` / `sequence-diagrams.md`（Q1〜Q10 検討プロセスの記録として残置、main 正本との差分は audit に記載）
-  - **Unit-2 Auth & Profile**（pending）
+  - **Unit-1 Platform** ✅ 完了（2026-05-29）
+    - [x] Functional Design（承認済み）
+    - [x] NFR Requirements（承認済み）
+    - [x] NFR Design（承認済み）
+    - [x] Infrastructure Design（承認済み）
+    - [x] Code Generation（承認済み、Step 1〜20 完了）
+  - **Unit-2 Auth & Profile**（Member A）✅ 完了（2026-05-29）
+    - [x] Functional Design（承認済み）
+    - [x] NFR Requirements（承認済み）
+    - [x] NFR Design（承認済み）
+    - [x] Infrastructure Design（承認済み）
+    - [x] Code Generation（承認済み、Step 1〜15 完了）
   - **Unit-3 Debate**（進行中）
     - [x] Functional Design Part 1 Planning v1（2026-05-28、Q1〜Q15 提示、develop 系前提）
     - [x] Functional Design Part 1 Planning v2（2026-05-29、main 整合、自前 Lambda + DDB + Lambda Streaming 案）

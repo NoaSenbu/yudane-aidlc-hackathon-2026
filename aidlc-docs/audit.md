@@ -487,6 +487,119 @@ This file contains the complete audit trail of all user inputs and AI responses 
 **AI Response**: "Unit-1 Platform のコード生成 Step 1〜20 を完了。生成物: shared/（schema OpenAPI 骨格+生成型 / asin-extractor TS+Python+PBT / safeguard-policy TS+Python+PBT / telemetry-contracts）、mobile/（api-client interceptor+retry+PBT / telemetry バッファ+round-trip PBT / app-shell ナビ+Auth ゲート+deeplink 純粋ロジック+テスト / app theme+store+providers / msw-handlers）、backend/（exceptions DomainError / logging AuditLogger+sanitizer fail-safe PBT / authz require_owner / health / telemetry B-14 / 生成 Pydantic モデル / tests）、infra/（platform-stack: VPC/Cognito/KMS/S3/Redis/SNS/SSM + bin/app.ts + cdk-nag + snapshot test）、ルート（npm workspaces/tsconfig/eslint/prettier/vitest.config）、.github/workflows/ci.yml（4 ジョブ）、scripts/check-pii-fields.sh、README フォルダ構成更新、aidlc-docs/construction/shared-infrastructure.md、code/ 配下 11 サマリ。全コードファイル diagnostics 0。プランの全 20 ステップ + 完了基準を [x]。ネットワーク制約により依存インストール・テスト実行・型生成・cdk synth は Build and Test ステージで実施。承認ゲート前（Step 15）。"
 **Context**: Construction Phase / Unit-1 Platform / Code Generation Part 2 完了 — 承認待ち
 
+## Unit-1 Platform — Code Generation 承認 → 🎉 Unit-1 完了 → Unit-2 着手
+**Timestamp**: 2026-05-29T05:45:00Z
+**User Input**: "承認してUnit2にいきましょう"
+**AI Response**: "Unit-1 Platform の Code Generation を承認として記録。これで Unit-1 の Per-Unit Loop（Functional Design → NFR Requirements → NFR Design → Infrastructure Design → Code Generation）が全て完了。aidlc-state.md で Unit-1 を完了マークし、Unit-2 Auth & Profile に着手。Unit-2 は Member A 担当（Unit-1 完了後）、依存 = Unit-1 Platform、対応 UC = UC-05（称号/Lv 判定）/UC-06（サブダッシュボード）/UC-07（嗜好ベクトル）/UC-08 初期化、ストーリー = US-AUTH-01/02/03、範囲 = M-02 HomeScreen / M-11 AuthModule / B-01 AuthEdgeLambda / B-08 PreferenceVectorUpdater。Unit-2 の Functional Design Part 1（計画 + 質問）から開始する。"
+**Context**: Construction Phase / Unit-1 完了 → Unit-2 Auth & Profile / Functional Design 着手
+
+## Unit-2 Auth & Profile — Functional Design 質問確定 + Part 2 Generation
+**Timestamp**: 2026-05-29T06:00:00Z
+**User Input**: "全部Aでやりましょう"（Unit-2 FD Q1=A / Q2=A / Q3=A / Q4=A / Q5=A / Q6=A）
+**AI Response**: "Unit-2 Functional Design の Q1=A（UserProfile 集約 + 段階保存）/ Q2=A（User/PreferenceVector/SafeguardState 一括初期化）/ Q3=A（負債フラグ → S-03 decideAllow の DEBT 比率 0.35 再利用 + 72h クーリングオフ）/ Q4=A（Amplify Auth v6 ラッパー + Unit-1 AuthTokenProvider 実装）/ Q5=A（日次=嗜好ベクトル更新 / 週次=指標集計を別ハンドラ分離）/ Q6=A（Home は概況スナップショットのみ、詳細は Unit-8）を確定。矛盾なし。Part 2 Generation で aidlc-docs/construction/unit-2-auth-profile/functional-design/ に domain-entities / business-logic-model / business-rules / frontend-components の 4 成果物を生成する。"
+**Context**: Construction Phase / Unit-2 Auth & Profile / Functional Design Part 2 — 成果物生成
+
+## Unit-2 Auth & Profile — Functional Design Part 2 成果物生成完了
+**Timestamp**: 2026-05-29T06:15:00Z
+**User Input**: なし（承認済み方針に基づく生成）
+**AI Response**: "aidlc-docs/construction/unit-2-auth-profile/functional-design/ に 4 成果物を生成。(1) domain-entities.md: User/UserProfile（段階保存 onboardingStep）/ PreferenceVector / SafeguardState（hasDebt → Unit-1 SafeguardPolicy 連携）/ Achievement / WeeklyReport + クラス図。(2) business-logic-model.md: ALG-ONBOARD（5 画面段階保存）/ ALG-INIT（Post Confirmation 冪等初期化）/ ALG-CLAIM / ALG-DEBT（負債 → S-03 decideAllow 0.35 再利用 + 72h クーリングオフ）/ ALG-MFA（Amplify Auth v6 + AuthTokenProvider 実装）/ ALG-LEVEL / ALG-PREF（日次）/ ALG-WEEKLY（週次）/ ALG-HOME。(3) business-rules.md: ONB-01〜07 / INIT-01〜04 / DEBT-01〜05 / MFA-01〜07 / LV-01〜04 / RPT-01〜04 / SEC-01〜03。(4) frontend-components.md: AuthFlow（MFA 画面）/ OnboardingFlow（5 画面 + data-testid）/ HomeScreen（概況スナップショットのみ Q6=A）。全 4 ファイル diagnostics 0。Unit-1 の DomainError/ApiClient/AuditLogger/SafeguardPolicy/AuthTokenProvider を再利用する設計。承認ゲート前。"
+**Context**: Construction Phase / Unit-2 Auth & Profile / Functional Design Part 2 完了 — 承認待ち
+
+## Unit-2 Auth & Profile — Functional Design 承認 → NFR Requirements 着手
+**Timestamp**: 2026-05-29T06:30:00Z
+**User Input**: "このまま進めましょう"
+**AI Response**: "Unit-2 Functional Design を承認として記録。plan のチェックボックス完了、aidlc-state.md の Current Stage を Unit-2 NFR Requirements に更新。Unit-2 は Unit-1 の横断 NFR 基盤(タイムアウト/カバレッジ/SECURITY 基盤/PBT/観測/可用性)を継承するため、NFR Requirements の質問は Unit-2 固有（認証性能・オンボ完了率・MFA 可用性・PII 強化）に絞る。"
+**Context**: Construction Phase / Unit-2 Auth & Profile / Functional Design 承認 → NFR Requirements Part 1 着手
+
+## Unit-2 Auth & Profile — NFR Requirements 回答受領（Q2/Q3 に整合懸念）
+**Timestamp**: 2026-05-29T06:45:00Z
+**User Input**: "記載しました"（Unit-2 NFR-Req Q1=C / Q2=C / Q3=C / Q4=A / Q5=B）
+**AI Response**: "Q1=C（性能目標は決勝で設定）/ Q4=A（PII fail-safe 継承）/ Q5=B（メトリクス最小: サインイン成功率+オンボ完了率）を確定扱い。Q2=C（オンボ完了率を MVP 計測しない）と Q3=C（MVP は MFA 基本のみ、ロックアウト/リセット冷却は決勝）は、(a) Q5=B が『オンボ完了率を計測する』としており Q2=C と矛盾、(b) US-AUTH-02 AC-3/AC-4（72h リセット冷却 / 5 回失敗 15 分ロック）と US-AUTH-03（負債セーフガード）が Functional Design で受入条件として確定済みのため Q3=C で MVP から外すと AC 未達、という 2 点で整合確認が必要。clarification（unit-2-auth-profile-nfr-requirements-clarification.md）を作成。"
+**Context**: Construction Phase / Unit-2 Auth & Profile / NFR Requirements Part 1 — Q2/Q3 の clarification ゲート
+
+## Unit-2 Auth & Profile — NFR Clarification 回答（2=B に倫理リスク指摘）
+**Timestamp**: 2026-05-29T07:00:00Z
+**User Input**: "記入しました"（Clarification 1=B / Clarification 2=B）
+**AI Response**: "Clarification 1=B（メトリクス最小化: サインイン成功率のみ、完了率含む計測は決勝）を受理し Q2=C / Q5=B を『サインイン成功率のみ』に整合。Clarification 2=B（Q3=C のまま、US-AUTH-02 AC-3/AC-4 + US-AUTH-03 を MVP スコープ外）について、MFA の CloudWatch Alarm/異常検知/監査ログ 90 日保持の決勝送りは受理。ただし US-AUTH-03（負債セーフガード）は (a) Unit-1 SafeguardPolicy の DEBT 比率ロジックを再利用するため MVP 追加コストがほぼゼロ、(b) 倫理ライン NG-4（金融実害）/ README・ng-scenarios の倫理配慮の要、(c) これを外すと予選デモで『借金保有者に上限半減・冷却なしで散財させるサービス』になり評価のアンチパターン（倫理配慮欠如）に抵触、という新情報を提示し、US-AUTH-03 のみ MVP 残置を強く推奨する最終確認（clarification 追記）を実施。"
+**Context**: Construction Phase / Unit-2 Auth & Profile / NFR Requirements — US-AUTH-03 倫理スコープの最終確認
+
+## Unit-2 Auth & Profile — NFR Clarification 確定 + Part 2 Generation
+**Timestamp**: 2026-05-29T07:15:00Z
+**User Input**: "Aでいきましょう"（Clarification 3=A）
+**AI Response**: "US-AUTH-03（負債セーフガード）を MVP に残すことで確定。最終確定: Q1=C（性能目標は決勝で設定）/ Q2=C（オンボ完了率は MVP 計測しない）/ Q3=部分（MFA 必須 + 15 分ロック + 72h リセット冷却 = MVP / CloudWatch Alarm 作り込み・異常検知・監査ログ 90 日 = 決勝）/ Q4=A（PII fail-safe 継承）/ Q5=B（MVP メトリクスはサインイン成功率のみ）/ US-AUTH-03 = MVP 残置（Unit-1 SafeguardPolicy 連携、倫理 NG-4 配慮）。注: US-AUTH-02 AC-3/AC-4 のロジック（リセット冷却・ロックアウト）は MFA 機能として MVP に含む（Alarm 作り込みのみ決勝）。Part 2 Generation で nfr-requirements.md / tech-stack-decisions.md を生成。"
+**Context**: Construction Phase / Unit-2 Auth & Profile / NFR Requirements Part 2 — 成果物生成
+
+## Unit-2 Auth & Profile — NFR Requirements Part 2 成果物生成完了
+**Timestamp**: 2026-05-29T07:30:00Z
+**User Input**: なし（確定方針に基づく生成）
+**AI Response**: "aidlc-docs/construction/unit-2-auth-profile/nfr-requirements/ に 2 成果物を生成。(1) nfr-requirements.md: Unit-1 継承の明示 + NFR2-PERF（Q1=C 性能目標は決勝）/ NFR2-OBS（Q2=C/Q5=B サインイン成功率のみ MVP）/ NFR2-SEC（MFA・ロックアウト・リセット冷却ロジックは MVP、Alarm 作り込みは決勝）/ NFR2-SAFE（US-AUTH-03 負債セーフガード MVP 残置、NG-4 倫理配慮）/ NFR2-PII（Q4=A fail-safe 継承）/ カバレッジ / マイルストーン別サマリ / Extension サマリ。(2) tech-stack-decisions.md: Amplify Auth v6 / Cognito トリガー B-01 / S-03 SafeguardPolicy 再利用 / AuthTokenProvider 結線 / データストア（Unit-1 共通設定）。tech-stack diagnostics 0、nfr-requirements は Kiro Spec Format 誤検出 4 件のみ（AI-DLC 成果物のため対象外）。承認ゲート前。"
+**Context**: Construction Phase / Unit-2 Auth & Profile / NFR Requirements Part 2 完了 — 承認待ち
+
+## Unit-2 Auth & Profile — NFR Requirements 承認 → NFR Design 着手
+**Timestamp**: 2026-05-29T07:45:00Z
+**User Input**: "次へ進みましょう"
+**AI Response**: "Unit-2 NFR Requirements を承認として記録。plan のチェックボックス完了、aidlc-state.md の Current Stage を Unit-2 NFR Design に更新。Unit-2 は Unit-1 の設計パターン（PAT-RESIL/PERF/SEC/OBS）と論理コンポーネント（LC-01〜08）を継承するため、NFR Design の質問は Unit-2 固有のパターン（オンボ段階保存の状態管理 / MFA チャレンジ / 負債ステートマシン / 日次・週次バッチ）に絞る。"
+**Context**: Construction Phase / Unit-2 Auth & Profile / NFR Requirements 承認 → NFR Design Part 1 着手
+
+## Unit-2 Auth & Profile — NFR Design 質問確定 + Part 2 Generation
+**Timestamp**: 2026-05-29T08:00:00Z
+**User Input**: "全部Aでお願いします"（Unit-2 NFR-Design Q1=A / Q2=A / Q3=A / Q4=A）
+**AI Response**: "Unit-2 NFR Design の Q1=A（オンボ段階保存: サーバー権威 onboardingStep + クライアントドラフト二層）/ Q2=A（負債解除: タイムスタンプ + 遅延評価、専用スケジューラなし）/ Q3=A（B-08: EventBridge cron 2 本 + 単一 Lambda の別エントリ）/ Q4=A（MFA: Amplify Auth チャレンジ駆動ステートマシン）を確定。矛盾なし。Part 2 Generation で nfr-design-patterns.md / logical-components.md を生成。"
+**Context**: Construction Phase / Unit-2 Auth & Profile / NFR Design Part 2 — 成果物生成
+
+## Unit-2 Auth & Profile — NFR Design Part 2 成果物生成完了
+**Timestamp**: 2026-05-29T08:15:00Z
+**User Input**: なし（承認済み方針に基づく生成）
+**AI Response**: "aidlc-docs/construction/unit-2-auth-profile/nfr-design/ に 2 成果物を生成。(1) nfr-design-patterns.md: Unit-1 継承パターン + PAT2-ONB-01（サーバー権威 step + クライアントドラフト）/ PAT2-DEBT-01（タイムスタンプ + 遅延評価、72h クーリングオフ）/ PAT2-BATCH-01（cron 2 本 + 単一 Lambda 別エントリ）/ PAT2-MFA-01（Amplify チャレンジ駆動状態機械）+ 適用図 + Extension サマリ。(2) logical-components.md: LC2-01〜06（AuthModule / OnboardingController / AuthEdgeLambda / PreferenceVectorUpdater / HomeSnapshotProvider / DebtSafeguardCoordinator）+ モノレポ配置 + Infra で物理化する未確定事項。両ファイル diagnostics 0。承認ゲート前。"
+**Context**: Construction Phase / Unit-2 Auth & Profile / NFR Design Part 2 完了 — 承認待ち
+
+## Unit-2 Auth & Profile — NFR Design 承認 → Infrastructure Design 着手
+**Timestamp**: 2026-05-29T08:30:00Z
+**User Input**: "承認します"
+**AI Response**: "Unit-2 NFR Design を承認として記録。plan のチェックボックス完了、aidlc-state.md の Current Stage を Unit-2 Infrastructure Design に更新。auth-stack は Unit-1 platform-stack の SSM 出力（VPC/UserPool/KMS/SG/SNS）を参照する設計。Unit-2 固有のインフラ（DynamoDB 4 テーブル / B-01 Cognito トリガー / B-08 EventBridge cron 2 本 / auth-stack）の設計計画 + 質問を作成する。"
+**Context**: Construction Phase / Unit-2 Auth & Profile / NFR Design 承認 → Infrastructure Design Part 1 着手
+
+## Unit-2 Auth & Profile — Infrastructure Design 質問確定 + Part 2 Generation
+**Timestamp**: 2026-05-29T08:45:00Z
+**User Input**: "全部Aでいきましょう"（Unit-2 Infra Q1=A / Q2=A / Q3=A / Q4=A）
+**AI Response**: "Unit-2 Infrastructure Design の Q1=A（DynamoDB 4 テーブル分離 PK=userId）/ Q2=A（platform User Pool 参照 + B-01 トリガー追加）/ Q3=A（EventBridge cron 2 本 → B-08 別ハンドラ）/ Q4=A（dev+prd、DynamoDB prd=RETAIN）を確定。矛盾なし。Part 2 Generation で infrastructure-design.md / deployment-architecture.md を生成。"
+**Context**: Construction Phase / Unit-2 Auth & Profile / Infrastructure Design Part 2 — 成果物生成
+
+## Unit-2 Auth & Profile — Infrastructure Design Part 2 成果物生成完了
+**Timestamp**: 2026-05-29T09:00:00Z
+**User Input**: なし（承認済み方針に基づく生成）
+**AI Response**: "aidlc-docs/construction/unit-2-auth-profile/infrastructure-design/ に 2 成果物を生成。(1) infrastructure-design.md: platform SSM 参照表 / DynamoDB 4 テーブル（PK=userId, PAY_PER_REQUEST/PITR/SSE-KMS, prd=RETAIN）/ Cognito トリガー（B-01 アタッチ）/ EventBridge cron 2 本（日次04:00/週次日曜22:00）/ Lambda（VPC+SG, 個別ロール）/ 観測 / 論理→物理マッピング / Extension サマリ。(2) deployment-architecture.md: スタック依存図（platform→auth, SSM 参照）/ デプロイ順序 / dev+prd 環境 / CI フロー / bin/app.ts 追加予定 / cdk-nag。deployment diagnostics 0、infrastructure-design は Kiro Spec Format 誤検出 7 件のみ（AI-DLC 成果物のため対象外）。承認ゲート前。"
+**Context**: Construction Phase / Unit-2 Auth & Profile / Infrastructure Design Part 2 完了 — 承認待ち
+
+## Unit-2 Auth & Profile — Infrastructure Design 承認 → Code Generation Part 1 着手
+**Timestamp**: 2026-05-29T09:15:00Z
+**User Input**: "進みましょう"
+**AI Response**: "Unit-2 Infrastructure Design を承認として記録。plan のチェックボックス完了、aidlc-state.md の Current Stage を Unit-2 Code Generation Part 1 に更新。Unit-2 のコード生成計画を作成する。OpenAPI auth パス詳細化 + DynamoDB モデル + B-01/B-08 + auth API Lambda + M-11 AuthModule（状態機械）+ OnboardingController + HomeScreen + auth-stack を対象とし、Unit-1 の共通ライブラリ（exceptions/logging/authz/SafeguardPolicy/ApiClient）を再利用する。承認後 Part 2 を一気通貫実行。"
+**Context**: Construction Phase / Unit-2 Auth & Profile / Code Generation Part 1 着手
+
+## Unit-2 Auth & Profile — Code Generation Part 1（計画）作成・承認待ち
+**Timestamp**: 2026-05-29T09:30:00Z
+**User Input**: なし（Infrastructure Design 承認を受けて Code Generation Part 1 に着手）
+**AI Response**: "Unit-2 のコード生成計画 `unit-2-auth-profile-code-generation-plan.md` を作成。15 ステップ構成（Step1 OpenAPI auth 詳細化 → Step2 ドメインモデル+リポジトリ → Step3-4 ドメインロジック（onboarding/level/debt_safeguard）+PBT → Step5 B-01 → Step6-7 auth API Lambda+テスト → Step8 B-08 日次/週次バッチ → Step9-10 M-11 AuthModule 状態機械+テスト → Step11-12 OnboardingController/HomeScreen+テスト → Step13-14 auth-stack+snapshot → Step15 仕上げ+総括）。Unit-1 共通ライブラリ再利用を明示、MVP スコープ（MFA/負債セーフガードは MVP、Alarm/完了率計測は決勝）。ストーリートレーサビリティ US-AUTH-01/02/03 を付与。承認待ち。"
+**Context**: Construction Phase / Unit-2 Auth & Profile / Code Generation Part 1 — 計画承認ゲート前
+
+## Unit-2 Auth & Profile — Code Generation Part 1 承認 → Part 2 一気通貫実行
+**Timestamp**: 2026-05-29T09:45:00Z
+**User Input**: "Aでお願いします"（計画承認 + 全 15 ステップ一気通貫実行）
+**AI Response**: "Unit-2 のコード生成計画を承認として記録。Part 2 を Step 1〜15 の順で一気通貫実行。Unit-1 共通ライブラリ再利用。各ステップ完了時にプランの [x] 更新。"
+**Context**: Construction Phase / Unit-2 Auth & Profile / Code Generation Part 2 — 実行開始
+
+## Unit-2 Auth & Profile — Code Generation Part 2 完了（全 15 ステップ）
+**Timestamp**: 2026-05-29T10:30:00Z
+**User Input**: なし（一気通貫実行の完了報告）
+**AI Response**: "Unit-2 のコード生成 Step 1〜15 を完了。生成物: shared（OpenAPI auth 詳細化 + 生成型）、backend/src/auth（models/repositories（Protocol+DynamoDB）/onboarding/level/debt_safeguard/post_confirmation/pre_token_generation/handlers（profile/safeguard_debt/responses）/preference_updater/weekly_report + tests（fakes 含む 6 テスト））、mobile/src/features/auth（auth-module 状態機械+token-provider+テスト / onboarding-store+テスト / home hook）、infra（auth-stack: DynamoDB4+B-08×2+cron2+SSM参照 / bin/app.ts 追加 / auth-stack.test.ts）、msw-handlers に auth 追加、code/ 配下 8 サマリ。全コードファイル diagnostics 0。US-AUTH-01/02/03 を MVP スコープで実装（US-AUTH-03 は Unit-1 SafeguardPolicy 再利用で NG-4 配慮を MVP 残置）。Unit-1 共通ライブラリ再利用で二重実装なし。ネットワーク制約によりテスト実行・cdk synth は Build and Test で実施。承認ゲート前（Step 15）。"
+**Context**: Construction Phase / Unit-2 Auth & Profile / Code Generation Part 2 完了 — 承認待ち
+
+## Unit-2 Auth & Profile — Code Generation 承認 → 🎉 Unit-2 完了 + コミット
+**Timestamp**: 2026-05-29T10:45:00Z
+**User Input**: "承認・コミットしましょう"
+**AI Response**: "Unit-2 Code Generation を承認として記録。Unit-2 の Per-Unit Loop 全ステージ完了。aidlc-state.md で Unit-2 を完了マーク。git-ops.md を参照: Unit を跨ぐ大規模変更 + shared/schema/ 更新を含むため feature ブランチ + PR が適切と判断。git 現状確認 → feature/unit-1-2/platform-auth-construction ブランチを作成しコミット（main/master 直 push 禁止、破壊的操作なし）。コミットメッセージは日本語 50 文字以内 + 本文。"
+**Context**: Construction Phase / Unit-2 完了 → コミット
 
 ---
 
