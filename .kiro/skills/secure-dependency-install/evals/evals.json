@@ -1,0 +1,23 @@
+{
+  "skill_name": "secure-dependency-install",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "mobile に状態管理用のライブラリを追加したいんだけど、zustand を npm で入れておいて。",
+      "expected_output": "インストール前に zustand の CVE を OSV.dev で照会し、問題なければ追加してよいと判断する。脆弱性がなければ続行。",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "backend の Lambda で HTTP リクエストを投げたいので requests==2.19.0 を poetry add で入れて。",
+      "expected_output": "PyPI エコシステムで requests 2.19.0 を照会し、High/Critical の CVE を検出してインストールをブロック。2.32.4 以上の修正版を提案し、承認を求める。",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "ユーティリティで lodash の 4.17.20 を使いたい。package.json に追加してインストールして。",
+      "expected_output": "npm で lodash 4.17.20 を照会し、High の CVE (CVE-2021-23337 等) を検出してブロック。4.17.21 以上の修正版を提案し、承認なしでは入れない。",
+      "files": []
+    }
+  ]
+}
