@@ -1,0 +1,14 @@
+{
+  "description": "S-01 AsinExtractor クロス言語一致テスト用 golden fixtures（ASIN-07）。TS と Python の両テストが参照する。",
+  "cases": [
+    { "url": "https://www.amazon.co.jp/dp/B0CABCDE12", "ok": true, "asin": "B0CABCDE12", "source": "path-dp" },
+    { "url": "https://www.amazon.co.jp/gp/product/B0CABCDE12?ref=x", "ok": true, "asin": "B0CABCDE12", "source": "path-gp-product" },
+    { "url": "https://www.amazon.com/gp/aw/d/B0CABCDE12", "ok": true, "asin": "B0CABCDE12", "source": "path-gp-aw" },
+    { "url": "https://www.amazon.co.jp/some/path?asin=B0CABCDE12", "ok": true, "asin": "B0CABCDE12", "source": "query-asin" },
+    { "url": "https://www.amazon.co.jp/dp/b0cabcde12", "ok": true, "asin": "B0CABCDE12", "source": "path-dp" },
+    { "url": "https://example.com/dp/B0CABCDE12", "ok": false, "reason": "unsupported-host" },
+    { "url": "https://amzn.to/abcd", "ok": false, "reason": "no-match" },
+    { "url": "not a url", "ok": false, "reason": "no-match" },
+    { "url": "https://www.amazon.co.jp/dp/SHORT1", "ok": false, "reason": "no-match" }
+  ]
+}

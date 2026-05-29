@@ -1,0 +1,111 @@
+openapi: 3.1.0
+info:
+  title: YUDANE API
+  version: 1.0.0
+  description: >
+    YUDANE（委ね）REST API 契約の Single Source of Truth（OpenAPI 3.1）。
+    Unit-1 Platform が第1版で全 UC のパス骨格 + 共通コンポーネント + 必須フィールド最小セットを凍結する。
+    各 Unit は担当パスに省略可能フィールドを非破壊的に追記する（api-contracts.md §2/§6）。
+  license:
+    name: SEE LICENSE IN LICENSE
+servers:
+  - url: https://api.yudane.app
+    description: 本番（prd）
+  - url: http://localhost:4010
+    description: Prism モックサーバー（並行開発）
+
+tags:
+  - name: platform
+    description: Unit-1 横断基盤（health / telemetry）
+  - name: auth
+    description: Unit-2 認証・プロファイル
+  - name: debate
+    description: Unit-3 論破チャット（UC-01）
+  - name: reel
+    description: Unit-4 エージェント型リール（UC-02）
+  - name: cart
+    description: Unit-5 カート介入（UC-03）
+  - name: calendar
+    description: Unit-6 カレンダー連動（UC-04）
+  - name: safeguard
+    description: Unit-7 セーフガード（UC-08）
+  - name: report
+    description: Unit-8 ダメ化レポート（UC-06/07）
+
+security:
+  - bearerAuth: []
+
+paths:
+  # --- Unit-1 Platform ---
+  /v1/health:
+    $ref: './paths/health.yaml#/health'
+  /v1/telemetry:
+    $ref: './paths/telemetry.yaml#/telemetry'
+  # --- Unit-2 Auth & Profile ---
+  /v1/users/{userId}/profile:
+    $ref: './paths/auth.yaml#/userProfile'
+  /v1/users/{userId}:
+    $ref: './paths/auth.yaml#/user'
+  # --- Unit-3 Debate ---
+  /v1/debate-sessions:
+    $ref: './paths/debate.yaml#/debateSessions'
+  /v1/debate-sessions/{sessionId}/messages:
+    $ref: './paths/debate.yaml#/debateMessages'
+  # --- Unit-4 Reel ---
+  /v1/reel:
+    $ref: './paths/reel.yaml#/reel'
+  /v1/amazon-transitions:
+    $ref: './paths/reel.yaml#/amazonTransitions'
+  # --- Unit-5 Cart Intercept ---
+  /v1/cart-watch-items:
+    $ref: './paths/cart.yaml#/cartWatchItems'
+  /v1/cart-watch-items/{itemId}:
+    $ref: './paths/cart.yaml#/cartWatchItem'
+  # --- Unit-6 Calendar ---
+  /v1/calendar-categories:
+    $ref: './paths/calendar.yaml#/calendarCategories'
+  # --- Unit-7 Safeguard ---
+  /v1/safeguard:
+    $ref: './paths/safeguard.yaml#/safeguard'
+  # --- Unit-8 Dame Report ---
+  /v1/report:
+    $ref: './paths/report.yaml#/report'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Cognito User Pool 発行の JWT アクセストークン
+  parameters:
+    CorrelationId:
+      $ref: './components/parameters/common.yaml#/CorrelationId'
+    Cursor:
+      $ref: './components/parameters/common.yaml#/Cursor'
+    Limit:
+      $ref: './components/parameters/common.yaml#/Limit'
+  responses:
+    ProblemDetails:
+      $ref: './components/responses/problem-details.yaml#/ProblemDetails'
+    Unauthorized:
+      $ref: './components/responses/problem-details.yaml#/Unauthorized'
+    Forbidden:
+      $ref: './components/responses/problem-details.yaml#/Forbidden'
+    RateLimited:
+      $ref: './components/responses/problem-details.yaml#/RateLimited'
+  schemas:
+    ProblemDetails:
+      $ref: './components/schemas/common.yaml#/ProblemDetails'
+    HealthStatus:
+      $ref: './components/schemas/common.yaml#/HealthStatus'
+    TelemetryEnvelope:
+      $ref: './components/schemas/common.yaml#/TelemetryEnvelope'
+    TelemetryEvent:
+      $ref: './components/schemas/common.yaml#/TelemetryEvent'
+    IngestResult:
+      $ref: './components/schemas/common.yaml#/IngestResult'
+    User:
+      $ref: './components/schemas/common.yaml#/User'
+    CalendarEvent:
+      $ref: './components/schemas/common.yaml#/CalendarEvent'

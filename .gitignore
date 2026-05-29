@@ -59,15 +59,14 @@ node_modules/
 .yarn/
 .pnp.*
 
-# --- Flutter / Dart ---
-.dart_tool/
-.packages
-build/
-.flutter-plugins
-.flutter-plugins-dependencies
-.pub-cache/
-.pub/
-# 注: pubspec.lock は意図的にコミット対象（AGENTS.md 開発環境規約）
+# --- TypeScript / ビルドキャッシュ ---
+*.tsbuildinfo
+coverage/
+.vitest/
+
+# --- OpenAPI 生成物の扱い ---
+# 生成型（shared/schema/types/api.ts, backend/src/common/models/api.py）は
+# api-contracts.md §3 によりコミット必須。ここでは無視しない
 
 # --- AWS CDK ---
 cdk.out/

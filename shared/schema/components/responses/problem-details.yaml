@@ -1,0 +1,63 @@
+ProblemDetails:
+  description: RFC 7807 Problem Details 形式のエラーレスポンス（api-contracts.md §4.4）
+  content:
+    application/problem+json:
+      schema:
+        $ref: '../schemas/common.yaml#/ProblemDetails'
+      examples:
+        validation:
+          value:
+            type: https://api.yudane.app/errors/validation.required-field
+            title: 必須項目が不足しています
+            status: 400
+            detail: 'userId は必須です'
+            instance: /v1/telemetry
+
+Unauthorized:
+  description: 未認証（401）
+  content:
+    application/problem+json:
+      schema:
+        $ref: '../schemas/common.yaml#/ProblemDetails'
+      examples:
+        unauthenticated:
+          value:
+            type: https://api.yudane.app/errors/auth.unauthenticated
+            title: 認証が必要です
+            status: 401
+
+Forbidden:
+  description: 認可エラー（403、IDOR 含む SECURITY-08）
+  content:
+    application/problem+json:
+      schema:
+        $ref: '../schemas/common.yaml#/ProblemDetails'
+      examples:
+        idor:
+          value:
+            type: https://api.yudane.app/errors/auth.idor
+            title: このリソースにアクセスする権限がありません
+            status: 403
+
+RateLimited:
+  description: レート制限超過（429、SECURITY-11）
+  headers:
+    X-RateLimit-Limit:
+      schema:
+        type: integer
+    X-RateLimit-Remaining:
+      schema:
+        type: integer
+    X-RateLimit-Reset:
+      schema:
+        type: integer
+  content:
+    application/problem+json:
+      schema:
+        $ref: '../schemas/common.yaml#/ProblemDetails'
+      examples:
+        rateLimited:
+          value:
+            type: https://api.yudane.app/errors/rate-limit.exceeded
+            title: リクエストが多すぎます
+            status: 429

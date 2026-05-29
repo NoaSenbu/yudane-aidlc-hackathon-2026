@@ -1,0 +1,27 @@
+CorrelationId:
+  name: X-Correlation-Id
+  in: header
+  required: false
+  description: クライアント起点の相関 ID（UUID v4）。レスポンス・ログ・X-Ray に伝搬される（REQ-01）
+  schema:
+    type: string
+    format: uuid
+
+Cursor:
+  name: cursor
+  in: query
+  required: false
+  description: ページネーション用カーソル（不透明トークン）
+  schema:
+    type: string
+
+Limit:
+  name: limit
+  in: query
+  required: false
+  description: 1 ページあたりの最大件数
+  schema:
+    type: integer
+    minimum: 1
+    maximum: 50
+    default: 10
