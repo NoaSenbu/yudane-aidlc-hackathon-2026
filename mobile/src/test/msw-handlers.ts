@@ -38,4 +38,25 @@ export const handlers = [
     }
     return HttpResponse.json({ id: params.userId, createdAt: '2026-05-30T00:00:00Z' });
   }),
+
+  // POST/PATCH /v1/users/{userId}/profile（US-AUTH-01 オンボ段階保存）
+  http.post(`${BASE}/v1/users/:userId/profile`, ({ params }) =>
+    HttpResponse.json(
+      { userId: params.userId, onboardingStep: 1, profileCompleted: false },
+      { status: 201 },
+    ),
+  ),
+  http.patch(`${BASE}/v1/users/:userId/profile`, ({ params }) =>
+    HttpResponse.json({ userId: params.userId, onboardingStep: 5, profileCompleted: true }),
+  ),
+
+  // GET /v1/home（ホーム概況、Q6=A）
+  http.get(`${BASE}/v1/home`, () =>
+    HttpResponse.json({
+      candidateCount: 12,
+      cartWatchCount: 3,
+      yudaneLevel: 5,
+      remainingBudgetYen: 42_000,
+    }),
+  ),
 ];

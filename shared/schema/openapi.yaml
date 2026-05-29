@@ -109,3 +109,11 @@ components:
       $ref: './components/schemas/common.yaml#/User'
     CalendarEvent:
       $ref: './components/schemas/common.yaml#/CalendarEvent'
+    UserProfile:
+      $ref: './components/schemas/auth.yaml#/UserProfile'
+    SafeguardSettings:
+      $ref: './components/schemas/auth.yaml#/SafeguardSettings'
+    Achievement:
+      $ref: './components/schemas/auth.yaml#/Achievement'
+    HomeSnapshot:
+      $ref: './components/schemas/auth.yaml#/HomeSnapshot'

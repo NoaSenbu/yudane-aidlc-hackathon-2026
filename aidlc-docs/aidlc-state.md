@@ -9,7 +9,7 @@
 - **Project Type**: Greenfield
 - **Start Date**: 2026-05-07T00:00:00Z
 - **Current Phase**: 🟢 CONSTRUCTION PHASE
-- **Current Stage**: Unit-1 Platform / Code Generation Part 2 完了 — 承認待ち
+- **Current Stage**: 🎉 Unit-1 + Unit-2 完了（Member A 前半フェーズ完了）→ コミット
 - **User Language**: Japanese
 
 ## Workspace State
@@ -41,13 +41,19 @@
   - AGENTS.md: Git 運用 / 品質ゲート / MVP・決勝 Readiness / 同期プロトコル
   - structure.md: 識別子命名規則 / コード編集ルール
   - tech.md: Lint・型・フォーマッタ / API 契約ガバナンス / テストレイヤー
-- [ ] Per-Unit Loop（進行中: Unit-1 Platform）
-  - **Unit-1 Platform**
-    - [x] Functional Design（承認済み、2026-05-29）
-    - [x] NFR Requirements（承認済み、2026-05-29）
-    - [x] NFR Design（承認済み、2026-05-29）
-    - [x] Infrastructure Design（承認済み、2026-05-29）
-    - [ ] Code Generation（進行中 — Part 1 計画）
+- [ ] Per-Unit Loop（進行中: Unit-2 Auth & Profile）
+  - **Unit-1 Platform** ✅ 完了（2026-05-29）
+    - [x] Functional Design（承認済み）
+    - [x] NFR Requirements（承認済み）
+    - [x] NFR Design（承認済み）
+    - [x] Infrastructure Design（承認済み）
+    - [x] Code Generation（承認済み、Step 1〜20 完了）
+  - **Unit-2 Auth & Profile**（Member A）✅ 完了（2026-05-29）
+    - [x] Functional Design（承認済み）
+    - [x] NFR Requirements（承認済み）
+    - [x] NFR Design（承認済み）
+    - [x] Infrastructure Design（承認済み）
+    - [x] Code Generation（承認済み、Step 1〜15 完了）
 - [ ] Functional Design (EXECUTE, per-unit)
 - [ ] NFR Requirements (EXECUTE, per-unit)
 - [ ] NFR Design (EXECUTE, per-unit)

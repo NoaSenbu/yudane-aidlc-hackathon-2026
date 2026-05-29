@@ -70,3 +70,46 @@ class CalendarEvent(BaseModel):
     category: CalendarCategory
     timeRange: TimeRange
     confidence: float | None = None
+
+
+# --- Unit-2 Auth & Profile ドメインスキーマ（非破壊追記） ---
+
+
+class UserProfile(BaseModel):
+    userId: str
+    monthlyDisposableYen: int | None = None
+    monthlySavingsYen: int | None = None
+    favoriteBrands: list[str] | None = None
+    ngCategories: list[str] | None = None
+    hasDebt: bool | None = None
+    associatesDisclosureAcknowledged: bool | None = None
+    onboardingStep: int | None = None
+    profileCompleted: bool | None = None
+
+
+class SafeguardFlagsModel(BaseModel):
+    cooldownOn: bool | None = None
+    quietWeek: bool | None = None
+    hasDebt: bool | None = None
+
+
+class SafeguardSettings(BaseModel):
+    monthlyLimitYen: int
+    currentBudgetUsedYen: int | None = None
+    remainingYen: int | None = None
+    flags: SafeguardFlagsModel | None = None
+    debtReleaseRequestedAt: str | None = None
+
+
+class Achievement(BaseModel):
+    exp: int
+    level: int
+    titles: list[str] | None = None
+    currentStreakDays: int | None = None
+
+
+class HomeSnapshot(BaseModel):
+    candidateCount: int | None = None
+    cartWatchCount: int | None = None
+    yudaneLevel: int | None = None
+    remainingBudgetYen: int | None = None
