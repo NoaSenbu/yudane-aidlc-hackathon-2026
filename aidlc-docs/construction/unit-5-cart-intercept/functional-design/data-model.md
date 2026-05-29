@@ -290,23 +290,41 @@ Q5 = C 反映により、`Users.PROFILE` に以下属性を追加（Unit-2 Funct
 
 B-06 NotificationDispatcher が Property 5 担保のため、`SafeguardStates.PK=USER#u, SK=SAFEGUARD#{month}` を読み取る。書き込みは Unit-7 owner のみ。
 
-**2 巡目セルフレビュー後追記（Issue D 関連）**: B-06 が `evaluate_notification(...)` を呼び出す際、以下の属性を SafeguardStates から読み取る必要がある:
+**2 巡目セルフレビュー後追記（Issue D 関連）+ 2026-05-29 修正（Issue B6 / A4 対応）**: B-06 が `evaluate_notification(...)` を呼び出す際、以下の属性を SafeguardStates から読み取る必要がある:
 
 | 属性 | 型 | 説明 |
 |---|---|---|
-| `cooldownOn` | Bool | ユーザー手動 ON フラグ |
-| `cooldownUntil` | String? | 自動冷却の解除時刻（ISO 8601、`evaluate_notification` の `cooldown_until` 引数に渡す） |
-| `quietWeekOn` | Bool | 「静かな週」モード |
-| `monthlyUsed` | Number | 当月の Amazon 遷移数 |
-| `monthlyLimit` | Number | 月間上限 |
+| `cooldown_on` | Bool | ユーザー手動 ON フラグ |
+| `cooldown_until` | String? | 自動冷却の解除時刻（ISO 8601、`evaluate_notification` の `cooldown_until` 引数に渡す） |
+| `quiet_week` | Bool | 「静かな週」モード |
+| `monthly_limit_yen` | Number | 月間上限（**main 由来 `decide_allow` 実装と整合した命名 / 単位**、business-rules.md SG-04）|
+| `current_budget_used_yen` | Number | 当月の消費額合計（円、business-rules.md SG-05）|
+| `has_debt` | Bool | 負債保有フラグ（SG-04、実効上限の re-scale 判定）|
 
-これら 5 属性の正式スキーマは Unit-7 Safeguard Functional Design で確定する。本 Unit ではこれらが **取得可能**であることを前提とする。
+これら 6 属性の正式スキーマは Unit-7 Safeguard Functional Design で確定する。本 Unit ではこれらが **取得可能**であることを前提とする。
 
-> **正式合意プロセス**: 上記属性 5 件 + S-03 `evaluate_notification` 関数の追加について、[functional-design.md §8.1 Unit 間契約レビュープロセス](./functional-design.md#81-本-unit-が他-unit-owner-にレビュー依頼する事項) で Member C（Unit-7 owner）にレビュー依頼。期限 2026-05-30 18:00 JST、合意エビデンスは GitHub PR `#safeguard-001` のマージ。
+> **2026-05-29 改訂（Issue B6 / A4 対応）**: 当初は `monthlyUsed` / `monthlyLimit` / `cooldownOn` 等のキャメルケース + `_yen` suffix なしで定義していたが、main 由来の `shared/safeguard-policy/{python/safeguard_policy.py, src/decide-allow.ts}` の正本実装と整合するため snake_case + `_yen` suffix に統一。`has_debt` は当初欠落していた（`decide_allow` の `flags.has_debt` 引数で必須）ため追加。
+
+> **正式合意プロセス**: 上記属性 6 件 + S-03 `evaluate_notification` 関数の追加について、[functional-design.md §8.1 Unit 間契約レビュープロセス](./functional-design.md#81-本-unit-が他-unit-owner-にレビュー依頼する事項) で Member C（Unit-7 owner）にレビュー依頼。期限 2026-05-30 18:00 JST、合意エビデンスは GitHub PR `#safeguard-001` のマージ。Unit-1 §4.5 SafeguardStates 暫定スキーマも本 Unit-5 拡張版に同期するよう Member A に依頼（Issue B6）。
 
 ### 3.3 IdempotencyKeys テーブル（Unit-1 owner）使用
 
 `POST /v1/cart-watch-items` / `POST /v1/push-tokens` で `with_idempotency` middleware（Unit-1 §3.2）を経由。テーブル仕様は Unit-1 で確定済み、本 Unit は consumer。
+
+**2026-05-29 追記（Issue A1 対応）**: main 由来の Unit-1 では `IdempotencyKeysTable` / `IdempotencyBucket` および `backend/src/common/idempotency/with_idempotency.py` が**未実装**であることを確認。本 Unit の B-04 / push_token Lambda の Property 1（重複登録の冪等性）を担保するため、**Member A への正式依頼**として [functional-design.md §8.1](./functional-design.md#81-本-unit-が他-unit-owner-にレビュー依頼する事項) に記録（PlatformStack 7 項目追実装の一部）。
+
+### 3.4 CartWatchItems 仕様の Unit-1 §4.3 同期依頼（Issue B5）
+
+main 由来の [Unit-1 data-model.md §4.3 CartWatchItems](../../unit-1-platform/functional-design/data-model.md#43-cartwatchitemsunit-5-owner) 暫定スキーマは、本 Unit が確定した以下と乖離している:
+
+| 項目 | Unit-1 暫定版（main） | Unit-5 確定版（本 §1）| Unit-1 同期方針 |
+|---|---|---|---|
+| ttl | 24 時間 | watching: 30 日 / dismissed-purchased: 7 日 | Unit-5 確定版に追従 |
+| status enum | watching / notified-* / purchased / dismissed | + **`watching_orphaned`**（NFR Design Q4=A' 追加）| Unit-5 確定版に追従 |
+| ConditionExpression | 未定義 | §1.3 Stateful 不正遷移防止 | Unit-5 が owner、Unit-1 §4.3 にリンク追加 |
+| GSI1 (status × createdAt) | 未定義 | `STATUS#{status}` × `{createdAt}`、Sparse Index | Unit-5 が owner、Unit-1 §4.3 にリンク追加 |
+
+> **正式合意プロセス**: Member A に Unit-1 §4.3 を Unit-5 §1.2 に同期する PR を依頼（[functional-design.md §8.1](./functional-design.md#81-本-unit-が他-unit-owner-にレビュー依頼する事項) `#cart-001` PR にカスケード）。期限 2026-05-29 18:00 JST。本 Unit-5 設計の方が新しい検討結果のため、**Unit-5 を正本としてカスケード**する方向で合意取得。
 
 ---
 

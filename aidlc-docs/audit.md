@@ -1198,3 +1198,44 @@ doc/backlog.md に B-504『APNs Production Certificate 取得（Apple Developer 
 **Context**: Git 運用 — origin/develop プル時の衝突解消、両 Unit の並行進捗を統合
 
 ---
+
+
+## Unit-5 整合性修正 — develop プル後の Unit-1 実装 / shared/* / steering との 15 件矛盾解消
+**Timestamp**: 2026-05-29T13:00:00Z
+**User Input**: "Unit1はまだ実装途中なので、Unit5として必要な修正をすすめてください"
+**AI Response**: "Unit-5 設計成果物を main 由来の Unit-1 実装 / shared/* 正本実装 / shared-infrastructure.md / steering（AGENTS / api-contracts / structure / tech-cdk）と整合させる修正を 15 件すべて完了。基本方針は『Unit-5 docs を現状の正本実装に合わせる + Unit-1 への追実装依頼は §8.1 Member A 合意プロセスに格上げ』で進めた。
+
+Priority A（重大、4 件）:
+- A1（PlatformStack 追実装依頼の格上げ）: §8.1 に PlatformStack 7 項目追実装依頼を新規追加（kmsKey public 化 / IdempotencyKeysTable / IdempotencyBucket / DebateRateLimitsTable / alertTopic public 化 / developerInitial props / with_idempotency middleware）。期限 2026-05-29 18:00 JST、エビデンス GitHub PR #platform-additions-001。さらに §8.2 ブロッカー判定に代替案 A/B/C を追加（Member D 直接 PR / CartStack 内一時実装 / dev 環境のみ完結）。data-model.md §3.3 にも追記して相互参照。
+- A2（OpenAPI paths/cart.yaml 拡張）: shared/schema/paths/cart.yaml を全面書き換え。POST /v1/cart-watch-items は Idempotency-Key header + retry_count 含む CartWatchItemDto レスポンス、GET /v1/cart-watch-items（一覧、status filter + cursor）追加、{itemId} → {asin} へリネーム、DELETE /v1/cart-watch-items/{asin}（dismiss）追加、POST /v1/push-tokens（Q5=C）追加。components/schemas に CartWatchItemDto / CartIntakeResponse / PushTokenResponse 定義。openapi.yaml の paths 参照も {asin} に更新 + /v1/push-tokens 追加。
+- A3（命名規約統一）: shared-infrastructure.md §2 / tech-cdk.md §4 に揃えた。Stack: yudane-{env}-cart-stack → cart-{env}-stack（yudane- prefix 削除、unit-env 順）。リソース: yudane-{env}-cart-* → yudane-cart-{env}-*（unit-env 順）。個人 sandbox: cart-dev-d-stack / yudane-cart-dev-d-watch-items。Secrets Manager: yudane/{env}/cart/* slash 区切り → yudane-cart-{env}-* hyphen 区切り。SSM パスは 4 階層固定 /yudane/{env}/cart/<key> を維持し、sandbox は env を dev-d 形式で表現（B7 統合）。infrastructure-design.md / deployment-architecture.md / functional-design.md の全該当箇所を sed + str_replace で一括変換、yudane-dev-platform-stack も platform-dev-stack に統一。
+- A4（evaluate_notification を decide_allow ラッパー方式に変更）: 当初の独自実装は既存 decide_allow と評価順 / 引数名 / 戻り値の 3 点で乖離していた問題を解消。functional-design.md §2.4 を全面書き直し、TS / Python ともに decide_allow を内包し、cooldown_until 自動冷却の追加チェック + warn → block 格上げ（NG-6 配慮、SG-07 例外）の 2 点のみを担当する薄いラッパーに変更。戻り値は SafeguardDecision { decision, reason_code, effective_limit_yen, remaining_yen } を維持。B-06 NotificationDispatcher 呼び出し側も decision.decision === 'block' / decision.reason_code を使う形に修正。data-model.md §3.2 SafeguardStates 属性を main 整合に更新（snake_case + _yen suffix + has_debt 追加で 6 属性に）。
+
+Priority B（中、7 件）:
+- B1（AsinResult 判別ユニオン整合）: shared/asin-extractor 実装は AsinResult = { ok: true; asin } | { ok: false; reason } の判別ユニオンを返すため、Unit-5 擬似コード 4 箇所を if (!result.ok) {...} const asin = result.asin; 形式に書き換え。Mobile / Backend の TS / Python 両方を整合。
+- B2（AuditLogger クラスベース呼び出し）: 全擬似コード 14 箇所を log()/metric() 関数呼び出しから AuditLogger クラスのインスタンスメソッド（audit.log/audit.metric）に sed で一括変換。各 lambda_handler 冒頭に audit = AuditLogger(service=\"...\") の初期化行を追加（cart-intake / cart-dismiss / cart-notification-dispatcher の 3 ハンドラ）。nfr-design-patterns.md のコード例にも『audit は呼び出し元 lambda_handler 冒頭で初期化済み』のコメント追加。
+- B3（apiFetch ヘルパー新規追加）: mobile/src/features/platform/api-client/api-fetch.ts を新規作成し、ApiClient.request の薄いラッパー + idempotencyKey オプション対応 + setApiClient シングルトン管理を export。index.ts でも公開。Unit-5 docs の擬似コード import に注釈追加。
+- B4（telemetry-contracts 追記）: shared/telemetry-contracts/{src/index.ts, python/telemetry_contracts.py} に EVENT_CATALOG 11 件追加（cart.intake_received / cart.attack_30m_fired / cart.attack_6h_fired / cart.attack_24h_fired / cart.dismiss / cart.amazon_transition / cart.notification_tap / cart.notification_suppressed / cart.share_extension_open / cart.push_permission_denied / cart.watching_orphaned）+ METRIC_CATALOG 9 件追加（cart.intake.created / cart.intake.reactivated / cart.dismissed / cart.scheduler.create_failed / cart.scheduler.retry_succeeded / cart.scheduler.retry_failed / cart.notification.dispatched / cart.notification.delay_seconds / cart.notification.suppressed_by_safeguard）+ ALLOWED_FIELDS 8 件追加（asin / itemId / cartWatchItemId / step / templateId / previousStatus / platform / triggerSource）+ PII_FIELDS に pushEndpointId 追加。TS / Python 同期更新。
+- B5（CartWatchItems Unit-1 §4.3 同期依頼）: data-model.md §3.4 を新設、Unit-1 暫定版（ttl 24h / status enum 6 種）と Unit-5 確定版（ttl 30d/7d / status 7 種 + watching_orphaned / ConditionExpression / GSI1 sparse）の差分を表で明示、Member A への同期依頼を §8.1 #cart-001 PR にカスケードする旨を記録（Unit-5 を正本としてカスケード方向）。
+- B6（SafeguardStates 属性名統一）: data-model.md §3.2 を全面書き直し。当初 cooldownOn/cooldownUntil/quietWeekOn/monthlyUsed/monthlyLimit のキャメルケース 5 属性 → snake_case + _yen suffix + has_debt 追加の 6 属性（cooldown_on / cooldown_until / quiet_week / monthly_limit_yen / current_budget_used_yen / has_debt）に統一。main 由来の decide_allow 実装と完全整合。§8.1 Member C 依頼項目も 5 件 → 6 件に更新。
+- B7（SSM パス階層を 4 段固定）: shared-infrastructure.md §1 規約 /yudane/<env>/<unit>/<key> 4 階層固定に揃えた。sandbox は env を dev-d 形式で表現（/yudane/dev-d/cart/eum-application-id）し階層挿入を回避。infrastructure-design.md §1.3 と §9 の SSM Parameter 一覧を一括修正。
+
+Priority C（軽微、4 件）:
+- C1（TDD 整合注記）: nfr-requirements.md §8.3 / nfr-design-patterns.md §7 / infrastructure-design.md Testing Strategy に AGENTS.md §12 TDD 開発スタイル / tech-cdk.md §6.1 Snapshot TDD への参照リンク + 本ステージとの整合性宣言を追記。
+- C2（Authorizer 配置 3 行依頼）: §8.1 Member A 依頼項目に統合済み（A1 で対応）。
+- C3（Telemetry 自動計測 4 イベント注記）: M-05 CartInterceptScreen 責務リスト末尾に M-13 Telemetry 自動計測 4 イベント（screen_view / app_foreground / app_background / deeplink_open）+ 手動計測 4 イベントの発火注記を追加。
+- C4（Secrets 命名統一）: A3 と統合済み（hyphen 区切り完全統一）。
+
+修正ファイル統計（Unit-5 docs 9 ファイル + main 由来 5 ファイル = 計 14 ファイル）:
+- aidlc-docs/construction/unit-5-cart-intercept/functional-design/{functional-design.md, data-model.md, sequence-diagrams.md}（3 件）
+- aidlc-docs/construction/unit-5-cart-intercept/nfr-requirements/{nfr-requirements.md, tech-stack-decisions.md}（2 件）※ tech-stack-decisions.md は変更なし
+- aidlc-docs/construction/unit-5-cart-intercept/nfr-design/{nfr-design-patterns.md, logical-components.md}（2 件）※ logical-components.md は表面上の文字列なし
+- aidlc-docs/construction/unit-5-cart-intercept/infrastructure-design/{infrastructure-design.md, deployment-architecture.md}（2 件）
+- shared/schema/{openapi.yaml, paths/cart.yaml}（2 件）
+- shared/telemetry-contracts/{src/index.ts, python/telemetry_contracts.py}（2 件）
+- mobile/src/features/platform/api-client/{api-fetch.ts 新規, index.ts}（2 件）
+
+全 14 ファイル diagnostics エラーゼロ確認。Unit-5 設計が main 由来の Unit-1 実装と完全整合した状態で Code Generation ステージ着手可能。Member A への合意プロセスは §8.1 で 7 項目が明示化されており、Stage 2 期限（5/29 18:00）超過時の代替案 A/B/C も §8.2 で定義済み。"
+**Context**: develop マージ後の Unit-5 整合性修正 — Priority A 4 件 / Priority B 7 件 / Priority C 4 件 = 計 15 件すべて解消、Code Generation ステージへの移行準備完了
+
+---

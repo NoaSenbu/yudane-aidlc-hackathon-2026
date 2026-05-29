@@ -706,6 +706,8 @@ Python SnapStart は **追加料金ゼロ**（[Unit-1 §3.2](../../unit-1-platfo
 
 > **5 巡目修正（Issue RRR 対応）**: 4 巡目で追加した §6.4 コスト試算 / §1.5 Mobile SLO / §4.4 脅威モデル / §1.1 OS バージョン / §7 アクセシビリティを Q&A チェックリストに反映、予選プレゼン Q&A 想定の 5 項目を追加。Day 4 朝 rehearsal でこれらを即答できるよう Member D が暗記する。
 
+> **2026-05-29 追記（Issue C1 対応）**: 本 NFR 検証は [AGENTS.md §12 TDD 開発スタイル](../../../../.kiro/steering/AGENTS.md#12-tdd-開発スタイル全-unit-必須) と整合。すべての PBT / Snapshot / latency 検証は Red → Green → Refactor → PBT 補強 の 4 フェーズサイクルで実装する（[functional-design.md TDD 適用方針](../functional-design/functional-design.md) 参照）。
+
 ---
 
 ## 9. NFR 文書のメンテ責任（6 巡目追加、Issue XXX 対応）

@@ -1,26 +1,103 @@
-# Unit-5 Cart Intercept のパス骨格（Q1=refinedA）。詳細は Unit-5 が非破壊で追記。
+# Unit-5 Cart Intercept パス定義（Q1=refinedA: Unit オーナーが非破壊で詳細化）。
+# 2026-05-29 更新（Issue A2 対応）: Unit-5 functional-design.md §4 / api-contracts.md §4.2 整合
+# - パスパラメータを {itemId} → {asin} に変更（CartWatchItems SK = CART#{asin} 整合、Unit-5 data-model.md §1.1）
+# - GET /v1/cart-watch-items（一覧、status filter + cursor）を追加
+# - DELETE /v1/cart-watch-items/{asin}（dismiss）を追加
+# - POST /v1/push-tokens（Q5=C End User Messaging Endpoint 登録）を追加
+# - examples を Prism Mock Server 用に整備（api-contracts.md §7.1）
+
 cartWatchItems:
   post:
     operationId: intakeCartItem
     tags: [cart]
-    summary: Share 受信 → 監視登録（骨格、UC-03、FR-CART-01）
+    summary: Share 受信 → 監視登録（UC-03、FR-CART-01）
+    description: >
+      Mobile から Amazon 共有 URL + 抽出済み ASIN を受信し、Backend で再検証後に
+      CartWatchItems に status=watching で登録、30m/6h/24h の追撃ジョブを EventBridge
+      Scheduler に作成する（Unit-5 Q2=A 二段検証 / Q4=A One-time Schedule）。
     parameters:
       - $ref: '../components/parameters/common.yaml#/CorrelationId'
+      - name: Idempotency-Key
+        in: header
+        required: true
+        description: UUID v7（クライアント発行）。同 Key で重複 POST しても副作用 1 回（Property 1）
+        schema:
+          type: string
+          format: uuid
     requestBody:
       required: true
       content:
         application/json:
           schema:
             type: object
+            required: [url, asin]
             properties:
-              sharedUrl:
+              url:
                 type: string
-                description: Amazon 共有 URL（S-01 で ASIN 抽出）
+                format: uri
+                description: Amazon 共有 URL（S-01 で ASIN 抽出した元）
+                example: https://www.amazon.co.jp/dp/B0CXXXXXXX/ref=...
+              asin:
+                type: string
+                pattern: '^[A-Z0-9]{10}$'
+                description: Mobile 側で抽出済み ASIN（Backend が再検証）
+                example: B0CXXXXXXX
     responses:
+      '200':
+        description: 既存 watching アイテムまたは再活性化
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CartIntakeResponse'
       '201':
-        description: 監視登録完了
+        description: 新規監視登録
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CartIntakeResponse'
       '400':
         $ref: '../components/responses/problem-details.yaml#/ProblemDetails'
+      '401':
+        $ref: '../components/responses/problem-details.yaml#/Unauthorized'
+      '404':
+        $ref: '../components/responses/problem-details.yaml#/ProblemDetails'
+      '429':
+        $ref: '../components/responses/problem-details.yaml#/RateLimited'
+  get:
+    operationId: listCartWatchItems
+    tags: [cart]
+    summary: 監視リスト一覧取得（M-05 CartInterceptScreen 表示）
+    description: >
+      ユーザーの CartWatchItems を status filter + cursor pagination で取得。
+      Unit-5 NFR Design Q2=A' staleTime 階層化で M-05 一覧は staleTime=60s。
+    parameters:
+      - $ref: '../components/parameters/common.yaml#/CorrelationId'
+      - name: status
+        in: query
+        required: false
+        description: ステータスフィルタ（active = watching + notified-* + watching_orphaned）
+        schema:
+          type: string
+          enum: [active, watching, notified-30m, notified-6h, notified-24h, watching_orphaned, purchased, dismissed]
+          default: active
+      - $ref: '../components/parameters/common.yaml#/Cursor'
+      - $ref: '../components/parameters/common.yaml#/Limit'
+    responses:
+      '200':
+        description: 監視リスト
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [items]
+              properties:
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/CartWatchItemDto'
+                nextCursor:
+                  type: string
+                  description: 次ページのカーソル（最終ページなら省略）
       '401':
         $ref: '../components/responses/problem-details.yaml#/Unauthorized'
 
@@ -28,13 +105,18 @@ cartWatchItem:
   get:
     operationId: getCartWatchItem
     tags: [cart]
-    summary: 監視アイテム取得（骨格）
+    summary: 監視アイテム単一取得（通知タップ → 詳細表示）
+    description: >
+      CartWatchItems を ASIN で取得（DDB SK = CART#{asin} で 1 RCU の効率的アクセス）。
+      Unit-5 NFR Design Q2=A' staleTime 階層化で M-05 詳細は staleTime=0（常に最新）。
     parameters:
-      - name: itemId
+      - name: asin
         in: path
         required: true
+        description: Amazon ASIN（10 桁英数字）
         schema:
           type: string
+          pattern: '^[A-Z0-9]{10}$'
       - $ref: '../components/parameters/common.yaml#/CorrelationId'
     responses:
       '200':
@@ -42,10 +124,160 @@ cartWatchItem:
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/CartWatchItemDto'
       '401':
         $ref: '../components/responses/problem-details.yaml#/Unauthorized'
       '403':
         $ref: '../components/responses/problem-details.yaml#/Forbidden'
       '404':
         $ref: '../components/responses/problem-details.yaml#/ProblemDetails'
+  delete:
+    operationId: dismissCartWatchItem
+    tags: [cart]
+    summary: 監視解除（FR-CART-04、US-03-02 AC-4）
+    description: >
+      CartWatchItems を status=dismissed に遷移、残追撃ジョブ 3 件を DeleteSchedule で取消。
+      既に dismissed / purchased なら 204 で冪等返却（Property 1）。
+      DELETE は冪等のため Idempotency-Key 不要（Unit-1 §3.2 / Q7=B）。
+    parameters:
+      - name: asin
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: '^[A-Z0-9]{10}$'
+      - $ref: '../components/parameters/common.yaml#/CorrelationId'
+    responses:
+      '204':
+        description: 解除完了（冪等）
+      '401':
+        $ref: '../components/responses/problem-details.yaml#/Unauthorized'
+      '403':
+        $ref: '../components/responses/problem-details.yaml#/Forbidden'
+      '404':
+        $ref: '../components/responses/problem-details.yaml#/ProblemDetails'
+
+pushTokens:
+  post:
+    operationId: registerPushToken
+    tags: [cart]
+    summary: Push 通知トークン登録・更新（Q5=C End User Messaging Endpoint 管理）
+    description: >
+      APNs / FCM トークンを End User Messaging Push の Endpoint として登録または更新。
+      Idempotency-Key は token 値の UUID v5 ハッシュで生成（同一トークン再送 = 副作用 1 回）。
+      registered な Endpoint ID を Users.pushEndpointId に保存し、B-06 が SendMessages の
+      Address に指定する。
+    parameters:
+      - $ref: '../components/parameters/common.yaml#/CorrelationId'
+      - name: Idempotency-Key
+        in: header
+        required: true
+        description: UUID v5（token 値から決定論的に生成、Unit-5 functional-design §1.3）
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [token, platform]
+            properties:
+              token:
+                type: string
+                description: APNs / FCM の device token（PII ではないが秘匿）
+              platform:
+                type: string
+                enum: [APNS, GCM]
+    responses:
+      '200':
+        description: 既存 Endpoint 更新
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PushTokenResponse'
+      '201':
+        description: 新規 Endpoint 作成
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PushTokenResponse'
+      '401':
+        $ref: '../components/responses/problem-details.yaml#/Unauthorized'
+
+components:
+  schemas:
+    CartWatchItemDto:
+      type: object
+      description: CartWatchItems の API 表現（Unit-5 data-model.md §1.2）
+      required: [itemId, asin, status, productMeta, createdAt, updatedAt]
+      properties:
+        itemId:
+          type: string
+          description: ULID（履歴の一意識別、NotificationLogs から FK 参照）
+        asin:
+          type: string
+          pattern: '^[A-Z0-9]{10}$'
+        status:
+          type: string
+          enum: [watching, notified-30m, notified-6h, notified-24h, purchased, dismissed, watching_orphaned]
+          description: ステータスマシン（Unit-5 Q8=A、watching_orphaned は NFR Design Q4=A' で追加）
+        productMeta:
+          type: object
+          required: [title, priceYen]
+          properties:
+            title:
+              type: string
+            priceYen:
+              type: integer
+            imageUrl:
+              type: string
+              format: uri
+            reviewSummary:
+              type: string
+            brand:
+              type: string
+            category:
+              type: string
+        attackSchedule:
+          type: object
+          description: EventBridge Scheduler 名（dismiss 時のキャンセル参照用）
+          properties:
+            schedule_30m:
+              type: string
+            schedule_6h:
+              type: string
+            schedule_24h:
+              type: string
+        triggerSource:
+          type: string
+          enum: [share-extension, reel-swipe-right, clipboard-suggest]
+        retry_count:
+          type: integer
+          minimum: 0
+          description: B-05 リトライバッチでの試行回数（NFR Design Q4=A'、3 回連続失敗で watching_orphaned）
+        lastNotifiedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CartIntakeResponse:
+      type: object
+      required: [item, isNewlyCreated]
+      properties:
+        item:
+          $ref: '#/components/schemas/CartWatchItemDto'
+        isNewlyCreated:
+          type: boolean
+    PushTokenResponse:
+      type: object
+      required: [endpointId]
+      properties:
+        endpointId:
+          type: string
+          description: AWS End User Messaging Push の Endpoint ID（ULID）

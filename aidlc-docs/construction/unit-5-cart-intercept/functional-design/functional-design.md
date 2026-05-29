@@ -213,6 +213,7 @@ CartWatchItem 登録時刻 `createdAt` に対し、30m / 6h / 24h ジョブは�
 - US-03-05 のセーフガード状態の表示（冷却モード / 月間上限到達）
 - US-03-04 AC-3 / FR-PROFILE-04 / NG-8 整合：「Amazon で買う」ボタンの近傍に **Associates 開示文言**（「YUDANE は Amazon Associates として、紹介リンク経由の購入で Amazon から紹介料を受け取っています」）を常時表示。タップ時の遷移確認オーバーレイにも同文言を含める（6 巡目追加）
 - **NFR Design 2 巡目追加（Issue LLLL）**: `status === "watching_orphaned"` のアイテムは一覧で **⚠️ 警告アイコン + 「監視は登録済みだけど追撃ジョブが届いてないかも」** のサブテキストを表示。タップ時はその場で「いらない」（dismiss）ボタンを目立つ位置に表示し、ユーザーが手動削除可能。論破ボタンと Amazon 遷移ボタンは通常通り表示（追撃ジョブがなくても論破経路は有効、Property 6 / SECURITY-15 整合）。Member D 実装時は「警告アイコン」の Reduce Motion 対応（`useReducedMotion` で点滅停止）を確認
+- **2026-05-29 追記（Issue C3）**: M-13 Telemetry の自動計測 4 イベント（`screen_view` / `app_foreground` / `app_background` / `deeplink_open`）が本画面で発火する。手動計測は `cart.intake_received` / `cart.dismiss` / `cart.amazon_transition` / `cart.notification_tap`（[shared/telemetry-contracts](../../../../shared/telemetry-contracts/) Issue B4 で追加済）。
 
 > **注: パスパラメータの設計（2 巡目セルフレビュー後修正）**
 >
@@ -223,6 +224,8 @@ CartWatchItem 登録時刻 `createdAt` に対し、30m / 6h / 24h ジョブは�
 ```typescript
 // mobile/src/features/cart/use-cart-watch-item.ts
 import { useQuery } from '@tanstack/react-query';
+// 2026-05-29 修正（Issue B3）: apiFetch は ApiClient.request の薄いラッパーとして
+// mobile/src/features/platform/api-client/api-fetch.ts に追加（Unit-5 owner で main に PR 提出）
 import { apiFetch } from '@yudane/api-client';
 
 export function useCartWatchItem(asin: string) {
@@ -376,14 +379,17 @@ export function useShareIntake() {
 
   useEffect(() => {
     const handleUrl = async (payload: { url: string }) => {
-      const asin = extractAsin(payload.url);
-      if (!asin) {
+      // 2026-05-29 修正（Issue B1）: 実装は判別ユニオン AsinResult を返すため
+      // result.ok で分岐（business-rules.md ASIN-06 / shared/asin-extractor 整合）
+      const result = extractAsin(payload.url);
+      if (!result.ok) {
         // US-03-01 AC-5: Amazon URL 形式以外は登録しない
+        // result.reason: 'no-match' | 'invalid-checksum-format' | 'unsupported-host'
         Toast.show('商品として認識できなかったよ');
         return;
       }
       // Mobile 側で即時 ASIN 表示（Q2 = A 反映、UX レイテンシ最小化）
-      mutate({ url: payload.url, asin });
+      mutate({ url: payload.url, asin: result.asin });
     };
 
     const sub = shareEventEmitter.addListener('onUrlShared', handleUrl);
@@ -543,7 +549,7 @@ class YudaneShareModule(reactContext: ReactApplicationContext) :
 |---|---|
 | Share Extension のメモリ上限超過（120MB） | OS が Extension を kill、UserDefaults への書き込みは未完了 → メインアプリ起動時に何も起きない（許容、ユーザーは再 Share） |
 | App Group 未設定 | `UserDefaults(suiteName:)` が nil → ログ出力 + `consumePendingUrl()` が常に null 返却（CI で App Group 設定を E2E 検証） |
-| Amazon URL でない（Activation Rule で弾かれない場合の二重防御） | `extractAsin()` が null → Toast 表示のみ、登録なし |
+| Amazon URL でない（Activation Rule で弾かれない場合の二重防御） | `extractAsin()` が `{ ok: false, reason: ... }` を返す → Toast 表示のみ、登録なし（ASIN-06 整合）|
 
 ---
 
@@ -681,9 +687,10 @@ export function onNotificationTap(payload: PushPayload, navigation: NavigationPr
 ```python
 # backend/src/cart/handlers/cart_intake.py
 from datetime import datetime, timezone
-from yudane_asin_extractor import extract_asin  # S-01
-from common.audit_logger import log, metric
-from common.idempotency import with_idempotency  # Unit-1 §3.2
+from yudane_asin_extractor import extract_asin  # S-01（実装は AsinResult 判別ユニオン、ASIN-06）
+# 2026-05-29 修正（Issue B2）: main 由来の AuditLogger はクラスベース実装
+from backend.src.common.logging import AuditLogger
+from common.idempotency import with_idempotency  # Unit-1 §3.2 / Issue A1 で Member A 依頼中
 from common.creators_api import get_item_by_asin  # B-11 経由
 from .scheduler import schedule_attacks  # B-05 を Lambda 内で同期呼出
 from .repository import CartWatchItemsRepo
@@ -702,27 +709,35 @@ class CartIntakeResponse(BaseModel):
 
 @with_idempotency
 def lambda_handler(event, context) -> APIGatewayProxyResponse:
+    audit = AuditLogger(service="cart-intake")
     user_id = event["requestContext"]["authorizer"]["claims"]["sub"]
     body = CartIntakeRequest.model_validate_json(event["body"])
 
     # Q2 = A 反映：Backend 側で再検証（Mobile の抽出を信用しない、SECURITY-05）
-    extracted_asin = extract_asin(str(body.url))
-    if extracted_asin is None or extracted_asin != body.asin:
-        log("warn", "ASIN mismatch between mobile and backend", {
-            "userId": user_id, "mobileAsin": body.asin, "extractedAsin": extracted_asin
+    # 2026-05-29 修正（Issue B1）: shared/asin-extractor 実装は AsinResult 判別ユニオンを返す
+    # Python 実装（shared/asin-extractor/python/asin_extractor.py）も TS 同等（ASIN-07 クロス言語一致）
+    asin_result = extract_asin(str(body.url))
+    if not asin_result.ok or asin_result.asin != body.asin:
+        audit.log("warn", "ASIN mismatch between mobile and backend", {
+            "userId": user_id,
+            "mobileAsin": body.asin,
+            "backendOk": asin_result.ok,
+            "backendAsin": asin_result.asin if asin_result.ok else None,
+            "reason": asin_result.reason if not asin_result.ok else None,
         })
         return Response(400, ProblemDetails(
             type="https://api.yudane.app/errors/asin-mismatch",
             title="ASIN 不一致",
             status=400,
         ))
+    extracted_asin = asin_result.asin  # 以降は string として扱う
 
     repo = CartWatchItemsRepo()
 
     # 既存登録チェック（同一 user × asin は 1 件、status=dismissed なら再活性化）
     existing = repo.get(user_id, extracted_asin)
     if existing and existing.status == "watching":
-        log("info", "Duplicate intake, returning existing", {
+        audit.log("info", "Duplicate intake, returning existing", {
             "userId": user_id, "asin": extracted_asin
         })
         return Response(200, CartIntakeResponse(item=existing.to_dto(), isNewlyCreated=False))
@@ -730,7 +745,7 @@ def lambda_handler(event, context) -> APIGatewayProxyResponse:
     # 5 巡目: dismissed / purchased からの再活性化（Issue X 対応）
     # 「やっぱり気になる」「もう一度買いたい」ケースに対応
     if existing and existing.status in ("dismissed", "purchased"):
-        log("info", "Reactivating from terminal status", {
+        audit.log("info", "Reactivating from terminal status", {
             "userId": user_id, "asin": extracted_asin, "previousStatus": existing.status
         })
         # 既存レコードを watching に戻す（既存 itemId を維持、createdAt は更新）
@@ -742,10 +757,10 @@ def lambda_handler(event, context) -> APIGatewayProxyResponse:
             attack_schedule = schedule_attacks(user_id, item.itemId, extracted_asin, now)
             repo.update_attack_schedule(user_id, extracted_asin, attack_schedule)
         except Exception as e:
-            log("error", "Failed to schedule attacks for reactivation", {
+            audit.log("error", "Failed to schedule attacks for reactivation", {
                 "itemId": item.itemId, "error": str(e)
             })
-        metric("cart.intake.reactivated", 1, "Count", {"previousStatus": existing.status})
+        audit.metric("cart.intake.reactivated", 1, "Count", {"previousStatus": existing.status})
         return Response(200, CartIntakeResponse(item=item.to_dto(), isNewlyCreated=False))
 
     # Creators API で商品メタ取得（B-11 経由、ElastiCache 6h キャッシュ、§8 A-10 でダミー fallback）
@@ -773,9 +788,9 @@ def lambda_handler(event, context) -> APIGatewayProxyResponse:
         repo.update_attack_schedule(user_id, extracted_asin, attack_schedule)
     except Exception as e:
         # 部分失敗でも CartWatchItem 登録は維持、後で B-05 のリトライバッチで補完
-        log("error", "Failed to schedule attacks", {"itemId": item.itemId, "error": str(e)})
+        audit.log("error", "Failed to schedule attacks", {"itemId": item.itemId, "error": str(e)})
 
-    metric("cart.intake.created", 1, "Count", {"userId": user_id})
+    audit.metric("cart.intake.created", 1, "Count", {"userId": user_id})
     return Response(201, CartIntakeResponse(item=item.to_dto(), isNewlyCreated=True))
 ```
 
@@ -815,11 +830,13 @@ def lambda_handler(event, context) -> APIGatewayProxyResponse:
 ```python
 # backend/src/cart/handlers/cart_dismiss.py
 from datetime import datetime, timezone
-from common.audit_logger import log, metric
+# 2026-05-29 修正（Issue B2）: main 由来の AuditLogger はクラスベース実装
+from backend.src.common.logging import AuditLogger
 from .scheduler import cancel_attacks
 from .repository import CartWatchItemsRepo
 
 def dismiss_lambda_handler(event, context) -> APIGatewayProxyResponse:
+    audit = AuditLogger(service="cart-dismiss")
     user_id = event["requestContext"]["authorizer"]["claims"]["sub"]
     asin = event["pathParameters"]["asin"]
 
@@ -852,8 +869,8 @@ def dismiss_lambda_handler(event, context) -> APIGatewayProxyResponse:
     # ステータス遷移 + TTL 7 日設定 + GSI1 から外す
     repo.transition_to_dismissed(user_id, asin)
 
-    log("info", "Cart watch item dismissed", {"userId": user_id, "asin": asin})
-    metric("cart.dismissed", 1, "Count", {"previousStatus": item.status})
+    audit.log("info", "Cart watch item dismissed", {"userId": user_id, "asin": asin})
+    audit.metric("cart.dismissed", 1, "Count", {"previousStatus": item.status})
     return Response(204, body=None)
 ```
 
@@ -1009,7 +1026,8 @@ import boto3
 import random
 from datetime import datetime, timezone
 from yudane_safeguard_policy import evaluate_notification  # S-03（本 Unit で追加、§2.4 参照）
-from common.audit_logger import log, metric
+# 2026-05-29 修正（Issue B2）: main 由来の AuditLogger はクラスベース実装
+from backend.src.common.logging import AuditLogger
 from common.user_repo import get_user  # Unit-2 提供
 from .repository import CartWatchItemsRepo, NotificationLogsRepo
 from .notification_templates import TEMPLATES  # 30 パターン静的辞書
@@ -1024,7 +1042,10 @@ def lambda_handler(event, context):
     - asin を Scheduler Input から受け取り、CART#asin SK で直接 GetItem
     - evaluate_notification に cooldown_until を渡す
     - displayName が空の場合は「あなた」をフォールバック
+
+    2026-05-29 修正（Issue B2）: AuditLogger をクラスベース呼び出しに統一
     """
+    audit = AuditLogger(service="cart-notification-dispatcher")
     user_id = event["userId"]
     item_id = event["itemId"]
     asin = event["asin"]                        # Issue A 対応
@@ -1036,37 +1057,40 @@ def lambda_handler(event, context):
     # CartWatchItem の最新状態取得（PK=USER#u, SK=CART#asin の効率的な GetItem）
     item = repo.get(user_id, asin)
     if item is None:
-        log("warn", "Cart watch item not found, skipping notification", {
+        audit.log("warn", "Cart watch item not found, skipping notification", {
             "userId": user_id, "asin": asin, "itemId": item_id
         })
         return
 
     # status が dismissed / purchased なら配信しない（Property 5 と整合）
     if item.status in ("dismissed", "purchased"):
-        log("info", "Skipping notification for resolved item", {
+        audit.log("info", "Skipping notification for resolved item", {
             "asin": asin, "status": item.status
         })
         return
 
     # SafeguardPolicy 判定（Property 5、Unit-7 連携、Issue D 対応で cooldown_until を渡す）
+    # 2026-05-29 修正（Issue A4）: evaluate_notification は decide_allow ラッパー、戻り値は SafeguardDecision
     user = get_user(user_id)
     decision = evaluate_notification(
         user_id=user_id,
+        monthly_limit_yen=user.safeguard.monthly_limit_yen,
+        current_budget_used_yen=user.safeguard.current_budget_used_yen,
         cooldown_on=user.safeguard.cooldown_on,
+        quiet_week=user.safeguard.quiet_week,
+        has_debt=user.safeguard.has_debt,
         cooldown_until=user.safeguard.cooldown_until,  # Issue D: 自動冷却の解除時刻
-        quiet_week_on=user.safeguard.quiet_week_on,
-        monthly_used=user.safeguard.monthly_used,
-        monthly_limit=user.safeguard.monthly_limit,
     )
-    if decision == "block":
+    if decision.decision == "block":
         logs.create(
             user_id=user_id,
             item_id=item.itemId,
             channel=f"cart-attack-{step}",
             status="suppressed_by_safeguard",
+            reason_code=decision.reason_code,  # 例: safeguard.cooldown / safeguard.monthly-limit-exceeded
             sent_at=datetime.now(timezone.utc),
         )
-        metric("notification.suppressed_by_safeguard", 1, "Count", {"step": step})
+        audit.metric("notification.suppressed_by_safeguard", 1, "Count", {"step": step, "reason": decision.reason_code})
         return
 
     # Q3 = A 反映：テンプレート選択 + 商品メタ埋め込み（Issue F: displayName フォールバック）
@@ -1085,7 +1109,7 @@ def lambda_handler(event, context):
         delivery_status = "sent"
         delivery_receipt = response.get("MessageResponse", {}).get("Result", {})
     except Exception as e:
-        log("error", "Push delivery failed", {"asin": asin, "error": str(e)})
+        audit.log("error", "Push delivery failed", {"asin": asin, "error": str(e)})
         delivery_status = "failed"
         delivery_receipt = {"error": str(e)}
 
@@ -1104,7 +1128,7 @@ def lambda_handler(event, context):
     if delivery_status == "sent":
         repo.transition_status(user_id, asin, f"notified-{step}")
 
-    metric("notification.dispatched", 1, "Count", {"step": step, "status": delivery_status})
+    audit.metric("notification.dispatched", 1, "Count", {"step": step, "status": delivery_status})
 
 
 def generate_copy(step: str, product_meta: ProductMeta, user_name: str) -> dict:
@@ -1214,65 +1238,136 @@ NG_KEYWORDS = [
 
 ### 2.4 S-03 SafeguardPolicy への拡張（本 Unit で追加）
 
-Unit-1 [S-03 SafeguardPolicy](../../unit-1-platform/functional-design/functional-design.md#63-s-03-safeguardpolicy) は `evaluate_monthly_limit` / `evaluate_cooldown` を提供する。本 Unit では B-06 NotificationDispatcher が Property 5（通知抑制）を担保するため、新関数 `evaluate_notification` を S-03 に追加する。
+Unit-1 [S-03 SafeguardPolicy](../../unit-1-platform/functional-design/functional-design.md#63-s-03-safeguardpolicy) と main 由来の正本実装（[shared/safeguard-policy/](../../../../shared/safeguard-policy/)）は **`decide_allow` / `decideAllow`** を提供する（business-rules.md SG-01〜10、Q2=A 段階評価）。本 Unit では B-06 NotificationDispatcher が Property 5（通知抑制）を担保するため、`decide_allow` を拡張する形で **`evaluate_notification` ラッパー関数**を追加する。
 
-#### TypeScript 版（`shared/safeguard-policy/src/index.ts`）
+> **2026-05-29 改訂（Issue A4 対応）**: 当初の `evaluate_notification` 独自実装は既存 `decide_allow` と評価順 / 引数名 / 戻り値の 3 点で乖離していた:
+>
+> - 評価順乖離: 当初 `quiet_week → cooldown_on → cooldown_until → monthly_limit` vs SG-01 規約 `cooldown → quietWeek → 上限超過 → warn 80% → allow`
+> - 引数名乖離: 当初 `monthly_used` / `monthly_limit` vs 実装 `current_budget_used_yen` / `monthly_limit_yen`、`has_debt` 引数欠落
+> - 戻り値乖離: 当初 `Literal["allow", "block"]` vs 実装 `SafeguardDecision { decision, reason_code, effective_limit_yen, remaining_yen }`、warn 欠落で SG-06 違反
+>
+> 修正後は **`decide_allow` ラッパー方式**で、業務ロジックは既存実装に委譲し本関数は通知特有の条件（`cooldown_until` 自動冷却 / warn → block 格上げ）のみ担当する。
+
+#### TypeScript 版（`shared/safeguard-policy/src/decide-allow.ts` 拡張）
+
+既存 `decideAllow` の入力型 `SafeguardInput` は維持しつつ、通知判定用の薄いラッパーを追加する:
 
 ```typescript
-export type NotificationDecision = 'allow' | 'block';
+import { decideAllow, type SafeguardInput, type SafeguardDecision } from './decide-allow';
 
+/** 通知判定の追加コンテキスト（cooldown_until 自動冷却を SG-01 に追加）。 */
 export interface NotificationContext {
   userId: string;
-  cooldownOn: boolean;            // ユーザー手動 ON
-  cooldownUntil?: string;          // ISO 8601、自動冷却の解除時刻
-  quietWeekOn: boolean;            // 「静かな週」モード
-  monthlyUsed: number;             // 当月の Amazon 遷移数
-  monthlyLimit: number;            // 月間上限
+  monthlyLimitYen: number;
+  currentBudgetUsedYen: number;
+  cooldownOn: boolean;
+  cooldownUntil?: string;          // ISO 8601、自動冷却の解除時刻（未来なら block）
+  quietWeek: boolean;
+  hasDebt: boolean;
 }
 
-export function evaluateNotification(ctx: NotificationContext): NotificationDecision;
-//   1. quietWeekOn が true → block
-//   2. cooldownOn が true → block
-//   3. cooldownUntil が現在時刻より未来 → block
-//   4. monthlyUsed >= monthlyLimit → block
-//   5. それ以外 → allow
+/**
+ * 通知配信可否判定（B-06 NotificationDispatcher が呼び出す）。
+ *
+ * `decideAllow` を内包し、以下 2 点を追加:
+ * 1. `cooldownUntil` が現在時刻より未来 → block（自動冷却、SG-02 直前で評価）
+ * 2. `decideAllow` の `warn` 判定は通知では `block` に格上げ（プッシュ通知は介入性が高く、
+ *    NG-6 罪悪感強要を避けるため near-limit 時も通知抑制、SG-07 の例外）
+ *
+ * 戻り値は既存 `SafeguardDecision` を維持（reason_code / effective_limit_yen / remaining_yen
+ * を NotificationLogs に記録するため）。
+ */
+export function evaluateNotification(ctx: NotificationContext): SafeguardDecision {
+  // 自動冷却（SG-02 cooldownOn の手動フラグに加えて時刻ベース）
+  if (ctx.cooldownUntil && new Date(ctx.cooldownUntil) > new Date()) {
+    return {
+      decision: 'block',
+      reasonCode: 'safeguard.cooldown',
+      effectiveLimitYen: ctx.monthlyLimitYen,
+      remainingYen: Math.max(0, ctx.monthlyLimitYen - ctx.currentBudgetUsedYen),
+    };
+  }
+
+  const input: SafeguardInput = {
+    transitionCountMonth: 0,  // 通知判定では未使用
+    monthlyLimitYen: ctx.monthlyLimitYen,
+    currentBudgetUsedYen: ctx.currentBudgetUsedYen,
+    flags: {
+      cooldownOn: ctx.cooldownOn,
+      quietWeek: ctx.quietWeek,
+      hasDebt: ctx.hasDebt,
+    },
+  };
+  const decision = decideAllow(input);
+
+  // warn は通知では block に格上げ（SG-07 例外）
+  if (decision.decision === 'warn') {
+    return { ...decision, decision: 'block' };
+  }
+  return decision;
+}
 ```
 
-#### Python 版（`shared/safeguard-policy/python/yudane_safeguard_policy/__init__.py`）
+#### Python 版（`shared/safeguard-policy/python/safeguard_policy.py` 拡張）
 
 ```python
 from datetime import datetime, timezone
-from typing import Literal, TypedDict, Optional
-
-class NotificationContext(TypedDict):
-    user_id: str
-    cooldown_on: bool
-    cooldown_until: Optional[str]
-    quiet_week_on: bool
-    monthly_used: int
-    monthly_limit: int
-
-NotificationDecision = Literal["allow", "block"]
+from typing import Optional
+from safeguard_policy import (
+    decide_allow,
+    SafeguardInput,
+    SafeguardFlags,
+    SafeguardDecision,
+)
 
 def evaluate_notification(
     user_id: str,
+    monthly_limit_yen: int,
+    current_budget_used_yen: int,
     cooldown_on: bool,
-    quiet_week_on: bool,
-    monthly_used: int,
-    monthly_limit: int,
+    quiet_week: bool,
+    has_debt: bool,
     cooldown_until: Optional[str] = None,
-) -> NotificationDecision:
-    """通知配信可否判定。block なら NotificationDispatcher は配信を抑制する（Property 5）"""
-    if quiet_week_on:
-        return "block"
-    if cooldown_on:
-        return "block"
-    if cooldown_until:
-        if datetime.fromisoformat(cooldown_until) > datetime.now(timezone.utc):
-            return "block"
-    if monthly_used >= monthly_limit:
-        return "block"
-    return "allow"
+) -> SafeguardDecision:
+    """通知配信可否判定（B-06 NotificationDispatcher が呼び出す）。
+
+    decide_allow ラッパー。SG-01 評価順を継承しつつ、以下 2 点を追加:
+    1. cooldown_until が現在時刻より未来 → block（自動冷却、SG-02 直前で評価）
+    2. decide_allow の warn 判定は通知では block に格上げ（SG-07 例外、NG-6 配慮）
+
+    Returns:
+        SafeguardDecision: 既存型を維持（reason_code 等を NotificationLogs に記録）
+    """
+    # 自動冷却（SG-02 cooldown_on の手動フラグに加えて時刻ベース）
+    if cooldown_until and datetime.fromisoformat(cooldown_until) > datetime.now(timezone.utc):
+        return SafeguardDecision(
+            decision="block",
+            reason_code="safeguard.cooldown",
+            effective_limit_yen=monthly_limit_yen,
+            remaining_yen=max(0, monthly_limit_yen - current_budget_used_yen),
+        )
+
+    input_data = SafeguardInput(
+        transition_count_month=0,  # 通知判定では未使用
+        monthly_limit_yen=monthly_limit_yen,
+        current_budget_used_yen=current_budget_used_yen,
+        flags=SafeguardFlags(
+            cooldown_on=cooldown_on,
+            quiet_week=quiet_week,
+            has_debt=has_debt,
+        ),
+    )
+    decision = decide_allow(input_data)
+
+    # warn は通知では block に格上げ（SG-07 例外）
+    if decision.decision == "warn":
+        return SafeguardDecision(
+            decision="block",
+            reason_code=decision.reason_code,
+            effective_limit_yen=decision.effective_limit_yen,
+            remaining_yen=decision.remaining_yen,
+        )
+    return decision
 ```
 
 #### S-03 への追加責任分界
@@ -1280,7 +1375,8 @@ def evaluate_notification(
 - 本関数の **TypeScript 版** は、将来 Mobile 側でも同一判定を走らせる（例: SafeguardScreen で「冷却モード ON 時は通知が来ない」表示）場合に使用
 - 現時点では Backend のみで使用するが、Shared 層に置くことで Mobile/Backend の判定一貫性を保証（要件書 §6.4 SECURITY-11、Mobile と Backend で同一ロジック）
 - PR は本 Unit が owner として `shared/safeguard-policy/` に追加するが、Unit-7 Safeguard owner（Member C）にコードレビュー必須（[api-contracts.md](../../../../.kiro/steering/api-contracts.md) Shared 層変更ルールに整合）
-- PBT-02 / PBT-07: Hypothesis で `evaluate_notification` の任意入力での `block` / `allow` 整合性検証
+- 既存 `decide_allow` の評価順（SG-01）/ 戻り値型（SafeguardDecision）/ 定数（DEFAULT_MONTHLY_LIMIT_RATIO 等）を**一切変更しない**ため、Unit-1 / Unit-7 への波及影響なし
+- PBT-02 / PBT-07: Hypothesis / fast-check で `evaluate_notification` の任意入力での block 整合性検証（特に warn → block 格上げ / cooldown_until 時刻判定の境界条件）
 
 ---
 
@@ -2042,7 +2138,7 @@ def lambda_handler(event, context):
 |---|---|---|
 | **Stage 1** | 2026-05-28（本日） | 設計書 push 完了、Member D が Native Module / B-04 / B-05 / B-06 を Mock 駆動で着手可能。**Day 1（5/28）作業範囲**: Expo Config Plugin 雛形 + iOS Share Extension Swift 雛形 + S-01 AsinExtractor 動作確認 |
 | **Stage 2** | 2026-05-29 終業 | OpenAPI 第 1 版凍結 + `shared/schema/types/` 型生成完了 + Prism Mock サーバー稼働。**Day 2（5/29）作業範囲**: B-04 CartIntakeHandler 雛形 + テンプレート 30 件記述 + Snapshot TDD で CartStack スケルトン |
-| **Stage 3** | 2026-05-29 夕方〜5/30 朝 | dev 環境 CartStack デプロイ、E2E-03b（dismiss 経路）から動作確認開始。**Day 3（5/30）作業範囲**: 個人 sandbox `yudane-dev-d-cart-*` への CDK deploy（Member D の initial = `d`）+ E2E-03b smoke test |
+| **Stage 3** | 2026-05-29 夕方〜5/30 朝 | dev 環境 CartStack デプロイ、E2E-03b（dismiss 経路）から動作確認開始。**Day 3（5/30）作業範囲**: 個人 sandbox `yudane-cart-dev-d-*` への CDK deploy（Member D の initial = `d`）+ E2E-03b smoke test |
 | **Stage 4** | 2026-05-30〜6/2 | Unit-2 Auth & Profile 完成、E2E-03（フル経路）動作確認。**Day 4-5（5/31〜6/2）作業範囲**: B-06 NotificationDispatcher 配信統合 + APNs/FCM 実機テスト + 予選デモシナリオ rehearsal |
 | **予選当日** | 2026-05-30（土）| MVP デモ提出。E2E-03（Share → 30m 通知 → 論破 → Amazon）が動作する状態 |
 | **Approved 申請** | 〜2026-06-15 | Amazon Approved Mobile Application 承認待ち（[backlog B-503](../../../../doc/backlog.md)）|
@@ -2053,21 +2149,30 @@ def lambda_handler(event, context):
 ## 8. Unit 間契約レビュープロセス（Member 間合意）
 
 > **4 巡目セルフレビュー後追加（Issue V 対応）**: data-model.md §3 で「想定」段階の Unit 間契約を、Member 間の正式合意プロセスに乗せる。
+>
+> **develop プル後の見直し（2026-05-29、Issue A1 対応）**: main 由来の Unit-1 完成版（`infra/lib/platform-stack.ts` / `backend/src/common/`）と Unit-5 設計の乖離を検出し、**PlatformStack 追実装 7 項目 を新規依頼として §8.1 に格上げ**。Unit-1 は既存実装あれど Unit-5 が前提とする `IdempotencyKeysTable` / `IdempotencyBucket` / `kmsKey` public 化等が**未着手**のため、Member A への正式合意プロセスとして扱う。
 
 ### 8.1 本 Unit が他 Unit owner にレビュー依頼する事項
 
 | 依頼先 Member | 依頼対象 | レビュー期限 | 合意エビデンス |
 |---|---|---|---|
-| **Member A**（Unit-1） | OpenAPI 第 1 版への paths/cart.yaml 追加 + IdempotencyKeys 利用 + S-04 TelemetryContracts への本 Unit イベント追加 + **M-01 AppShell.onDeepLink の M-09 への delegate 仕様**（7 巡目: Issue JJ） | 2026-05-29 18:00 JST | GitHub PR #cart-001 のマージ |
+| **Member A**（Unit-1 PlatformStack 追実装、2026-05-29 追加）| **PlatformStack 7 項目の追実装**: ① `kmsKey: kms.IKey` を `public readonly` 化（現状 `const key` ローカル変数のため Cross-Stack 参照不可）/ ② `IdempotencyKeysTable: dynamodb.ITable` 新規（Unit-1 data-model.md §3.2 で予告済、未実装）/ ③ `IdempotencyBucket: s3.IBucket` 新規（同上、Idempotency response 大容量 S3 退避用）/ ④ `DebateRateLimitsTable: dynamodb.ITable` 新規（Unit-3 owner 用だが Unit-1 で作成、Unit-1 data-model.md §3.1 で予告済、未実装）/ ⑤ `alertsTopic` を `alertTopic` に rename + `public readonly` 化（[infrastructure-design.md §5.3 将来統合手順](../infrastructure-design/infrastructure-design.md#5-sns-topic--slack-webhookq6a-反映) で本 Unit が `subscription` 追加するため）/ ⑥ `PlatformStackProps` に `developerInitial?: string` 追加（個人 sandbox 命名分離用、tech-cdk.md §4.1 整合）/ ⑦ `backend/src/common/idempotency/with_idempotency.py` 新規実装（Unit-1 data-model.md §3.2 atomic lock パターンの実コード化）| **2026-05-29 18:00 JST**（Stage 2 デッドライン）| GitHub PR `#platform-additions-001` のマージ |
+| **Member A**（Unit-1 既存合意） | OpenAPI 第 1 版への `paths/cart.yaml` 追加 + IdempotencyKeys 利用 + S-04 TelemetryContracts への本 Unit イベント追加 + **M-01 AppShell.onDeepLink の M-09 への delegate 仕様**（7 巡目: Issue JJ）+ **CartWatchItems の Unit-1 §4.3 を Unit-5 §1.2 に同期**（Issue B5: ttl 30 日/7 日、`watching_orphaned` enum 追加）+ **Unit-1 §4.1 Authorizer 配置マトリクスに Cart 関連 3 行追加**（Issue C2: cart-watch-items POST/DELETE / push-tokens POST / amazon-transitions の Lambda Authorizer / Cognito Authorizer 振り分け）| 2026-05-29 18:00 JST | GitHub PR `#cart-001` のマージ |
 | **Member A**（Unit-2） | Users テーブルへの `pushEndpointId` / `pushPlatform` / `pushTokenUpdatedAt` 追加 | 2026-05-29 18:00 JST | GitHub PR #auth-002 のマージ（[data-model.md §3.1](./data-model.md#31-users-テーブルunit-2-owner-への追加属性)） |
 | **Member B**（Unit-3） | `POST /v1/debate-sessions` の request body に `productId: string` / `trigger: "cart-attack"` 受入 | 2026-05-29 18:00 JST | Unit-3 functional-design への記述 |
-| **Member C**（Unit-7） | SafeguardStates テーブル属性 5 件（cooldownOn / cooldownUntil / quietWeekOn / monthlyUsed / monthlyLimit）の正式定義 + S-03 `evaluate_notification` 関数の Unit-7 owner レビュー | 2026-05-30 18:00 JST | GitHub PR #safeguard-001 のマージ |
+| **Member C**（Unit-7） | SafeguardStates テーブル属性 6 件（cooldown_on / cooldown_until / quiet_week / monthly_limit_yen / current_budget_used_yen / has_debt）の正式定義 + S-03 `evaluate_notification` 関数（`decide_allow` ラッパー方式、2026-05-29 修正版）の Unit-7 owner レビュー | 2026-05-30 18:00 JST | GitHub PR `#safeguard-001` のマージ |
 | **Member C**（Unit-7） | Lambda Authorizer から `POST /v1/amazon-transitions` の Safeguard 判定実装 | 2026-05-30 18:00 JST | Unit-7 functional-design への記述 |
 | **Member C**（Unit-4） | `POST /v1/amazon-transitions` の request body に `cartWatchItemId` 含む受入 + B-13 が CartWatchItem を `purchased` に遷移する責務 | 2026-05-29 18:00 JST | Unit-4 functional-design への記述 |
 
 ### 8.2 ブロッカー判定
 
 合意期限内に PR がマージされない場合は [AGENTS.md §11.5 ブロッカー対応](../../../../.kiro/steering/AGENTS.md) に従い、Slack `#yudane-emergency` で即時エスカレーション。週次同期（金曜 17:00）で代替案を協議。
+
+特に **PlatformStack 追実装 7 項目（§8.1 1 行目）** は Unit-5 の Code Generation ステージのクリティカルパスとなる。期限超過時の代替案:
+
+- **代替案 A**: Member D が Unit-5 owner として Unit-1 PlatformStack に直接 PR を出す（コア 3 Unit ルール違反だが、実装ブロックよりは低リスク）
+- **代替案 B**: Unit-5 内で `kmsKey` / `idempotencyKeysTable` 等を一時的に CartStack に直接作成し、Unit-1 PlatformStack 整備後に SSM Parameter 経由で参照に切替（後付け移行）
+- **代替案 C**: dev 環境のみ KMS / Idempotency を Unit-5 内で完結させ、prd 環境では Unit-1 整備を待つ（環境別差異が増えるため最終手段）
 
 ---
 

@@ -92,11 +92,12 @@ client_config = Config(
 ```python
 # backend/src/cart/handlers/cart_intake.py
 # 部分失敗許容: DDB PutItem 成功 + Scheduler 1 失敗 でも CartWatchItem は status=watching で残す
+# 注: audit = AuditLogger(service="cart-intake") は呼び出し元 lambda_handler 冒頭で初期化済み
 try:
     attack_schedule = schedule_attacks(user_id, item.itemId, extracted_asin, now)
     repo.update_attack_schedule(user_id, extracted_asin, attack_schedule)
 except Exception as e:
-    log("error", "Failed to schedule attacks", {"itemId": item.itemId, "error": str(e)})
+    audit.log("error", "Failed to schedule attacks", {"itemId": item.itemId, "error": str(e)})
     # CartWatchItem は維持、B-05 リトライバッチ（§1.5）で補完
 ```
 
@@ -297,6 +298,8 @@ export function useCartWatchItem(asin: string) {
 ---
 
 ## 7. ハッカソン書類審査・予選評価軸へのインパクト
+
+> **2026-05-29 追記（Issue C1 対応）**: 本 NFR Design パターン適用は [AGENTS.md §12.4 AI Code Generation での TDD（CDK は Snapshot TDD）](../../../../.kiro/steering/AGENTS.md#124-ai-code-generation-での-tddc-確定) / [tech-cdk.md §6.1 Snapshot TDD](../../../../.kiro/steering/tech-cdk.md#61-snapshot-tdd-cdk-必須) と整合。19 パターンすべてを Red → Green → Refactor → Snapshot 固定 のサイクルで CDK Stack に組み込む。
 
 | 評価軸 | 本ドキュメントの貢献 |
 |---|---|

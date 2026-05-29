@@ -89,7 +89,7 @@ cart_intake Lambda の `count_active(user_id)` Filter で active 状態のアイ
 
 物理レイヤーのテスト:
 
-- **Snapshot TDD**: `template.hasResourceProperties` で全リソース定義を検証（[functional-design.md §0.1 TDD 適用方針](../functional-design/functional-design.md)）
+- **Snapshot TDD**: `template.hasResourceProperties` で全リソース定義を検証（[functional-design.md §0.1 TDD 適用方針](../functional-design/functional-design.md)）。**[AGENTS.md §12 TDD 開発スタイル](../../../../.kiro/steering/AGENTS.md#12-tdd-開発スタイル全-unit-必須) / [tech-cdk.md §6.1 Snapshot TDD](../../../../.kiro/steering/tech-cdk.md#61-snapshot-tdd-cdk-必須) と完全整合**（2026-05-29 追記、Issue C1 対応）。
 - **Smoke Test**: deploy 後に [deployment-architecture.md §7](./deployment-architecture.md) のチェックリスト 6 項目（dev）/ 11 項目（prd）を CI で自動実行
 - **Integration Test IT-08〜10**: Lambda + DDB + Scheduler + EUM の連携を実 AWS 環境で検証（[functional-design.md §5](../functional-design/functional-design.md)）
 - **cdk-nag Static Check**: `npm run synth -- --strict` で全 cdk-nag finding を CI で評価、§7 の 4 件 suppression のみ許可
@@ -102,7 +102,7 @@ cart_intake Lambda の `count_active(user_id)` Filter で active 状態のアイ
 | Plan v3 確定 | 物理マッピング | 環境別差異 |
 |---|---|---|
 | Q1=A: CDK construct 直接参照 | `props: { platformStack, authStack, safeguardStack }` で型安全な参照 | dev / prd で同一構造 |
-| Q2=A: dev + prd の 2 環境 | `App.ts` で 2 Stack インスタンス（`yudane-dev-cart` / `yudane-prd-cart`） | dev = 個人 sandbox 4 + 共有 dev、prd = デモ用 1 環境 |
+| Q2=A: dev + prd の 2 環境 | `App.ts` で 2 Stack インスタンス（`cart-dev-stack` / `cart-prd-stack`、shared-infrastructure.md §2 / tech-cdk.md §4 命名規約準拠） | dev = 個人 sandbox 4 + 共有 dev、prd = デモ用 1 環境 |
 | Q3=B: Function bundle 同梱 | poetry path dependencies で `shared/*` を Function zip に同梱 | dev / prd で同一バンドル方式 |
 | Q4=A: default Group + Schedule 名 prefix | 攻撃ジョブ = `cart-attack-{userId}-{itemId}-{step}` / retry = `cart-retry-batch` | Schedule 名に `{init?}-` を sandbox 環境で挿入 |
 | Q5=A: dev/prd 別 Application | `CfnApp` × 2、SSM `/yudane/{env}/cart/eum-application-id` | dev = APNs Sandbox cert / prd = APNs Production cert（B-504 backlog） |
@@ -112,6 +112,8 @@ cart_intake Lambda の `count_active(user_id)` Filter で active 状態のアイ
 | Q9=A: sandbox 内 Lambda 実体作成 | 4 名 × 個人 sandbox + 共有 dev + prd = 6 環境 | 個人 sandbox は `developerInitial` props で命名分離 |
 | Q10=A: CDK Rollback + DDB PITR | `cdk deploy --rollback` + DDB PITR 35 日（prd のみ） | dev は PITR off |
 
+> **2026-05-29 修正（Issue A3 対応）**: 命名規約を [shared-infrastructure.md §2](../../shared-infrastructure.md#2-命名規約全-unit-共通) / [tech-cdk.md §4](../../../../.kiro/steering/tech-cdk.md#4-cdk-固有命名) に揃えた。Stack は `<unit>-<env>-stack`（yudane- prefix なし）、DynamoDB / Lambda / EUM / SNS は `yudane-<unit>-<env>-<entity>`（unit-env 順）。個人 sandbox は Stack `<unit>-dev-<initial>-stack` / リソース `yudane-<unit>-dev-<initial>-<entity>`。
+
 ---
 
 ## 1. リソース命名規約と環境別マッピング
@@ -119,27 +121,29 @@ cart_intake Lambda の `count_active(user_id)` Filter で active 状態のアイ
 ### 1.1 Stack 命名
 
 ```
-yudane-{env}-cart-stack
+cart-{env}-stack                   # 共有 dev / prd
+cart-dev-{initial}-stack           # 個人 sandbox（developerInitial 指定時のみ）
 ```
 
 | 環境 | Stack 名 |
 |---|---|
-| 共有 dev | `yudane-dev-cart-stack` |
-| Member A sandbox | `yudane-dev-a-cart-stack` |
-| Member B sandbox | `yudane-dev-b-cart-stack` |
-| Member C sandbox | `yudane-dev-c-cart-stack` |
-| Member D sandbox | `yudane-dev-d-cart-stack` |
-| prd | `yudane-prd-cart-stack` |
+| 共有 dev | `cart-dev-stack` |
+| Member A sandbox | `cart-dev-a-stack` |
+| Member B sandbox | `cart-dev-b-stack` |
+| Member C sandbox | `cart-dev-c-stack` |
+| Member D sandbox | `cart-dev-d-stack` |
+| prd | `cart-prd-stack` |
 
 ### 1.2 リソース命名（`resourceName(props, suffix)` ヘルパー）
 
 ```typescript
 // infra/lib/utils/resource-name.ts（Unit-1 で確定済み、本 Stack でも継承）
+// shared-infrastructure.md §2: yudane-<unit>-<env>-<entity> 形式（unit-env 順）
 export function resourceName(props: BaseStackProps, suffix: string): string {
   const initSegment = props.envName === 'dev' && props.developerInitial
     ? `-${props.developerInitial}`
     : '';
-  return `yudane-${props.envName}${initSegment}-${suffix}`;
+  return `yudane-cart-${props.envName}${initSegment}-${suffix}`;
 }
 ```
 
@@ -147,16 +151,16 @@ export function resourceName(props: BaseStackProps, suffix: string): string {
 
 | リソース | 共有 dev | Member D sandbox | prd |
 |---|---|---|---|
-| DDB CartWatchItems | `yudane-dev-cart-watch-items` | `yudane-dev-d-cart-watch-items` | `yudane-prd-cart-watch-items` |
-| DDB NotificationLogs | `yudane-dev-cart-notification-logs` | `yudane-dev-d-cart-notification-logs` | `yudane-prd-cart-notification-logs` |
-| Lambda cart_intake | `yudane-dev-cart-intake` | `yudane-dev-d-cart-intake` | `yudane-prd-cart-intake` |
-| Lambda cart_dismiss | `yudane-dev-cart-dismiss` | `yudane-dev-d-cart-dismiss` | `yudane-prd-cart-dismiss` |
-| Lambda cart_list | `yudane-dev-cart-list` | `yudane-dev-d-cart-list` | `yudane-prd-cart-list` |
-| Lambda push_token | `yudane-dev-cart-push-token` | `yudane-dev-d-cart-push-token` | `yudane-prd-cart-push-token` |
-| Lambda notification_dispatcher | `yudane-dev-cart-notification-dispatcher` | `yudane-dev-d-cart-notification-dispatcher` | `yudane-prd-cart-notification-dispatcher` |
-| Lambda cart_attack_scheduler_retry | `yudane-dev-cart-attack-scheduler-retry` | `yudane-dev-d-cart-attack-scheduler-retry` | `yudane-prd-cart-attack-scheduler-retry` |
-| EUM Application | `yudane-dev-cart` | `yudane-dev-d-cart` | `yudane-prd-cart` |
-| SNS Topic（cartAlertTopic） | `yudane-dev-cart-alerts` | `yudane-dev-d-cart-alerts` | `yudane-prd-cart-alerts` |
+| DDB CartWatchItems | `yudane-cart-dev-watch-items` | `yudane-cart-dev-d-watch-items` | `yudane-cart-prd-watch-items` |
+| DDB NotificationLogs | `yudane-cart-dev-notification-logs` | `yudane-cart-dev-d-notification-logs` | `yudane-cart-prd-notification-logs` |
+| Lambda cart_intake | `yudane-cart-dev-intake` | `yudane-cart-dev-d-intake` | `yudane-cart-prd-intake` |
+| Lambda cart_dismiss | `yudane-cart-dev-dismiss` | `yudane-cart-dev-d-dismiss` | `yudane-cart-prd-dismiss` |
+| Lambda cart_list | `yudane-cart-dev-list` | `yudane-cart-dev-d-list` | `yudane-cart-prd-list` |
+| Lambda push_token | `yudane-cart-dev-push-token` | `yudane-cart-dev-d-push-token` | `yudane-cart-prd-push-token` |
+| Lambda notification_dispatcher | `yudane-cart-dev-notification-dispatcher` | `yudane-cart-dev-d-notification-dispatcher` | `yudane-cart-prd-notification-dispatcher` |
+| Lambda cart_attack_scheduler_retry | `yudane-cart-dev-attack-scheduler-retry` | `yudane-cart-dev-d-attack-scheduler-retry` | `yudane-cart-prd-attack-scheduler-retry` |
+| EUM Application | `yudane-cart-dev` | `yudane-cart-dev-d` | `yudane-cart-prd` |
+| SNS Topic（cartAlertTopic） | `yudane-cart-dev-alerts` | `yudane-cart-dev-d-alerts` | `yudane-cart-prd-alerts` |
 | Schedule（攻撃ジョブ） | `cart-attack-{userId}-{itemId}-{step}` | `cart-attack-d-{userId}-{itemId}-{step}` | 同 dev 形式 |
 | Schedule（retry batch） | `cart-retry-batch` | `cart-retry-batch-d` | `cart-retry-batch` |
 
@@ -164,31 +168,39 @@ export function resourceName(props: BaseStackProps, suffix: string): string {
 
 ### 1.3 SSM Parameter パス
 
+shared-infrastructure.md §1 規約 `/yudane/<env>/<unit>/<key>` の **4 階層固定** に準拠。個人 sandbox は env を `dev-{init}` 化（階層挿入ではなく env suffix）。
+
 ```
-/yudane/{env}{/init?}/cart/cart-watch-items-table-arn
-/yudane/{env}{/init?}/cart/notification-logs-table-arn
-/yudane/{env}{/init?}/cart/eum-application-id          # Q5=A 反映
-/yudane/{env}{/init?}/cart/alert-topic-arn             # Q6=A' 反映
+/yudane/{env}/cart/cart-watch-items-table-arn
+/yudane/{env}/cart/notification-logs-table-arn
+/yudane/{env}/cart/eum-application-id          # Q5=A 反映
+/yudane/{env}/cart/alert-topic-arn             # Q6=A' 反映
 ```
 
-| 環境 | パス例 |
-|---|---|
-| 共有 dev | `/yudane/dev/cart/eum-application-id` |
-| Member D sandbox | `/yudane/dev/d/cart/eum-application-id` |
-| prd | `/yudane/prd/cart/eum-application-id` |
+| 環境 | env 値 | パス例 |
+|---|---|---|
+| 共有 dev | `dev` | `/yudane/dev/cart/eum-application-id` |
+| Member D sandbox | `dev-d` | `/yudane/dev-d/cart/eum-application-id` |
+| prd | `prd` | `/yudane/prd/cart/eum-application-id` |
+
+> **2026-05-29 修正（Issue B7 対応）**: 当初は `/yudane/{env}/{init?}/cart/<key>` の 5 階層 + 階層挿入案だった。shared-infrastructure.md §1 規約の `/yudane/<env>/<unit>/<key>` 4 階層固定と乖離していたため、env を `dev-d` 形式で表現して規約を維持しつつ sandbox 分離を実現（個人 sandbox 例: `/yudane/dev-d/cart/eum-application-id`）。
 
 ### 1.4 Secrets Manager（Q6=A' Slack Webhook）
 
+shared-infrastructure.md §2 規約 `yudane-<unit>-<env>-<purpose>` の Hyphen 区切りに準拠。
+
 ```
-yudane/{env}/cart/slack-webhook-url
+yudane-cart-{env}-slack-webhook-url
 ```
 
 | 環境 | シークレット名 | 内容 |
 |---|---|---|
-| dev | `yudane/dev/cart/slack-webhook-url` | Slack `#yudane-dev` チャンネル用 Webhook URL |
-| prd | `yudane/prd/cart/slack-webhook-url` | Slack `#yudane-emergency` チャンネル用 Webhook URL |
+| dev | `yudane-cart-dev-slack-webhook-url` | Slack `#yudane-dev` チャンネル用 Webhook URL |
+| prd | `yudane-cart-prd-slack-webhook-url` | Slack `#yudane-emergency` チャンネル用 Webhook URL |
 
 > 個人 sandbox は dev シークレットを共有（4 名で同 Webhook を参照、CloudWatch Alarm のメッセージに `{stack}` を含めて発信元判別）。
+>
+> **2026-05-29 修正（Issue C4 対応）**: 当初の `yudane/{env}/cart/slack-webhook-url` Slash 区切りを Hyphen 区切りの shared-infrastructure 規約に統一。Secrets Manager は両方許容するが、規約遵守でリソース命名を一貫化。
 
 ---
 
@@ -233,7 +245,7 @@ const intakeAlias = new lambda.Alias(this, 'CartIntakeAlias', {
 **ロールバック手順**:
 
 1. `cdk deploy` 失敗 → CFN が自動的に直前 version へ rollback
-2. 手動ロールバック: `aws lambda update-alias --function-name yudane-prd-cart-intake --name live --function-version <prev-version>`
+2. 手動ロールバック: `aws lambda update-alias --function-name yudane-cart-prd-intake --name live --function-version <prev-version>`
 
 ### 2.3 Function bundle の poetry path dependencies（Q3=B）
 
@@ -290,7 +302,7 @@ const cartIntakeFunction = new lambda.Function(this, 'CartIntakeFunction', {
 | `scheduler:CreateSchedule` / `GetSchedule` | `arn:aws:scheduler:{region}:{account}:schedule/default/cart-*` | 攻撃ジョブ作成（FD §3.2 cdk-nag wildcard suppression と整合）|
 | `iam:PassRole` | `schedulerInvokeRole.roleArn` | Scheduler が NotificationDispatcher を invoke する Role |
 | `kms:Encrypt` / `Decrypt` | `props.platformStack.kmsKey.keyArn` | DDB / S3 暗号化 |
-| `logs:CreateLogStream` / `PutLogEvents` | `arn:aws:logs:*:*:log-group:/aws/lambda/yudane-{env}-cart-intake:*` | CloudWatch Logs |
+| `logs:CreateLogStream` / `PutLogEvents` | `arn:aws:logs:*:*:log-group:/aws/lambda/yudane-cart-{env}-intake:*` | CloudWatch Logs |
 
 #### 3.1.2 `cart-dismiss-lambda-role`
 
@@ -387,9 +399,9 @@ if (props.envName === 'dev') {
     applicationId: eumApp.ref,
     enabled: true,
     // .p8 Key 値は AWS Secrets Manager から動的注入（CDK Custom Resource）
-    tokenKey: cdk.SecretValue.secretsManager('yudane/dev/cart/apns-sandbox-key').toString(),
-    tokenKeyId: cdk.SecretValue.secretsManager('yudane/dev/cart/apns-sandbox-key-id').toString(),
-    teamId: cdk.SecretValue.secretsManager('yudane/dev/cart/apns-team-id').toString(),
+    tokenKey: cdk.SecretValue.secretsManager('yudane-cart-dev-apns-sandbox-key').toString(),
+    tokenKeyId: cdk.SecretValue.secretsManager('yudane-cart-dev-apns-sandbox-key-id').toString(),
+    teamId: cdk.SecretValue.secretsManager('yudane-cart-dev-apns-team-id').toString(),
     bundleId: 'jp.amazon.yudane.dev',
   });
 }
@@ -399,9 +411,9 @@ if (props.envName === 'prd') {
   new pinpoint.CfnAPNSChannel(this, 'ApnsChannel', {
     applicationId: eumApp.ref,
     enabled: true,
-    tokenKey: cdk.SecretValue.secretsManager('yudane/prd/cart/apns-key').toString(),
-    tokenKeyId: cdk.SecretValue.secretsManager('yudane/prd/cart/apns-key-id').toString(),
-    teamId: cdk.SecretValue.secretsManager('yudane/prd/cart/apns-team-id').toString(),
+    tokenKey: cdk.SecretValue.secretsManager('yudane-cart-prd-apns-key').toString(),
+    tokenKeyId: cdk.SecretValue.secretsManager('yudane-cart-prd-apns-key-id').toString(),
+    teamId: cdk.SecretValue.secretsManager('yudane-cart-prd-apns-team-id').toString(),
     bundleId: 'jp.amazon.yudane',
   });
 }
@@ -409,7 +421,7 @@ if (props.envName === 'prd') {
 new pinpoint.CfnGCMChannel(this, 'GcmChannel', {
   applicationId: eumApp.ref,
   enabled: true,
-  apiKey: cdk.SecretValue.secretsManager(`yudane/${props.envName}/cart/fcm-server-key`).toString(),
+  apiKey: cdk.SecretValue.secretsManager(`yudane-cart-${props.envName}-fcm-server-key`).toString(),
 });
 
 // SSM Parameter 登録
@@ -460,13 +472,13 @@ const slackBridgeFunction = new lambda.Function(this, 'SlackBridgeFunction', {
   handler: 'slack_bridge.lambda_handler',
   code: lambda.Code.fromAsset('../backend', { /* bundling */ }),
   environment: {
-    SLACK_WEBHOOK_SECRET_ARN: `arn:aws:secretsmanager:${this.region}:${this.account}:secret:yudane/${props.envName}/cart/slack-webhook-url-*`,
+    SLACK_WEBHOOK_SECRET_ARN: `arn:aws:secretsmanager:${this.region}:${this.account}:secret:yudane-cart-${props.envName}-slack-webhook-url-*`,
   },
 });
 
 slackBridgeFunction.addToRolePolicy(new iam.PolicyStatement({
   actions: ['secretsmanager:GetSecretValue'],
-  resources: [`arn:aws:secretsmanager:${this.region}:${this.account}:secret:yudane/${props.envName}/cart/slack-webhook-url-*`],
+  resources: [`arn:aws:secretsmanager:${this.region}:${this.account}:secret:yudane-cart-${props.envName}-slack-webhook-url-*`],
 }));
 
 this.cartAlertTopic.addSubscription(new subs.LambdaSubscription(slackBridgeFunction));
@@ -588,10 +600,10 @@ Tags.of(this).add('CostCenter', 'yudane-hackathon-2026');
 
 | Parameter Path | 値 | 参照先 |
 |---|---|---|
-| `/yudane/{env}{/init?}/cart/cart-watch-items-table-arn` | DDB ARN | Unit-3 Debate（cart-attack 経由のセッション履歴記録の参照）/ Unit-8 Report（北極星指標集計）|
-| `/yudane/{env}{/init?}/cart/notification-logs-table-arn` | DDB ARN | Unit-8 Report（通知 tap 率集計）|
-| `/yudane/{env}{/init?}/cart/eum-application-id` | EUM App ID | 他 Unit が Push 配信する場合（Unit-6 Calendar / Unit-8 Report 経由）|
-| `/yudane/{env}{/init?}/cart/alert-topic-arn` | SNS Topic ARN | 将来 PlatformStack `alertTopic` 統合時に参照 |
+| `/yudane/{env}/cart/cart-watch-items-table-arn` | DDB ARN | Unit-3 Debate（cart-attack 経由のセッション履歴記録の参照）/ Unit-8 Report（北極星指標集計）|
+| `/yudane/{env}/cart/notification-logs-table-arn` | DDB ARN | Unit-8 Report（通知 tap 率集計）|
+| `/yudane/{env}/cart/eum-application-id` | EUM App ID | 他 Unit が Push 配信する場合（Unit-6 Calendar / Unit-8 Report 経由）|
+| `/yudane/{env}/cart/alert-topic-arn` | SNS Topic ARN | 将来 PlatformStack `alertTopic` 統合時に参照 |
 
 ---
 

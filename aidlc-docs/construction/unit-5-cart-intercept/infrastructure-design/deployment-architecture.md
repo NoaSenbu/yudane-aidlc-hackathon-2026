@@ -37,7 +37,7 @@ graph TB
     end
 
     subgraph SandboxDeploy["個人 sandbox 手動デプロイ"]
-        D -.->|npm run deploy:dev:cart -- --init=d| Sandbox[yudane-dev-d-cart-stack]
+        D -.->|npm run deploy:dev:cart -- --init=d| Sandbox[cart-dev-d-stack]
         D2[Member A/B/C] -.->|sandbox の cart は Mock| MockSandbox[Cart は dev 共有を参照]
     end
 
@@ -51,9 +51,9 @@ graph TB
     end
 
     subgraph AWS["AWS ap-northeast-1"]
-        DD5 --> AWS_DEV[yudane-dev-cart-stack]
-        Sandbox --> AWS_SAND[yudane-dev-d-cart-stack]
-        PD5 --> AWS_PRD[yudane-prd-cart-stack]
+        DD5 --> AWS_DEV[cart-dev-stack]
+        Sandbox --> AWS_SAND[cart-dev-d-stack]
+        PD5 --> AWS_PRD[cart-prd-stack]
     end
 
     style D fill:#e1f5ff
@@ -166,7 +166,7 @@ jobs:
           role-to-assume: arn:aws:iam::ACCOUNT:role/GitHubActionsRole
           aws-region: ap-northeast-1
       - run: cd infra && npm ci
-      - run: cd infra && npm run deploy -- yudane-dev-platform-stack
+      - run: cd infra && npm run deploy -- platform-dev-stack
 
   cdk-deploy-auth-dev:
     needs: cdk-deploy-platform-dev
@@ -196,11 +196,11 @@ jobs:
           role-to-assume: arn:aws:iam::ACCOUNT:role/GitHubActionsRole
           aws-region: ap-northeast-1
       - run: cd infra && npm ci
-      - run: cd infra && npm run deploy -- yudane-dev-cart-stack
+      - run: cd infra && npm run deploy -- cart-dev-stack
       - name: Smoke Test
         run: |
           # CartWatchItems Table の存在確認
-          aws dynamodb describe-table --table-name yudane-dev-cart-watch-items
+          aws dynamodb describe-table --table-name yudane-cart-dev-watch-items
           # EUM Application の存在確認
           aws ssm get-parameter --name /yudane/dev/cart/eum-application-id
 ```
@@ -212,7 +212,7 @@ jobs:
 cd infra
 npm run deploy:dev:cart -- --init=d
 # 内部的に:
-# cdk deploy yudane-dev-d-cart-stack --context developerInitial=d
+# cdk deploy cart-dev-d-stack --context developerInitial=d
 ```
 
 各メンバーが個別 sandbox に Stack 作成可能。共有 dev は GitHub Actions 経由のみで更新（複数人 deploy 衝突回避）。
@@ -223,7 +223,7 @@ npm run deploy:dev:cart -- --init=d
 
 | 項目 | Member D Sandbox | 共有 dev | prd |
 |---|---|---|---|
-| **Stack 名** | `yudane-dev-d-cart-stack` | `yudane-dev-cart-stack` | `yudane-prd-cart-stack` |
+| **Stack 名** | `cart-dev-d-stack` | `cart-dev-stack` | `cart-prd-stack` |
 | **デプロイ方法** | `npm run deploy:dev:cart -- --init=d`（手動） | `deploy-dev.yml` 自動（develop push）| `deploy-prd.yml` 手動（main merge + manual approval）|
 | **DDB PITR** | 無効 | 無効 | 有効（35 日） |
 | **DDB RemovalPolicy** | DESTROY | DESTROY | RETAIN |
@@ -232,8 +232,8 @@ npm run deploy:dev:cart -- --init=d
 | **Reserved Concurrency** | 共有 100 + 個別 60 | 同左 | 同左 |
 | **APNs cert** | Sandbox（Apple Developer 不要） | 同左 | **Production**（B-504 backlog 完了後） |
 | **FCM key** | dev | 同左 | prd |
-| **EUM Application** | `yudane-dev-d-cart` | `yudane-dev-cart` | `yudane-prd-cart` |
-| **SNS Topic** | `yudane-dev-d-cart-alerts` | `yudane-dev-cart-alerts` | `yudane-prd-cart-alerts` |
+| **EUM Application** | `yudane-cart-dev-d` | `yudane-cart-dev` | `yudane-cart-prd` |
+| **SNS Topic** | `yudane-cart-dev-d-alerts` | `yudane-cart-dev-alerts` | `yudane-cart-prd-alerts` |
 | **Slack Webhook** | dev Slack Webhook（共通）| 同左 | prd Slack Webhook |
 | **Slack 通知先 channel** | `#yudane-dev` | `#yudane-dev` | `#yudane-emergency` |
 | **CloudWatch Alarms** | 5 系統すべて有効 | 同左 | 同左 |
@@ -248,7 +248,7 @@ npm run deploy:dev:cart -- --init=d
 ```bash
 # デプロイ失敗時、CFN は自動的に直前 version へ rollback
 # 明示的にロールバックする場合:
-aws cloudformation rollback-stack --stack-name yudane-prd-cart-stack
+aws cloudformation rollback-stack --stack-name cart-prd-stack
 ```
 
 ### 5.2 Lambda Function バージョンの巻き戻し
@@ -256,7 +256,7 @@ aws cloudformation rollback-stack --stack-name yudane-prd-cart-stack
 ```bash
 # SnapStart 適用 3 関数の Alias を直前 version に戻す
 aws lambda update-alias \
-  --function-name yudane-prd-cart-intake \
+  --function-name yudane-cart-prd-intake \
   --name live \
   --function-version <prev-version>
 
@@ -268,14 +268,14 @@ aws lambda update-alias \
 ```bash
 # CartWatchItems を任意時刻から復元（prd のみ、PITR 35 日）
 aws dynamodb restore-table-to-point-in-time \
-  --source-table-name yudane-prd-cart-watch-items \
-  --target-table-name yudane-prd-cart-watch-items-restored-20260626 \
+  --source-table-name yudane-cart-prd-watch-items \
+  --target-table-name yudane-cart-prd-watch-items-restored-20260626 \
   --restore-date-time 2026-06-26T18:00:00+09:00
 
 # 復元後、アプリケーションが新テーブルを参照するよう SSM Parameter を更新
 aws ssm put-parameter \
   --name /yudane/prd/cart/cart-watch-items-table-arn \
-  --value "arn:aws:dynamodb:ap-northeast-1:ACCOUNT:table/yudane-prd-cart-watch-items-restored-20260626" \
+  --value "arn:aws:dynamodb:ap-northeast-1:ACCOUNT:table/yudane-cart-prd-watch-items-restored-20260626" \
   --overwrite
 ```
 
@@ -284,11 +284,11 @@ aws ssm put-parameter \
 ```bash
 # DeletionProtection を一時無効化
 aws dynamodb update-table \
-  --table-name yudane-prd-cart-watch-items \
+  --table-name yudane-cart-prd-watch-items \
   --deletion-protection-enabled false
 
 # Stack 削除
-cdk destroy yudane-prd-cart-stack
+cdk destroy cart-prd-stack
 
 # 注: RemovalPolicy=RETAIN のため、DDB Table は CFN Stack から切り離されるが残存
 # 完全削除には別途 aws dynamodb delete-table が必要
@@ -335,9 +335,9 @@ cdk destroy yudane-prd-cart-stack
 
 ### 7.1 dev 環境（自動デプロイ後）
 
-- [ ] CartWatchItems Table 存在確認: `aws dynamodb describe-table --table-name yudane-dev-cart-watch-items`
+- [ ] CartWatchItems Table 存在確認: `aws dynamodb describe-table --table-name yudane-cart-dev-watch-items`
 - [ ] NotificationLogs Table 存在確認: 同上
-- [ ] 6 Lambda 全て deployed: `aws lambda list-functions | grep yudane-dev-cart`
+- [ ] 6 Lambda 全て deployed: `aws lambda list-functions | grep yudane-cart-dev`
 - [ ] EventBridge Scheduler の retry batch が rate(15min) で稼働: `aws scheduler get-schedule --name cart-attack-scheduler-retry-schedule --group-name default`
 - [ ] EUM Application 存在確認: `aws ssm get-parameter --name /yudane/dev/cart/eum-application-id`
 - [ ] cartAlertTopic 存在確認 + Slack Bridge Lambda subscribe 確認
