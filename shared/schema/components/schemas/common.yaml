@@ -1,0 +1,150 @@
+ProblemDetails:
+  type: object
+  description: RFC 7807 Problem Details。エラー応答の共通形式
+  required:
+    - type
+    - title
+    - status
+  properties:
+    type:
+      type: string
+      format: uri
+      description: 'エラーコードを URL 化したもの（例: https://api.yudane.app/errors/safeguard.cooldown）'
+    title:
+      type: string
+      description: 人間可読の要約（ユーザー表示可、友達系トーン）
+    status:
+      type: integer
+      description: HTTP ステータスコード
+    detail:
+      type: string
+      description: 具体説明（PII / 内部情報は含めない、SECURITY-09）
+    instance:
+      type: string
+      description: 対象リソースのパス
+
+HealthStatus:
+  type: object
+  description: ヘルスチェック結果（GET /v1/health、PAT-RESIL-04）
+  required:
+    - status
+    - checkedAt
+  properties:
+    status:
+      type: string
+      enum: [healthy, degraded]
+    checkedAt:
+      type: string
+      format: date-time
+    dependencies:
+      type: object
+      additionalProperties:
+        type: string
+        enum: [ok, error]
+      description: 依存サービス（dynamodb / redis 等）の浅い疎通結果
+
+TelemetryValue:
+  description: テレメトリ値（PII 混入防止のためプリミティブのみ）
+  oneOf:
+    - type: string
+    - type: number
+    - type: boolean
+
+TelemetryEvent:
+  type: object
+  description: クライアント計測イベント（S-04 許可名・許可キーのみ、TEL-01/02）
+  required:
+    - name
+    - occurredAt
+  properties:
+    name:
+      type: string
+      description: S-04 イベントカタログに登録済みの名前のみ
+    occurredAt:
+      type: string
+      format: date-time
+      description: 端末時刻（ISO 8601）
+    props:
+      type: object
+      additionalProperties:
+        $ref: '#/TelemetryValue'
+
+TelemetryEnvelope:
+  type: object
+  description: テレメトリのバッチ送信封筒（Q6=A、TEL-04）
+  required:
+    - events
+    - clientSentAt
+    - schemaVersion
+  properties:
+    events:
+      type: array
+      maxItems: 100
+      items:
+        $ref: '#/TelemetryEvent'
+    clientSentAt:
+      type: string
+      format: date-time
+    schemaVersion:
+      type: string
+      description: S-04 TelemetryContracts のバージョン
+
+IngestResult:
+  type: object
+  description: テレメトリ取込結果（B-14）
+  required:
+    - accepted
+    - dropped
+  properties:
+    accepted:
+      type: integer
+    dropped:
+      type: integer
+
+User:
+  type: object
+  description: ユーザー（必須フィールド最小セット。詳細は Unit-2 が非破壊で追記）
+  required:
+    - id
+    - createdAt
+  properties:
+    id:
+      type: string
+      description: Cognito sub
+    email:
+      type: string
+      format: email
+      x-pii: true
+      description: メールアドレス（PII。ログ・テレメトリでは必ずマスク、PII-03）
+    createdAt:
+      type: string
+      format: date-time
+
+CalendarEvent:
+  type: object
+  description: >
+    カレンダー予定（端末ローカル分類後の最小情報のみ）。
+    NOTE: title / body / attendees は意図的にスキーマに含めない（FR-CAL-05 / NG-7 データ悪用防止）。
+    これらの追加 PR は CI の check-pii-fields.sh で自動 reject される。
+  required:
+    - category
+    - timeRange
+  properties:
+    category:
+      type: string
+      enum: [presentation, date, camping, other]
+    timeRange:
+      type: object
+      required:
+        - startAt
+      properties:
+        startAt:
+          type: string
+          format: date-time
+        endAt:
+          type: string
+          format: date-time
+    confidence:
+      type: number
+      minimum: 0
+      maximum: 1

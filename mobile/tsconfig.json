@@ -1,0 +1,15 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "rootDir": "src",
+    "types": ["vitest/globals"],
+    "paths": {
+      "@yudane/schema": ["../shared/schema/types/api.ts"],
+      "@yudane/safeguard-policy": ["../shared/safeguard-policy/src/index.ts"],
+      "@yudane/telemetry-contracts": ["../shared/telemetry-contracts/src/index.ts"],
+      "@/*": ["src/*"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
+}

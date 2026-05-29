@@ -1,0 +1,24 @@
+# Unit-8 Dame Report のパス骨格（Q1=refinedA）。詳細は Unit-8 が非破壊で追記。
+report:
+  get:
+    operationId: getDameReport
+    tags: [report]
+    summary: ダメ化レポート取得（骨格、UC-06/07）
+    parameters:
+      - name: period
+        in: query
+        required: false
+        schema:
+          type: string
+          enum: [week, month]
+          default: week
+      - $ref: '../components/parameters/common.yaml#/CorrelationId'
+    responses:
+      '200':
+        description: 委ね Lv / Before-After 指標 / ナラティブ
+        content:
+          application/json:
+            schema:
+              type: object
+      '401':
+        $ref: '../components/responses/problem-details.yaml#/Unauthorized'

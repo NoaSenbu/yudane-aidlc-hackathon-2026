@@ -1,0 +1,58 @@
+# Unit-3 Debate のパス骨格（Q1=refinedA）。詳細は Unit-3 が非破壊で追記。
+debateSessions:
+  post:
+    operationId: startDebateSession
+    tags: [debate]
+    summary: 論破セッション開始（骨格、UC-01 / ストリーミング）
+    description: M-1 事実+心理 / M-2 ストレス×ご褒美の併走プロンプト。SSE で配信（詳細は Unit-3）
+    parameters:
+      - $ref: '../components/parameters/common.yaml#/CorrelationId'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+    responses:
+      '201':
+        description: セッション作成（SSE 接続情報を含む）
+      '401':
+        $ref: '../components/responses/problem-details.yaml#/Unauthorized'
+      '409':
+        description: クールダウン中（safeguard.cooldown 等、FR-DEBATE-05）
+        content:
+          application/problem+json:
+            schema:
+              $ref: '../components/schemas/common.yaml#/ProblemDetails'
+      '429':
+        $ref: '../components/responses/problem-details.yaml#/RateLimited'
+
+debateMessages:
+  post:
+    operationId: continueDebate
+    tags: [debate]
+    summary: 論破続行（骨格）
+    parameters:
+      - name: sessionId
+        in: path
+        required: true
+        schema:
+          type: string
+      - $ref: '../components/parameters/common.yaml#/CorrelationId'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              userAction:
+                type: string
+                enum: [resist, agree]
+    responses:
+      '200':
+        description: ストリーミングトークン（SSE）
+      '401':
+        $ref: '../components/responses/problem-details.yaml#/Unauthorized'
+      '403':
+        $ref: '../components/responses/problem-details.yaml#/Forbidden'

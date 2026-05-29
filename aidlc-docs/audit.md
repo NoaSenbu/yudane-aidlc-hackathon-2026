@@ -278,3 +278,117 @@ This file contains the complete audit trail of all user inputs and AI responses 
 **AI Response**: "dark-copy-inventory.md の位置づけを「モックアップ固定文のカタログ」から「AI プロンプト設計の型ライブラリ」に再定義。(1) タイトル変更: 『論破コピー集』→『論破コピー代表例集 — AI プロンプト設計の型』。(2) §0 冒頭を刷新: モックアップ文言は『本実装で AI が動的生成するコピーの代表例 / プロトタイプ』であり、本実装では心理学的メカニズムをプロンプトで指示してコンテキスト（stress_level / calendar / 嗜好 / 時刻）で変奏させる設計思想を明記。§0.1 でモックアップ固定 vs 本実装動的生成の対応表、§0.2 で分類 4 軸、§0.3 で M-1/M-2/M-3 凡例。(3) §8『AI プロンプト設計への昇華』を新設: プロンプト 5 ブロック構造（System / Mechanism / Context / Constraint / Instruction）/ メカニズム → プロンプト指示テンプレート 10 型（T-01 Mental Accounting 〜 T-10 Meta-cognitive Challenge）/ ctx → メカニズム選択の分岐コード例 / モックアップ ⇄ 本実装の対応マップ / モデレーション 2 段との連動 を記述。(4) README に『🧠 AI 論破プロンプトの設計原則』セクションを新設: モックアップ文言 ⇄ 本実装の対応、プロンプト 5 ブロック構造、心理学的メカニズム 10 型の要約、設計原則（M-1 + M-2 併走必須 / ctx 駆動の個別最適化 / モデレーション 2 段）、『なぜこの設計が効くのか』の解説付き。目次にも項目追加。詳細は dark-copy-inventory.md §8 への内部リンクで参照。全 2 ファイル diagnostics エラーなし。"
 **Context**: AI 論破の設計思想を「定型文カタログ」から「心理学的メカニズム × ctx 駆動の動的生成」に位置づけ直し、モックアップ検証の価値を Construction Phase の Functional Design に橋渡しする形に進化
 
+
+## Construction Phase 再開 — Unit-1 Platform 着手
+**Timestamp**: 2026-05-29T00:00:00Z
+**User Input**: "aidlcを開始します" → "私はMemberAなのですが、Unit1は私のタスクですか？" → "unit1のconstructionを始めていきましょう"
+**AI Response**: "セッション継続として aidlc-state.md / audit.md を読み込み、Inception Phase 完了・Construction Phase の Per-Unit Loop が次ステップと確認。unit-of-work.md の役割マトリクスから Unit-1 Platform が Member A の担当（実装順序の先頭、全 Unit の前提基盤）であることを回答。execution-plan.md より Construction の全条件付きステージ（Functional Design / NFR Requirements / NFR Design / Infrastructure Design）が EXECUTE と確認。Unit-1 の Functional Design ステージに着手し、components.md / component-methods.md / services.md / api-contracts.md（steering）を読み込んだ上で、Functional Design Plan（チェックボックス + [Answer]: 質問）を作成。"
+**Context**: Construction Phase / Per-Unit Loop / Unit-1 Platform / Functional Design Part 1（計画 + 質問）着手
+
+## Unit-1 Platform — Functional Design 質問回答受領（Q1/Q4 は追加検討）
+**Timestamp**: 2026-05-29T00:30:00Z
+**User Input**: "1 実装者によってパス定義も変わってくると思いますし、パスを実装した人が Open API に追記していく方針がいいと思うのですが、A と比較したときの問題点を出してください / 2 A でいいと思います。ユーザの判断を後押しするサービスなので、なるべくユーザに考える負荷をかけたくないです / 3 A でいきましょう / 4 A でいいのですが、これだと PII にあたるカラムが増えたときにマスクルールを適用しなければログに出てしまいますよね？ / 5 A でいいです / 6 A でいいです / 7 A でいいです"
+**AI Response**: "Q2=A（Safeguard 判定の段階評価、ユーザー負荷最小の方針と整合）/ Q3=A（ASIN 抽出 主要パターン網羅）/ Q5=A（ApiClient リトライ）/ Q6=A（Telemetry バッファリング）/ Q7=A（DomainError 2 階層）を確定。Q1 は『実装者が OpenAPI に追記する incremental 方式』と A（第1版で全 UC 骨格凍結）の比較分析を提示し、骨格凍結 + 実装者が非破壊で詳細追記のハイブリッド（refined A）を推奨。Q4 は『鍵名 denylist は fail-open で新規 PII 列が漏れる』というユーザー指摘を是とし、default-deny（ログ出力ホワイトリスト）+ スキーマ駆動 PII 宣言 + CI ガードの fail-safe 案（refined A）を提示。clarification 質問 2 件を unit-1-platform-functional-design-clarification.md に作成し回答待ち。"
+**Context**: Construction Phase / Unit-1 Platform / Functional Design Part 1 — Q1/Q4 の clarification ゲート
+
+## Unit-1 Platform — Functional Design Clarification 確定 + Part 2 Generation
+**Timestamp**: 2026-05-29T00:45:00Z
+**User Input**: "両方ともAでいきましょう"
+**AI Response**: "Clarification 1=A（refined A: OpenAPI 第1版で全 UC パス骨格 + 共通コンポーネント + 必須フィールド最小セットを凍結、詳細な省略可能フィールドは実装者が非破壊で追記）、Clarification 2=A（refined A: default-deny ホワイトリスト + x-pii 宣言 + CI ガードによる fail-safe な PII 保護）を確定。これで全 7 項目確定（Q1=refinedA / Q2=A / Q3=A / Q4=refinedA / Q5=A / Q6=A / Q7=A）。Part 2 Generation を実行し、aidlc-docs/construction/unit-1-platform/functional-design/ 配下に domain-entities.md / business-logic-model.md / business-rules.md / frontend-components.md の 4 成果物を生成する。"
+**Context**: Construction Phase / Unit-1 Platform / Functional Design Part 2 — 成果物生成
+
+## Unit-1 Platform — Functional Design Part 2 成果物生成完了
+**Timestamp**: 2026-05-29T01:00:00Z
+**User Input**: なし（承認済み方針に基づく一気通貫生成）
+**AI Response**: "aidlc-docs/construction/unit-1-platform/functional-design/ 配下に 4 成果物を生成。(1) domain-entities.md: 横断ドメインモデル（ErrorCategory 8 種 / DomainError 2 階層 / ProblemDetails / CorrelationContext / Asin・AsinResult / SafeguardPolicyConstants・SafeguardInput・SafeguardDecision / TelemetryEvent・Envelope・MetricDatum / LogRecord・MaskingRule・FieldClassification / ApiContractMeta）+ Mermaid クラス図 + テキスト代替。(2) business-logic-model.md: ALG-ASIN（Q3=A 抽出フロー + round-trip）/ ALG-SG（Q2=A 段階判定フロー）/ ALG-API・ALG-REFRESH・ALG-MAP（Q5=A リトライ・401 リフレッシュ・エラー変換）/ ALG-STREAM（SSE 土台）/ ALG-TEL（Q6=A バッファリング）/ ALG-LOG（Q4=refinedA default-deny マスキング）/ ALG-NAV / OpenAPI ガバナンス・ワークフロー（Q1=refinedA）+ アルゴリズム一覧。(3) business-rules.md: ASIN-01〜07 / SG-01〜10 + 定数表 / ERR-01〜08 + code↔HTTP 対応 / REQ・RETRY-01〜06 / TEL-01〜09 / PII-01〜09（default-deny + CI ガード）/ API-01〜10 + 設定値カタログ。(4) frontend-components.md: コンポーネント階層 / M-01 AppShell（状態遷移図 + ディープリンクルーティング）/ M-12 ApiClient UI 観点（category 別エラー伝播）/ M-13 Telemetry 自動計測 + 利用規則 / 状態管理基盤 / API 連携ポイント / A11y 土台。全 4 ファイル diagnostics エラー 0。自己レビューで SG/PII/ERR の相互整合を確認。plan のチェックボックス更新。承認ゲート前。"
+**Context**: Construction Phase / Unit-1 Platform / Functional Design Part 2 完了 — 承認待ち
+
+## Unit-1 Platform — Functional Design 承認 → NFR Requirements 着手
+**Timestamp**: 2026-05-29T01:15:00Z
+**User Input**: "continue to Next Stage次に進みましょう"
+**AI Response**: "Unit-1 Platform の Functional Design を承認として記録。plan のチェックボックスを完了、aidlc-state.md の Current Stage を NFR Requirements（Unit-1）に更新。NFR Requirements ステージのルール詳細（construction/nfr-requirements.md）を読み込み、Unit-1 向けの NFR 評価計画 + 質問（[Answer]: タグ）を作成する。要件書 §6（Perf 300ms/60fps / Security-01〜15 / PBT-01〜10 / Scalability / A11y）を Unit-1 の横断基盤責務に落とし込む。"
+**Context**: Construction Phase / Unit-1 Platform / Functional Design 承認・完了 → NFR Requirements Part 1 着手
+
+## Unit-1 Platform — NFR Requirements 回答受領（Q3 矛盾検出）
+**Timestamp**: 2026-05-29T01:30:00Z
+**User Input**: "記載しました"（Q1=A / Q2=A / Q3=C / Q4=A / Q5=A / Q6=B / Q7=A）
+**AI Response**: "Q1=A（カバレッジ高め）/ Q2=A（タイムアウト 2 系統）/ Q4=A（SECURITY 基盤一元実装）/ Q5=A（PBT 性質割当）/ Q7=A（段階達成）を確定。Q6=B（Unit-1 はヘルスチェック+ログのみ、フォールバックは各 Unit）は §6.7 と整合し矛盾なしのため確定。Q3=C（カスタムメトリクス土台を最小限、CloudWatch 標準メトリクスのみ）は要件書 §6.1 の北極星指標（論破→Amazon 遷移率 35%+ 等）および services.md『北極星指標の集計経路』（B-12 AuditLogger.metric() / B-14 TelemetryIngestion が EMF 形式でカスタムメトリクス出力）と矛盾するため、clarification ファイル（unit-1-platform-nfr-requirements-clarification.md）を作成し確認。"
+**Context**: Construction Phase / Unit-1 Platform / NFR Requirements Part 1 — Q3 矛盾の clarification ゲート
+
+## Unit-1 Platform — NFR Requirements Clarification 確定 + Part 2 Generation
+**Timestamp**: 2026-05-29T01:45:00Z
+**User Input**: "Bと記載しました"（Clarification 1=B）
+**AI Response**: "Q3 を B に確定（Unit-1 は EMF 出力土台 + メトリクス命名規約 + オーバーヘッド上限のみ提供、具体メトリクス名カタログは各 Unit が S-04 に追記。北極星指標の集計経路は維持）。これで全 7 項目確定（Q1=A / Q2=A / Q3=B / Q4=A / Q5=A / Q6=B / Q7=A）。Part 2 Generation を実行し、aidlc-docs/construction/unit-1-platform/nfr-requirements/ 配下に nfr-requirements.md / tech-stack-decisions.md を生成する。"
+**Context**: Construction Phase / Unit-1 Platform / NFR Requirements Part 2 — 成果物生成
+
+## Unit-1 Platform — NFR Requirements Part 2 成果物生成完了
+**Timestamp**: 2026-05-29T02:00:00Z
+**User Input**: なし（承認済み方針に基づく生成）
+**AI Response**: "aidlc-docs/construction/unit-1-platform/nfr-requirements/ 配下に 2 成果物を生成。(1) nfr-requirements.md: NFR-PERF（タイムアウト 2 系統・overhead<1ms・コールドスタート 2s）/ NFR-COV（Shared 95%+/90%+・基盤 85%+）/ NFR-SEC（SECURITY 01〜15 を Unit-1 基盤実装/各 Unit/N-A に振り分け、Q4=A）/ NFR-PBT（対象ロジック別性質割当 + クロス言語一致 + shrinking/seed/example-based、Q5=A）/ NFR-AVAIL（Q6=B: Unit-1 はヘルスチェック+ログのみ、フォールバックは各 Unit）/ NFR-OBS（Q3=B: EMF 出力土台 + 命名規約 + overhead のみ、カタログは各 Unit）/ NFR-A11Y / マイルストーン別達成目標（Q7=A 段階達成）/ Extension コンプライアンスサマリ。(2) tech-stack-decisions.md: モノレポ基盤 / Mobile（RN0.76+/TS5/TanStack retry=false/Zustand/fast-check）/ Backend（Powertools ラッパー/Pydantic v2/Hypothesis）/ Infra（CDK/cdk-nag）/ Shared 契約（OpenAPI/Prism/Schemathesis/MSW/check-pii-fields）/ CI セキュリティツール / 未決定事項の後続ステージ振り分け。tech-stack-decisions.md は diagnostics 0。nfr-requirements.md は Kiro Spec Format プロバイダの誤検出 4 件（# Requirements Document 等を要求）のみで、AI-DLC 成果物のため対象外と判断（Inception requirements.md と同様）。plan チェックボックス更新。承認ゲート前。"
+**Context**: Construction Phase / Unit-1 Platform / NFR Requirements Part 2 完了 — 承認待ち
+
+## Unit-1 Platform — NFR Requirements 承認 → NFR Design 着手
+**Timestamp**: 2026-05-29T02:15:00Z
+**User Input**: "次にいきましょう"
+**AI Response**: "Unit-1 Platform の NFR Requirements を承認として記録。plan のチェックボックスを完了、aidlc-state.md の Current Stage を NFR Design（Unit-1）に更新。NFR Design ステージのルール詳細（construction/nfr-design.md）を読み込み、Unit-1 向けの NFR Design 計画 + 質問（必要なら）を作成する。nfr-requirements.md の各 NFR を AWS サービス・論理コンポーネント・設計パターンにマッピングする。"
+**Context**: Construction Phase / Unit-1 Platform / NFR Requirements 承認・完了 → NFR Design 着手
+
+## Unit-1 Platform — NFR Design 質問確定 + Part 2 Generation
+**Timestamp**: 2026-05-29T02:30:00Z
+**User Input**: "全部Aで記載しました！"（NFR Design Q1=A / Q2=A / Q3=A / Q4=A）
+**AI Response**: "NFR Design の Q1=A（単一 apiFetch + Request Policy interceptor チェーン）/ Q2=A（Allowlist Sanitizer + Powertools Decorator で default-deny を構造強制）/ Q3=A（クライアントバッファ + 退避キューの At-least-once、サーバー専用キューは MVP では設けず）/ Q4=A（API Gateway Lambda Authorizer + Lambda 冒頭の共通デコレータで sub↔path userId 照合）を確定。矛盾なし。Part 2 Generation を実行し、aidlc-docs/construction/unit-1-platform/nfr-design/ 配下に nfr-design-patterns.md / logical-components.md を生成する。"
+**Context**: Construction Phase / Unit-1 Platform / NFR Design Part 2 — 成果物生成
+
+## Unit-1 Platform — NFR Design Part 2 成果物生成完了
+**Timestamp**: 2026-05-29T02:45:00Z
+**User Input**: なし（承認済み方針に基づく生成）
+**AI Response**: "aidlc-docs/construction/unit-1-platform/nfr-design/ 配下に 2 成果物を生成。(1) nfr-design-patterns.md: パターン一覧 12 種（PAT-RESIL-01〜04 / PAT-PERF-01/02 / PAT-SEC-01〜04 / PAT-OBS-01/02）+ 各パターン詳細 + パターン依存図（Mermaid + テキスト代替）+ Extension コンプライアンスサマリ。(2) logical-components.md: LC-01〜08（ApiClient Interceptor Chain / Telemetry Pipeline / Audit Logging Facade / Authorization Layer / Health & Degrade Surface / Shared Contract & Codegen / Safeguard Policy Module / ASIN Utility）+ モノレポ配置 + Infrastructure Design で物理化する未確定事項。全 2 ファイル diagnostics 0。plan チェックボックス更新。承認ゲート前。"
+**Context**: Construction Phase / Unit-1 Platform / NFR Design Part 2 完了 — 承認待ち
+
+## Unit-1 Platform — NFR Design 承認 → Infrastructure Design 着手
+**Timestamp**: 2026-05-29T03:00:00Z
+**User Input**: "次にいきましょう"
+**AI Response**: "Unit-1 Platform の NFR Design を承認として記録。plan のチェックボックスを完了、aidlc-state.md の Current Stage を Infrastructure Design（Unit-1）に更新。Infrastructure Design ステージのルール詳細（construction/infrastructure-design.md）と CDK 固有の steering（tech-cdk.md）を読み込み、Unit-1 の platform-stack を中心とした AWS インフラ設計計画 + 質問を作成する。"
+**Context**: Construction Phase / Unit-1 Platform / NFR Design 承認・完了 → Infrastructure Design 着手
+
+## Unit-1 Platform — Infrastructure Design 回答受領（Q7 矛盾検出）
+**Timestamp**: 2026-05-29T03:15:00Z
+**User Input**: "記載しました"（Q1=A / Q2=A / Q3=A / Q4=A / Q5=「___a」/ Q6=A / Q7=C）
+**AI Response**: "Q1=A（VPC 2AZ/3層+Endpoint+NAT1）/ Q2=A（単一 REST API + Lambda Authorizer + rate limit）/ Q3=A（テーブル分離 + 共通設定規約）/ Q4=A（Unit-1 は非同期規約のみ）/ Q6=A（dev+prd 2 環境）を確定。Q5 は『___a』表記だが a が明示されているため A（MVP は基盤+主要アラート、決勝でフル）と解釈し確定扱い。Q7=C（ElastiCache Redis と OpenSearch Serverless を両方とも利用 Unit のスタックに委譲し platform-stack に含めない）は (1) unit-of-work.md の Unit-1 Infra 範囲（ElastiCache/OpenSearch を明示的に含む）と矛盾、(2) ElastiCache は B-11 CreatorsApiClient 経由で Unit-4 Reel と Unit-5 Cart の両方が利用するため単一 Unit スタックに置くと他 Unit がクロススタック依存になる、という 2 点の問題があるため clarification（unit-1-platform-infrastructure-design-clarification.md）を作成し確認。"
+**Context**: Construction Phase / Unit-1 Platform / Infrastructure Design Part 1 — Q7 矛盾の clarification ゲート
+
+## Unit-1 Platform — Infrastructure Design Clarification 確定 + Part 2 Generation
+**Timestamp**: 2026-05-29T03:30:00Z
+**User Input**: "Aでいきましょう"（Clarification 1=A、Q5 確認は A 維持）
+**AI Response**: "Q7 を A に確定（ElastiCache Redis と OpenSearch Serverless を両方 platform-stack に配置。ElastiCache は MVP 最小ノード構築で Unit-4/5 が共有、OpenSearch は Unit-4 着手時に platform-stack へ追加、いずれも段階構築。unit-of-work.md の Unit-1 範囲と完全整合、クロススタック依存を回避）。これで全 7 項目確定（Q1=A/Q2=A/Q3=A/Q4=A/Q5=A/Q6=A/Q7=A）。Part 2 Generation を実行し、aidlc-docs/construction/unit-1-platform/infrastructure-design/ 配下に infrastructure-design.md / deployment-architecture.md、および aidlc-docs/construction/shared-infrastructure.md を生成する。"
+**Context**: Construction Phase / Unit-1 Platform / Infrastructure Design Part 2 — 成果物生成
+
+## Unit-1 Platform — Infrastructure Design Part 2 成果物生成完了
+**Timestamp**: 2026-05-29T03:45:00Z
+**User Input**: なし（承認済み方針に基づく生成）
+**AI Response**: "aidlc-docs/construction/unit-1-platform/infrastructure-design/ 配下に 2 成果物 + shared-infrastructure.md を生成。(1) infrastructure-design.md: VPC（2AZ/3層+Endpoint+NAT1）/ API GW REST + Lambda Authorizer / Cognito User Pool 基盤 / DynamoDB 共通設定（オンデマンド+PITR+SSE-KMS+命名規約）/ S3（Data Lake/Catalog）/ ElastiCache Redis（platform 配置・Unit-4/5 共有）/ OpenSearch Serverless（platform 配置・Unit-4 着手時）/ KMS/IAM/Secrets/SSM / 観測（MVP 主要 Alarm + 決勝フル）/ 共通 Lambda（B-12 Layer/B-14/health）/ 論理→物理マッピング / Extension サマリ。(2) deployment-architecture.md: dev+prd 2 環境 / スタック依存図（SSM 連携、Export/Import 回避）/ デプロイ順序 / CI フロー / cdk-nag 方針 / デプロイアーキ図（Mermaid+テキスト代替）/ コスト最適化。(3) shared-infrastructure.md: platform が公開する SSM パラメータ一覧 / 命名規約 / 全 Unit 必須インフラ規約（暗号化/IAM/ネットワーク/観測/設定/API契約/テレメトリ）/ デプロイ順序 / 環境。deployment-architecture と shared-infrastructure は diagnostics 0。infrastructure-design.md は Kiro Spec Format プロバイダの誤検出 7 件（## Overview/Architecture/Components and Interfaces/Data Models 等を要求）のみで AI-DLC 成果物のため対象外。plan チェックボックス更新。承認ゲート前。"
+**Context**: Construction Phase / Unit-1 Platform / Infrastructure Design Part 2 完了 — 承認待ち
+
+## Unit-1 Platform — Infrastructure Design 承認 → Code Generation 着手
+**Timestamp**: 2026-05-29T04:00:00Z
+**User Input**: "次にいきましょう！"
+**AI Response**: "Unit-1 Platform の Infrastructure Design を承認として記録。plan のチェックボックスを完了、aidlc-state.md の Current Stage を Code Generation（Unit-1）Part 1 に更新。Code Generation ステージのルール詳細（construction/code-generation.md）と TypeScript / Python の fileMatch steering を読み込み、Unit-1 のコード生成計画（Part 1）を作成する。モノレポ構造の初期化 + shared（S-01〜S-04）+ mobile platform（M-01/M-12/M-13）+ backend common（B-12/B-14/health）+ infra（platform-stack）+ OpenAPI 骨格凍結を対象とする。"
+**Context**: Construction Phase / Unit-1 Platform / Infrastructure Design 承認・完了 → Code Generation Part 1 着手
+
+## Unit-1 Platform — Code Generation Part 1（計画）作成・承認待ち
+**Timestamp**: 2026-05-29T04:15:00Z
+**User Input**: なし（Infrastructure Design 承認を受けて Code Generation Part 1 に着手）
+**AI Response**: "code-generation.md / tech-typescript.md / tech-python.md / tech-cdk.md / dev-commands.md を読み込み、Unit-1 のコード生成計画 `unit-1-platform-code-generation-plan.md` を作成。20 ステップ構成（Step1 モノレポ構造 → Step2 OpenAPI 骨格凍結+型生成 → Step3-4 S-01 AsinExtractor+PBT → Step5-6 S-03 SafeguardPolicy+PBT → Step7 S-04 TelemetryContracts → Step8-9 B-12 AuditLogger/sanitizer/require_owner+PBT → Step10-11 B-14 TelemetryIngestion/Health → Step12-13 M-12 ApiClient+PBT → Step14-15 M-13 Telemetry+PBT → Step16-17 M-01 AppShell+状態管理土台 → Step18-19 infra platform-stack+snapshot → Step20 README/CI/MSW/総括）。各ステップにストーリートレーサビリティ・NFR・ルール参照を付与。MVP スコープ（コード+単体/PBT テスト生成まで、実行とデプロイは Build and Test、OpenSearch は Unit-4 着手時）を明記。承認待ち（Step 7 ゲート）。"
+**Context**: Construction Phase / Unit-1 Platform / Code Generation Part 1 — 計画承認ゲート前
+
+## Unit-1 Platform — Code Generation Part 1 承認 → Part 2 一気通貫実行
+**Timestamp**: 2026-05-29T04:30:00Z
+**User Input**: "Aでいきましょう"（計画承認 + 全 20 ステップ一気通貫実行）
+**AI Response**: "Unit-1 Platform のコード生成計画を承認として記録。Part 1（計画）完了を aidlc-state.md にマーク。Part 2 Generation を Step 1〜20 の順で一気通貫実行。実アプリケーションコードをワークスペース直下（mobile / backend / infra / shared）に生成し、ドキュメント総括を aidlc-docs/construction/unit-1-platform/code/ に配置。各ステップ完了時にプランのチェックボックスを [x] 更新。"
+**Context**: Construction Phase / Unit-1 Platform / Code Generation Part 2 — 実行開始
+
+## Unit-1 Platform — Code Generation Part 2 完了（全 20 ステップ）
+**Timestamp**: 2026-05-29T05:30:00Z
+**User Input**: なし（一気通貫実行の完了報告）
+**AI Response**: "Unit-1 Platform のコード生成 Step 1〜20 を完了。生成物: shared/（schema OpenAPI 骨格+生成型 / asin-extractor TS+Python+PBT / safeguard-policy TS+Python+PBT / telemetry-contracts）、mobile/（api-client interceptor+retry+PBT / telemetry バッファ+round-trip PBT / app-shell ナビ+Auth ゲート+deeplink 純粋ロジック+テスト / app theme+store+providers / msw-handlers）、backend/（exceptions DomainError / logging AuditLogger+sanitizer fail-safe PBT / authz require_owner / health / telemetry B-14 / 生成 Pydantic モデル / tests）、infra/（platform-stack: VPC/Cognito/KMS/S3/Redis/SNS/SSM + bin/app.ts + cdk-nag + snapshot test）、ルート（npm workspaces/tsconfig/eslint/prettier/vitest.config）、.github/workflows/ci.yml（4 ジョブ）、scripts/check-pii-fields.sh、README フォルダ構成更新、aidlc-docs/construction/shared-infrastructure.md、code/ 配下 11 サマリ。全コードファイル diagnostics 0。プランの全 20 ステップ + 完了基準を [x]。ネットワーク制約により依存インストール・テスト実行・型生成・cdk synth は Build and Test ステージで実施。承認ゲート前（Step 15）。"
+**Context**: Construction Phase / Unit-1 Platform / Code Generation Part 2 完了 — 承認待ち

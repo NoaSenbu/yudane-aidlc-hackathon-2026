@@ -1,0 +1,30 @@
+health:
+  get:
+    operationId: getHealth
+    tags: [platform]
+    summary: ヘルスチェック
+    description: 依存サービス（DynamoDB / Redis）の浅い疎通を返す（PAT-RESIL-04）
+    security: []
+    parameters:
+      - $ref: '../components/parameters/common.yaml#/CorrelationId'
+    responses:
+      '200':
+        description: healthy
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/common.yaml#/HealthStatus'
+            examples:
+              healthy:
+                value:
+                  status: healthy
+                  checkedAt: '2026-05-30T00:00:00Z'
+                  dependencies:
+                    dynamodb: ok
+                    redis: ok
+      '503':
+        description: degraded
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/common.yaml#/HealthStatus'

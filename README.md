@@ -216,11 +216,23 @@ yudane-aidlc-hackathon-2026/
 │   ├── styles.css / app.js
 │   └── assets/{brand,products}/*.svg
 │
+├── shared/                              # 🔗 横断共通（Unit-1 Platform、TS/Python 両対応）
+│   ├── schema/                          #   S-02 OpenAPI 3.1 契約 + 生成型
+│   ├── asin-extractor/                  #   S-01 ASIN 抽出
+│   ├── safeguard-policy/                #   S-03 セーフガード判定
+│   └── telemetry-contracts/             #   S-04 メトリクス/PII 分類
+├── mobile/                              # 📱 React Native（Unit-1: platform features）
+│   └── src/features/platform/           #   M-12 ApiClient / M-13 Telemetry / M-01 AppShell
+├── backend/                             # 🐍 Python 3.13 Lambda（Unit-1: common / telemetry）
+│   └── src/common/                      #   B-12 AuditLogger / authz / exceptions / health
+├── infra/                               # ☁️ AWS CDK v2（Unit-1: platform-stack）
+│   └── lib/platform-stack.ts
+│
 └── .kiro/                               # ⚙️ Kiro IDE 設定 / AI steering
     └── steering/                        #   3 層構造（always / fileMatch / manual）
 ```
 
-Construction Phase 着手後に `mobile/` / `backend/` / `infra/` / `shared/` が追加される。詳細は [structure.md](.kiro/steering/structure.md) を参照。
+Unit-1 Platform 実装完了。残り 7 Unit は `mobile/` / `backend/` / `infra/` 配下に追加される。詳細は [structure.md](.kiro/steering/structure.md) を参照。
 
 ---
 

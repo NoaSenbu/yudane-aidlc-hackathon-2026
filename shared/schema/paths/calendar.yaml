@@ -1,0 +1,27 @@
+# Unit-6 Calendar のパス骨格（Q1=refinedA）。詳細は Unit-6 が非破壊で追記。
+calendarCategories:
+  post:
+    operationId: submitCalendarCategories
+    tags: [calendar]
+    summary: 予定カテゴリ送信（骨格、UC-04、FR-CAL-05）
+    description: 端末ローカル分類後のカテゴリのみ送信（title/body/attendees は禁止、NG-7）
+    parameters:
+      - $ref: '../components/parameters/common.yaml#/CorrelationId'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              events:
+                type: array
+                items:
+                  $ref: '../components/schemas/common.yaml#/CalendarEvent'
+    responses:
+      '200':
+        description: 商品カテゴリ推定結果
+      '400':
+        $ref: '../components/responses/problem-details.yaml#/ProblemDetails'
+      '401':
+        $ref: '../components/responses/problem-details.yaml#/Unauthorized'
