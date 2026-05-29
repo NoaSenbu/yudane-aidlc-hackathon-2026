@@ -1,0 +1,17 @@
+{
+  "enabled": true,
+  "name": "Python 保存で ruff + mypy --strict",
+  "description": "backend/ 配下の Python 保存時に ruff check と mypy --strict を実行し、品質ゲートを前倒しで担保する",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "backend/**/*.py"
+    ]
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "cd backend && poetry run ruff check . && poetry run mypy --strict",
+    "timeout": 120
+  }
+}

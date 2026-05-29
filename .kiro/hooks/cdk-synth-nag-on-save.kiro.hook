@@ -1,0 +1,18 @@
+{
+  "enabled": true,
+  "name": "CDK 編集で synth + cdk-nag",
+  "description": "infra/ 配下の TS 保存時に cdk synth を実行し、cdk-nag による IaC セキュリティ検査を行う",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "infra/lib/**/*.ts",
+      "infra/bin/**/*.ts"
+    ]
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "cd infra && npx cdk synth --quiet",
+    "timeout": 180
+  }
+}

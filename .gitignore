@@ -77,3 +77,6 @@ dist/
 out/
 *.tgz
 *.zip
+
+# --- 一時作業ディレクトリ ---
+.tmp-decode/

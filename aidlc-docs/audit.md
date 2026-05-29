@@ -508,7 +508,7 @@ This file contains the complete audit trail of all user inputs and AI responses 
 ## Unit-2 Auth & Profile — Functional Design 承認 → NFR Requirements 着手
 **Timestamp**: 2026-05-29T06:30:00Z
 **User Input**: "このまま進めましょう"
-**AI Response**: "Unit-2 Functional Design を承認として記録。plan のチェックボックス完了、aidlc-state.md の Current Stage を Unit-2 NFR Requirements に更新。Unit-2 は Unit-1 の横断 NFR 基盤（タイムアウト/カバレッジ/SECURITY 基盤/PBT/観測/可用性）を継承するため、NFR Requirements の質問は Unit-2 固有（認証性能・オンボ完了率・MFA 可用性・PII 強化）に絞る。"
+**AI Response**: "Unit-2 Functional Design を承認として記録。plan のチェックボックス完了、aidlc-state.md の Current Stage を Unit-2 NFR Requirements に更新。Unit-2 は Unit-1 の横断 NFR 基盤(タイムアウト/カバレッジ/SECURITY 基盤/PBT/観測/可用性)を継承するため、NFR Requirements の質問は Unit-2 固有（認証性能・オンボ完了率・MFA 可用性・PII 強化）に絞る。"
 **Context**: Construction Phase / Unit-2 Auth & Profile / Functional Design 承認 → NFR Requirements Part 1 着手
 
 ## Unit-2 Auth & Profile — NFR Requirements 回答受領（Q2/Q3 に整合懸念）
@@ -600,3 +600,326 @@ This file contains the complete audit trail of all user inputs and AI responses 
 **User Input**: "承認・コミットしましょう"
 **AI Response**: "Unit-2 Code Generation を承認として記録。Unit-2 の Per-Unit Loop 全ステージ完了。aidlc-state.md で Unit-2 を完了マーク。git-ops.md を参照: Unit を跨ぐ大規模変更 + shared/schema/ 更新を含むため feature ブランチ + PR が適切と判断。git 現状確認 → feature/unit-1-2/platform-auth-construction ブランチを作成しコミット（main/master 直 push 禁止、破壊的操作なし）。コミットメッセージは日本語 50 文字以内 + 本文。"
 **Context**: Construction Phase / Unit-2 完了 → コミット
+
+---
+
+## 2 系統並走の検出と main → develop マージ
+**Timestamp**: 2026-05-29T14:00:00Z
+**User Input**: "Q5を検討するにあたりunit001がどうなっているか確認したいです。developブランチの変更を取り入れて確認してください。" → "mainをdevelopの差分を見てください。誤って、developではなく、mainが更新されている可能性があります。" → "オプション A、main 側のほうが正" → "ステアリングだけdevelopmentを採用してください。それ以外のunit1の更新はmainをマスターにしてください。"
+**AI Response**: "main にあって develop にない 140 ファイル / +8569 行（unit1 ブランチ → main 直マージのコミット 352e4bc / b19c4c0）を検出。Unit-1 Platform の完全実装（mobile / backend / infra / shared / aidlc-docs/construction/unit-1-platform/{functional-design, nfr-requirements, nfr-design, infrastructure-design, code}）と CI/CD 設定が main 側のみに存在し、develop 側 (Q1〜Q10 の Functional Design 系設計ドキュメント) と二重化していた。ユーザー指示に基づき以下のマージ戦略を実行: (1) 未 commit 変更を git stash で退避、(2) develop に切替して git merge --no-ff origin/main を実行、(3) コンフリクト 2 ファイル（aidlc-state.md / audit.md）が発生、その他 137 ファイルは main 由来として自動ステージ、(4) ステアリング配下（.kiro/steering/）は両ブランチ間で main が縮小版（並列開発前提決定 / Backlog 運用 / TDD 開発スタイル / §11 チーム同期 / §12 Telemetry スキーマ等を削除）だったため、現在の作業ツリーが develop 版を維持していることを確認、(5) mockup/README.md も develop の Claude Design SSOT 拡張が維持されていることを確認、(6) aidlc-state.md を main 正本（Code Generation Part 2 完了）+ develop 進捗（並列開発前提決定 / Backlog 運用 / TDD 反映 / Unit-3 着手）の統合版で書き直し、(7) audit.md を時系列マージ（〜2026-05-10 共通 + 2026-05-27〜28 develop 系 + 2026-05-29 main 系 + 本マージ完了記録）。Unit-1 の二重化ドキュメントは main 側を正本（business-logic-model.md / business-rules.md / domain-entities.md / frontend-components.md と nfr-* / infrastructure-design / code/* 一式）とし、develop 系の Q1〜Q10 検討プロセス（functional-design-plan.md / functional-design.md / data-model.md / openapi-skeleton-plan.md / sequence-diagrams.md）は『検討プロセス記録』として残置する方針を aidlc-state.md に明記。"
+**Context**: Construction Phase / 2 系統並走の解消 — feature/unit1 → main 直マージで生じた main / develop 乖離を develop に main を取り込む形で解消、ステアリングは develop 拡張（並列開発前提決定 / TDD 等）を維持
+
+
+---
+
+## Unit-3 Debate Functional Design v3 — AgentCore 全面採用判断
+**Timestamp**: 2026-05-29T15:30:00Z
+**User Input**: "Agent Coreの最新情報を調査して、よりマネージドに実装できる案がないか再検討してください。" → "1. リージョン可用性とCDKへの適性をチェックした上で判断したいです。" → "Cで進めてください"
+**AI Response**: "AWS AgentCore power を activate して最新情報調査。(1) Tokyo apne1 で AgentCore Runtime / Memory / Gateway / Identity 全機能 GA 確認（公式 Regional Availability API + Whats New）。(2) `aws-cdk-lib/aws-bedrockagentcore` L2 構成（Runtime / RuntimeEndpoint / Memory / Gateway / Browser / CodeInterpreter / OnlineEvaluation）が安定版で利用可能、alpha パッケージ不要。(3) Direct Code Deploy（2025-11 GA）で ECR 不要、S3 zip / local asset から直接デプロイ可能。(4) 選択肢 A（採用しない）/ B（Memory のみ）/ C（全面採用）を提示、調査結果を踏まえ C を強く推奨。ユーザー承認 → v3 改訂を実施。Q1（Memory STM + 組み込み Strategy）/ Q3（Strands streaming 標準）/ Q5（Cognito Authorizer）/ Q6（Public Network、VPC 不要）/ Q8（Memory semantic + ヒューリスティック）/ Q10（Memory userPreference）/ Q11（lifecycleConfiguration）/ Q13（Memory expirationDuration）/ Q15（`agentcore dev`）を AgentCore 採用版に書き直し。Q16（ストラテジー設計）/ Q17（RuntimeEndpoint 環境戦略）を新設。Q2（Cooldown DDB）/ Q4 / Q7 / Q9 / Q12 / Q14 は維持・微修正。Unit-2 への申し送り 2 件削除（Q8 の `UserActivitySummary` / Q10 の B-08 集約は Memory が代替）、Unit-7 への申し送りに Memory データ削除追加、Unit-1 への申し送りに tech-cdk.md §4.2 + backlog B-303/304 追加。v1 → v2 → v3 の改訂履歴を Decision Record として残置。"
+**Context**: Construction Phase / Unit-3 Functional Design Part 1 v3 — AgentCore 全面採用による工数 5-6 日削減 + 創造性アピール強化、ハッカソン書類審査・予選・決勝の 4 評価軸で全面強化
+
+
+## Unit-3 Debate Functional Design Part 1 — v3.2 通常運用版全採用 + task-breakdown.md 作成
+**Timestamp**: 2026-05-29T18:00:00Z
+**User Input**: "MVPと通常運用というのは、保守運用面だけのことを言っていて、機能面的な実装には影響しないということでしょうか？" → "C. 通常運用版を全採用でいきます。Code generation前にタスクを分解して、実装の優先度を決めていきます。"
+**AI Response**: "L1 機能面 / L2 アーキテクチャ面 / L3 保守運用面 の 3 層整理を提示。Q11（Strands graceful shutdown）と Q13（Memory streamDeliveryResources + S3 export）は L3 保守運用ではなく **L1 機能面に直結する修正** であることを説明（Q11: 論破文中断防止 = M-1 体験品質 / Q13: Year 1 退化レポートのデータ保全 = M-3 到達証拠の成立条件）。ユーザー選択を受けて plan.md を v3 → v3.2 に更新（オプション C 全採用版）。Q1=B→C / Q4=A→A+SSM / Q10=A→B / Q11=A→A+graceful shutdown 80s / Q12=C→D 多層 / Q13=D→D+S3 / Q14=B→A PBT 全面 / Q16=A→B custom Strategy / Q17=A→B 3 endpoint を確定。追加工数 +4d（5-6d → 9-11d）。Decision Record §6 を末尾追加。同ディレクトリに task-breakdown.md を新規作成 — Phase 1〜6（5/29〜6/26）の実装計画 + P0/P1/P2 優先度マトリクス + 5/30 予選 MVP の暫定構成（Phase 2 本格実装が間に合わない現実的対応）+ リスク 7 件 + Mermaid 依存 DAG を策定。aidlc-state.md の Stage Progress と Current Stage を更新。"
+**Context**: Unit-3 Functional Design Part 1 — Decision finalization + task breakdown before Part 2 generation
+
+---
+
+
+## Unit-3 Debate Functional Design Part 1 — v3.3 セルフレビュー修正
+**Timestamp**: 2026-05-29T19:00:00Z
+**User Input**: "現状のPlanで矛盾や誤った点がないかレビューしてください。" → "Aを実施した後に再度レビューしてください。"
+**AI Response**: "v3.2 plan + task-breakdown のセルフレビューで Critical 6 件 + Major 6 件 + Minor 2 件を検出。ユーザー選択 A を受けて Critical 6 + Major 6 を v3.3 として一括修正。修正内容: C-1（Q4 SSM 切替の P0/P1 分類矛盾解消、P0 化）/ C-2（Memory expirationDuration の 7 日 vs 90 日混乱を解消、単一値 90 日 + S3 export 365 日に統一）/ C-3（5/30 マイルストーン矛盾を解消、暫定デモ 5/30 → P0 完了 6/6 → 決勝 Readiness 6/15 → 決勝デモ 6/26 の 4 段階に整理）/ C-4（§1.4 Infra 層表 v3 のままを v3.3 統合版に書き換え）/ C-5（出力 SSM 不整合を 7 個に統一）/ C-6（task-breakdown 依存 DAG の論理矛盾解消、P1 タスクは P1_Done より前に配置）/ M-1（§4 評価軸を v3.3 統合版に、§6.3 をレビュー記録に簡略化）/ M-2（Q12 選択肢 D を「多層防御」に再定義）/ M-3（Q1 / Q10 / Q16 の段階実装方針を plan 本文に明示）/ M-4（IAM ハードコードを Haiku + Sonnet 2 ARN ワイルドカード化）/ M-5（RuntimeEndpoint qualifier 命名を `live` + `canary` に統一、Stack 単位 env 分離 + 各 Stack 内 2 endpoint）/ M-6（Unit-2 申し送り表記を「v3 で消滅、v3.2 / v3.3 でも変更なし」に正確化）。設計判断自体に変更なし、ドキュメント整合性のみ向上。task-breakdown は v1.1 で C-1 / C-3 / C-6 を反映、aidlc-state.md / audit.md 更新。"
+**Context**: Unit-3 Functional Design Part 1 — Self-review and consistency fixes before Part 2 generation
+
+---
+
+
+## Unit-3 Debate Functional Design Part 2 Generation 完了
+**Timestamp**: 2026-05-29T20:00:00Z
+**User Input**: "A"（Functional Design Part 2 Generation に進む）
+**AI Response**: "Unit-1 main 正本の構成に整合する 6 ファイルを新規作成。(1) business-logic-model.md: ALG-DEBATE-START / ALG-COOLDOWN-CHECK / ALG-COOLDOWN-INC / ALG-STRESS / ALG-PROMPT / ALG-MEMORY-WRITE / ALG-MEMORY-READ / ALG-AFFIRMATION / ALG-GRACEFUL-SHUTDOWN / ALG-MOD / ALG-S3-EXPORT の 11 アルゴリズムを技術非依存で記述、PBT-02 / PBT-03 / PBT-07 / PBT-08 の重点 property を明示。(2) business-rules.md: DEBATE-* / COOLDOWN-* / PROMPT-* / STRESS-* / MEMORY-* / MOD-* / AUTHZ-* / STREAM-* / ENDPOINT-* / SSM-* / PBT-* の 11 区分でルール一覧化、設定値カタログを 17 項目で確定。(3) domain-entities.md: Mermaid クラス図 + Pydantic v2 / TypeScript 型を 13 DTO で定義、AgentCore Memory event_metadata / DDB Cooldowns / Strands streaming event の構造を確定。(4) strands-agent-design.md: ファイル構造 + main.py 実装方針 + Strands Agent 設定（model SSM / hooks / Memory Strategy 構成 P0 P1 / callback_handler / Bedrock Guardrails）+ タイマー実装二段構造 + Property 1〜5 + AgentCore Runtime 起動方法。(5) prompt-composition.md: M-1 + M-2 併走テンプレート 4 ブロック（base / m1_fact / m1_psychology / m2_reward）+ compose.py 実装 + PROMPT-02 不変条件の PBT 重点 property + プロンプト改善ロードマップ。(6) sequence-diagrams.md: Mermaid シーケンス 8 種（翻意成功 → Amazon 遷移 / 連続拒否 → クールダウン / graceful shutdown / 多層モデレーション NG-6 検出 / Memory 個別最適化学習 / Year 1 退化レポート参照 / クールダウン手動解除 / Mobile env 切替 live+canary）。strands-agent-design.md は Kiro Spec Format リンター対応で Overview / Architecture / Components and Interfaces / Data Models / Correctness Properties / Error Handling / Testing Strategy セクションを補強。全 6 ファイル diagnostics エラーなし、Unit-1 main 正本のフォーマットに整合。aidlc-state.md 更新。"
+**Context**: Unit-3 Functional Design Part 2 Generation - all 6 files created, ready for NFR Requirements stage
+
+---
+
+
+## Unit-3 Debate Functional Design Part 2 — 多巡セルフレビュー完了
+**Timestamp**: 2026-05-29T22:00:00Z
+**User Input**: "矛盾や誤りがないかレビューしてください。矛盾・誤りがなくなるまで再レビュー・修正を実施してください。" → 「作業を続けてください」を 6 回
+**AI Response**: "Part 2 全 6 ファイル + plan + task-breakdown の 8 ファイルに対して 7 巡のクロスチェックレビューを実施。各巡で検出した問題と修正:
+
+**1 巡目 Critical 4**: C3-1（strands-agent-design.md セクション構造壊れ、## 1 タイトルと内容の乖離）/ C3-2（DDB 属性名 snake_case vs camelCase 混在、Pydantic alias で camelCase に統一）/ C3-3（肯定フィードバック起動経路不在、DebateInvocationPayload に action フィールドを新設）/ C3-4（compose_debate_prompt シグネチャの ng_directives vs price_yen 不一致、ng_directives は base block 静的埋め込みに統合）+ Major 1（M3-1: 自然解除リセットロジック衝突、ALG-COOLDOWN-INC で cooldownUntil <= now を検知して 1 にリセット）
+
+**2 巡目 Critical 3 + Major 3**: C4-1（Mermaid クラス図の未定義型 MemorySignal/StressSignal/AxisExtraction を list~string~ に修正）/ C4-2（prompt-composition の strands-agent-design §3 参照を §2 に修正）/ C4-3（§11 設計判断サマリの §10 NG-6 検査参照を business-rules MOD-03 に修正）/ M4-1（DebateSession から qualifier フィールド削除）/ M4-2（EventType から debate.timeout 削除、session_complete reason に統合）
+
+**3 巡目 Critical 1**: plan.md の Telemetry イベントリストから debate.timeout 削除、10 イベント版に拡張
+
+**4 巡目 Critical 1**: task-breakdown 5/30 関連の plan v3.2 言及を v3.3 に統一
+
+**5 巡目 Major 2**: M5-1（plan.md Q10 namespace `/user/debate-preferences/` を `/user/debate/` に修正、他 7 箇所と整合）/ M5-2（domain-entities `DebateOutcome` Literal から 'timeout' 削除、session_complete reason のみで使用）
+
+**6 巡目 Major 1**: M6-1（runtime_session_id 生成ロジックを `f'{session_id}_{actor_id}'` で 3 文書統一、26+1+36=63 文字）
+
+**7 巡目 Major 1**: 定数名統一 `GRACEFUL_SHUTDOWN_AT_SECONDS` → `DEBATE_GRACEFUL_SHUTDOWN_AT_SECONDS` / `GRACEFUL_SUMMARY_TIMEOUT` → `DEBATE_GRACEFUL_SUMMARY_TIMEOUT_SECONDS`（business-rules カタログとコードで統一、SI 単位 _SECONDS を全てに付与）
+
+**最終結果**: 全 8 ファイル diagnostics エラーゼロ、計 17 件の矛盾・誤りを多巡修正。v3.3 + 7 巡セルフレビュー完了で Code Generation 着手可能な品質に到達。"
+**Context**: Unit-3 Functional Design Part 2 - exhaustive multi-pass self-review complete
+
+---
+
+
+## Unit-3 Debate NFR Requirements ステージ完了
+**Timestamp**: 2026-05-29T22:30:00Z
+**User Input**: "A"（NFR Requirements ステージに進む）
+**AI Response**: "Unit-1 のフォーマットに整合する 2 ファイルを新規作成。(1) nfr-requirements.md: 性能（NFR-PERF-DEBATE-01〜10、Bedrock 初回トークン 300ms / 90s 厳守 / 80s graceful shutdown）/ コスト（NFR-COST-DEBATE-01〜08、1 セッション $0.001 / dev $300 月 / prd $3,000 月 / Throttling 抑制）/ カバレッジ（NFR-COV-DEBATE-01〜10、compose.py / cooldown.py / stress.py / affirmation.py を 95%+、Unit-3 全体 85%）/ セキュリティ（NFR-SEC-DEBATE-01〜11、actor_id JWT / Memory PII 最小化 / IAM 2 ARN ワイルドカード）/ 倫理担保（NFR-ETHICS-DEBATE-01〜10、NG-6 滑落 0 件 / 多層検出率 100% / 拒否者への肯定強要 0 件 / 人間レビュー 6/24）/ PBT（NFR-PBT-DEBATE-01〜10、重点 5 + 統合点 5 = 10 property）/ 可用性（NFR-AVAIL-DEBATE-01〜07、fail-open / カナリア手順 / SLO 99.0%）/ 観測（NFR-OBS-DEBATE-01〜12、M-1/M-2 軸別翻意率 / Bedrock コスト / Dashboard 4 ウィジェット）/ A11y（NFR-A11Y-DEBATE-01〜05、SR LiveRegion）/ マイルストーン別目標 P0/P1/P2 / Extension コンプライアンスサマリの 11 区分。(2) tech-stack-decisions.md: AgentCore Runtime + Memory Strategy + RuntimeEndpoint live+canary + Bedrock Haiku 4.5 + Strands Agents SDK + Cooldown DDB + S3 Memory Export + SSM 7 個 + テスト・観測スタック + v3 で採用しなかった 7 技術と理由 + ロックファイル管理。Unit-3 で新規導入する依存ライブラリは 4 つのみ（AgentCore CDK / Strands Python SDK / @aws-sdk/client-bedrock-agentcore / event-source-parser）、それ以外は Unit-1 既存スタックを継承。aidlc-state.md 更新。"
+**Context**: Unit-3 NFR Requirements stage complete - performance / cost / ethics requirements established, ready for NFR Design
+
+---
+
+
+## Unit-3 Debate NFR Requirements — セルフレビュー完了
+**Timestamp**: 2026-05-29T23:00:00Z
+**User Input**: "矛盾や誤った点がないかレビューしてください。"
+**AI Response**: "NFR Requirements 2 ファイル + Functional Design 6 + plan + task-breakdown のクロスチェックレビューで Critical 4 + Major 3 件を検出、修正完了。
+
+**Critical 修正**:
+- NC-1: サマリ表 dev コスト表記不一致（'$10/日' → '$300/月（$10/日）'）
+- NC-2: NFR-AVAIL-DEBATE-04 fail-open が COOLDOWN-03 コスト保護と矛盾 → DDB 障害ログ + Bedrock コストアラート併用条件を追加
+- NC-3: サマリ表カバレッジ目標が中途半端（90/85） → 重点 95/90 + 全体 85/80 に整理
+- NC-4: PBT 番号体系 3 つの混在解消、Unit-3 ローカル番号を `business-rules PBT-*` → `UNIT3-PBT-*` に rename、§0.1 に用語整理表を追加、Extension PBT-* と区別
+
+**Major 修正**:
+- NM-1: Cognito Identity Pool 言及（Unit-3 設計に存在しない） → AgentCore Cognito User Pool JWT 直接受領の正しい説明に修正
+- NM-2: 'Hypothesis ベンチマーク' は誤り（Hypothesis に benchmark 機能なし）→ pytest-benchmark に修正
+- NM-3: SLO 99.0% vs Unit-1 99.5% の不整合 → 99.0% の根拠（Bedrock 依存の不確定性）を明記
+
+**Extension PBT カテゴリ修正**: NFR-PBT-DEBATE-04（PBT-07 → PBT-03 + PBT-07 Generator Quality）/ NFR-PBT-DEBATE-09（PBT-04 Idempotency → PBT-03 Invariant）/ NFR-PBT-DEBATE-10（PBT-08 Shrinking 単独 → PBT-03 + PBT-08）。Extension PBT 定義（property-based-testing.md）と整合。
+
+**全 3 ファイル diagnostics エラーなし**（Kiro Spec Format リンター誤検知 4 件は Unit-1 と同様無害）。"
+**Context**: Unit-3 NFR Requirements - cross-pass review with Functional Design, 7 issues fixed for consistency
+
+---
+
+
+## Unit-3 Debate NFR Design ステージ完了
+**Timestamp**: 2026-05-30T08:00:00Z
+**User Input**: "A"（NFR Design ステージへ進む）
+**AI Response**: "Unit-1 のフォーマットに整合する 2 ファイルを新規作成。
+
+**(1) logical-components.md**: LC-D-01 Debate Entrypoint Router / LC-D-02 Strands Agent Streaming Pipeline / LC-D-03 Memory Hook Manager / LC-D-04 Prompt Composition Engine / LC-D-05 Stress Estimator / LC-D-06 Cooldown DDB Adapter / LC-D-07 3-Layer Moderation Pipeline / LC-D-08 Affirmation Generator / LC-D-09 Mobile AgentCore Client / LC-D-10 Mobile Event Parser / LC-D-11 Memory S3 Export Pipeline / LC-D-12 SSM Configuration Loader の 12 論理コンポーネントを定義。各 LC に構成 / 依存 / 実装方針 / 不変条件を記述。Mermaid 依存図で 12 LC + AgentCore Runtime + DDB + S3 + Athena + Telemetry の関係を可視化。NFR Requirements との対応サマリを末尾表で集約。
+
+**(2) nfr-design-patterns.md**: PAT-D-PERF（Streaming First-Token / Two-Stage Timer / Memory Top-K Bound / Pure Function Prompt の 4）+ PAT-D-COST（Cooldown Gate / Throttling Single-Retry / SSM Model Switch / DDB Failure Kill Switch の 4）+ PAT-D-ETHICS（3-Layer Moderation / Affirmation Fail-Safe / Outcome-Gated Affirmation の 3）+ PAT-D-RESIL（Memory Fail-Open / Cooldown Reset / Bedrock Guardrails Surface の 3）+ PAT-D-OBS（Axis-Tagged Telemetry / Bedrock Token EMF / Canary Endpoint Routing の 3）+ PAT-D-SEC（JWT-only actor_id / Memory Namespace Isolation / IAM Wildcard 2-Model の 3）= 計 6 区分 21 パターン。FMEA で 10 失敗モードを対応パターンに紐付け。P0/P1/P2 マイルストーン別優先度で task-breakdown.md と整合。
+
+**多巡セルフレビュー（2 巡）**:
+
+**1 巡目 Critical 4 + Major 6**:
+- **NDC-1**: LC-D-06 Kill Switch コード例で `ssm.get_parameter` 直接呼び出し → LC-D-12 の `is_kill_switch_enabled(env_name)` ヘルパー経由に統一（カプセル化）
+- **NDC-2**: LC-D-09 Mobile Client の `actor_id` 変数スコープ不明確 → Amplify Auth `Auth.fetchAuthSession()` 経由で `idToken.payload.sub` 取得を明示
+- **NDC-3**: PAT-D-COST-04 の `cd_state == 'ddb_error'` 比較がドメインモデルと矛盾 → `try/except DDBError` で書き直し
+- **NDC-4**: NFR-A11Y-DEBATE-01〜05 を logical-components.md 配下とした記載が誤り → Mobile feature 直接実装（Outside-In TDD）に修正
+- **NDM-1**: タイマー二段のリテラル `80s` / `90s` をカタログ定数 `DEBATE_GRACEFUL_SHUTDOWN_AT_SECONDS` / `DEBATE_MAX_DURATION_SECONDS` 参照に変更
+- **NDM-2**: FMEA「Sonnet 切替時 AccessDenied」検出列を `CloudWatch Errors` → `N/A（IAM 2 ARN 先行付与で予防済）` に修正
+- **NDM-3**: PAT-D-COST-04 を P1 → P0 に昇格（NFR-AVAIL-DEBATE-04 / kill-switch SSM Parameter は P0 出力と整合）
+- **NDM-4**: PAT-D-RESIL-02 対応 NFR を `COOLDOWN-04 / PBT-03` → `NFR-PBT-DEBATE-03 / business-rules COOLDOWN-04` に統一
+- **NDM-5**: PAT-D-RESIL-03 適用コンポーネントを `Strands callback_handler` → `Bedrock Guardrails + Strands main.py event 変換` に修正
+- **NDM-6**: PAT-D-COST-04 表の対応 NFR から `NC2-2` 削除（NC2-2 はセルフレビュー修正コードであり NFR ID ではない）
+
+**2 巡目 Critical 1**:
+- **2NDC-1**: PAT-D-COST-04 見出しの `（NC2-2）` を `（NFR-AVAIL-DEBATE-04）` に修正（§0 表との整合）
+
+**最終結果**: 全 2 ファイル diagnostics エラーゼロ、計 11 件の矛盾・誤りを多巡修正。Functional Design 8 ファイル / NFR Requirements 2 ファイルとの整合性チェック完了で、Infrastructure Design ステージ着手可能な品質に到達。"
+**Context**: Unit-3 NFR Design stage complete - logical components and design patterns established with multi-pass self-review, ready for Infrastructure Design
+
+---
+
+
+
+## Unit-3 Debate Infrastructure Design ステージ完了
+**Timestamp**: 2026-05-30T09:30:00Z
+**User Input**: "A"（Infrastructure Design ステージへ進む）
+**AI Response**: "Unit-1 のフォーマットを参考に、Unit-3 固有の AgentCore Runtime + Memory + Bedrock Guardrails + Cooldowns DDB + S3 Memory Export 構成を 2 ファイルで確定。
+
+**(1) infrastructure-design.md**: 物理 AWS リソース確定。
+
+- §0 サマリ: 12 カテゴリ（Agent Runtime / 認証 / ネットワーク / エンドポイント / Memory / LLM / Guardrails / 自前データ / 保全データ / 観測 / セキュリティ / 設定）と Q1〜Q17 確定根拠の対応表
+- §1 AgentCore Runtime: Direct Code Deploy（S3 zip、ECR 不要）+ Cognito Authorizer + Public Network + lifecycleConfiguration（idleTimeout/maxLifetime: 120s）+ IAM Role 詳細（Bedrock 2 ARN ワイルドカード / Memory R/W / DDB R/W / KMS / SSM / CloudWatch / X-Ray の 8 アクション）+ RuntimeEndpoint live + canary
+- §2 AgentCore Memory: yudane_debate_<env>_memory + expirationDuration 90 日 + Unit-1 KMS + memoryStrategies（userPreference + semantic + custom、custom は P1）+ streamDeliveryResources（S3 Memory Export）
+- §3 Bedrock Guardrails: NG-1〜8 の 8 DENIED_TOPICS + contentPolicy（HATE/VIOLENCE/SEXUAL/INSULTS = HIGH）+ streaming 連携
+- §4 データストア: DDB Cooldowns（On-Demand + KMS + PITR + TTL + camelCase 属性）+ S3 Memory Export Bucket（Lifecycle 365 日 + KMS + Versioning + Glue Crawler 日次）+ IAM Memory Export Role
+- §5 SSM Parameter Store 出力 8 個（runtime-arn / memory-id / runtime-endpoint-live-arn / runtime-endpoint-canary-arn / model-id / memory-export-bucket-arn / cooldowns-table-arn / kill-switch、P0/P1 区分）
+- §6 観測・アラート: CloudWatch Log Group / OTEL X-Ray / EMF メトリクス 8 種（debate.session_started 等）/ CloudWatch Alarms 5 種（NFR-SEC-DEBATE-08 の 4 種 + NFR-AVAIL-DEBATE-04 の DDB 障害連続 5 分）/ Dashboard 4 ウィジェット
+- §7 セキュリティ: KMS / IAM / Public Network / Cognito / Memory PII / TLS / プロンプトインジェクション の 7 項目
+- §8 論理 → 物理マッピング表: LC-D-01〜12 の 12 論理コンポーネントを物理 AWS リソースに紐付け
+- §9 Extension コンプライアンスサマリ: SECURITY-01〜14 + cdk-nag の 12 項目を Compliant / N/A 区分
+
+**(2) deployment-architecture.md**: デプロイ戦略確定。
+
+- §1 環境戦略: dev + staging + prd の 3 環境（Unit-1 の 2 環境と異なり、staging を canary endpoint カナリアリリース検証に活用）
+- §2 スタック依存: 並列デプロイ可能な Unit-7 + Unit-8 を明示、SSM 経由連携（Unit-1 5 個参照 + Unit-3 8 個出力）+ Mermaid 依存図
+- §3 デプロイフロー: GitHub Actions 8 ステップ + 破壊的操作の事前承認 + Bedrock Guardrails 変更承認フロー + Direct Code Deploy 詳細
+- §4 cdk-nag 方針: AwsSolutionsChecks 全適用 + Suppression 表（aws-solutions-iam5 / aws-solutions-l1 / DDB・S3 は Suppression 不要）
+- §5 物理デプロイアーキテクチャ図: 大規模 Mermaid（Mobile / AgentCore Runtime / Strands Agent / Bedrock / Memory / Data Stores / Config & Security / Obs / 他 Unit）+ テキスト代替
+- §6 カナリアリリース手順: 6/24-26 の段階的ロールアウト + ロールバック手順 + GO/NO-GO チェックリスト 9 項目（E2E-01/01 派生/02/03 + コスト/Throttling/Guardrails/Memory/DDB）
+- §7 コスト最適化メモ: dev / staging / prd の 3 環境別予算（dev < $300/月 / staging < $50/月 / prd < $3,000/月、内訳: Bedrock $2,500 + Memory $200 + その他 $300）
+- §8 未確定項目: Code Generation で確定する 7 項目を一覧
+- §9 ハッカソン評価軸へのインパクト: 4 評価軸 + AI-DLC プロセス + 決勝デモ完成度の 6 軸
+
+**多巡セルフレビュー（3 巡）**:
+
+**1 巡目 Critical 4 + Major 5**:
+- **IDC-1**: タイマー対応マトリクス（§1.2）が「90 〜 120s が Strands Agent の hard cutoff」と書いていた → Strands Agent は 90s 時点で session_complete yield して return することを明示、120s は AgentCore Runtime プラットフォーム側の最終 fail-safe であることを補注
+- **IDC-2**: §1.3 IAM で `bedrock-agentcore:DeleteAllLongTermMemoriesInNamespace` を Unit-3 Runtime に付与していた → Unit-7 削除バッチ Lambda の IAM Role に付与（最小権限）と修正、Unit-3 Runtime には付与しないコメント追記
+- **IDC-3**: deployment-architecture.md §6.3 GO/NO-GO の E2E ID（E2E-03 = graceful shutdown としていた）を sequence-diagrams.md と整合（E2E-03 = 多層モデレーション、graceful shutdown = E2E-01 派生）に修正、4 シナリオに整理
+- **IDC-4**: infrastructure-design.md §2.1 Memory Strategy 配列で P0+P1 を一括記載していた → P0/P1 区分を CDK コードコメントで明示、Phase 4 で `addStrategy` または再 deploy で有効化することを補注
+- **IDM-1**: §6.3 CloudWatch Alarms 5 種の出典が混在 → NFR-SEC-DEBATE-08 の 4 種 + NFR-AVAIL-DEBATE-04 の 1 種 = 計 5 種 と明示、各行に出典列を追加
+- **IDM-2**: §1 環境戦略で dev/staging/prd の RuntimeEndpoint 構築 Phase が不揃いだった → dev は live=P0 + canary=P1、staging/prd は両方 P1 と統一
+- **IDM-3**: §6.3 Bedrock コスト計算式が誤っていた（30 × 24 × 60 / 30 ≠ 1440 通分）→ 「prd 月予算 $3,000 を 30 日 × 24 時間 × 60 分で按分すると $0.07/30分。10 倍上限を許容しても $1.0 未満」に式正規化
+- **IDM-4**: infrastructure-design.md §3.2 で `tech-stack §3.1` の章番号未確認 → tech-stack-decisions.md §3.1 への正しいリンクを追加
+- **IDM-5**: deployment-architecture.md §5 Mermaid 図のノードラベル内 `<br/>` / スラッシュ `/` が render エラーリスク → 全ラベルから `<br/>` を削除、`/` を ` ` に置換
+
+**2 巡目 Critical 1 + Major 1**:
+- **2IDC-1**: §6.1 カナリアリリース手順で「prd live endpoint へ昇格（SSM model-id 値変更）」と書いていたが、SSM `model-id` は Bedrock モデル切替用 → 「live endpoint へ Direct Code Deploy 再 deploy または Mobile が読む SSM `runtime-endpoint-live-arn` をプロンプト改善版を含む新リビジョンへ更新」に修正
+- **2IDM-1**: §2.1 デプロイ順序で Unit-7 と Unit-8 が逐次的に並んでいた → 両者は debate-stack に依存するだけで Unit-7/Unit-8 の間に依存はないため並列デプロイ可と明示
+
+**3 巡目 Major 1 + Minor 1**:
+- **3IDM-1**: §0 サマリ表の「Agent Memory: AgentCore Memory（組み込み 2 + custom 1 Strategy）」が最終形か段階形か不明 → 「組み込み 2 + custom 1、custom は P1 で追加」に明示
+- **3idm-1**: §1.1 リソース定義の lifecycleConfiguration コメント「論破は連続会話で idle = 90s + バッファ 30s」が紛らわしい → 「Strands Agent 90s 厳守の保険として +30s バッファ / microVM 強制終了（Strands Agent 既に session_complete yield 済の最終 fail-safe）」に正規化
+
+**最終結果**: 全 2 ファイル diagnostics エラーゼロ（Kiro Spec Format 誤検知 7 件は Unit-1 と同様無害）、計 12 件の矛盾・誤りを 3 巡で修正。Functional Design 8 ファイル / NFR Requirements 2 ファイル / NFR Design 2 ファイル / shared-infrastructure.md / Unit-1 infrastructure-design.md / task-breakdown.md との整合性チェック完了で、Code Generation Phase 1 着手可能な品質に到達。"
+**Context**: Unit-3 Infrastructure Design stage complete - physical AWS resources mapped with multi-pass self-review, ready for Code Generation Phase 1
+
+---
+
+
+
+## Unit-3 Debate Infrastructure Design — 4 巡目クロスチェックレビュー
+**Timestamp**: 2026-05-30T10:30:00Z
+**User Input**: "矛盾や誤った点がないかレビューしてください。"
+**AI Response**: "Functional Design 8 ファイル + NFR Requirements 2 ファイル + NFR Design 2 ファイル + Infrastructure Design 2 ファイル + shared-infrastructure.md + Unit-1 設計 をクロスチェックレビュー。**4 巡目で重大な設計矛盾 3 件を検出、修正完了**。
+
+**Critical 修正（3 件、すべて重大）**:
+
+- **4IDC-1（最重要）**: **Mobile が SSM を直接読み取る実装が Cognito Identity Pool 不採用と矛盾**。tech-stack-decisions.md §2.2 で「Cognito Identity Pool は採用しない」と確定済みなのに、logical-components.md §9 / business-rules.md ENDPOINT-06 / infrastructure-design.md §5 / deployment-architecture.md §2.2 で Mobile が `getSSMParameter()` で直接 SSM を読む実装になっていた。Identity Pool 無しでは Mobile アプリに AWS IAM 認証情報が無く SSM API 直接呼び出し不可能 → **EAS Build 時の `EXPO_PUBLIC_*` 環境変数注入方式に統一**（4 ファイルを一括修正、`process.env.EXPO_PUBLIC_DEBATE_RUNTIME_ENDPOINT_LIVE_ARN` を Mobile アプリに埋め込み、ランタイムでは環境変数のみ参照）。InvokeAgentRuntime は JWT 認証のみで動作するため Cognito User Pool トークンで成立、矛盾なし。
+
+- **4IDC-2**: deployment-architecture.md §6.1 カナリアリリース手順で「prd の 5% のユーザーを canary に向けて A/B」と書いていたが、AgentCore Runtime canary endpoint は Mobile が能動的に切り替える別エンドポイントで、5% トラフィック振り分けの実装方法が未定義 → **EAS Build で live build / canary build を別々に作成 + Expo Updates の OTA 段階配信機能で 5% 配信** に方式確定し、§6 冒頭に補注追加。
+
+- **4IDC-3**: infrastructure-design.md §1.3 IAM Role で「Memory R/W は actor_id namespace に限定（IAM ResourceTag 推奨）」と書いていたが、**actor_id 単位の絞り込みは IAM Role では不可能**（単一 Runtime IAM Role が全ユーザーの Memory にアクセス）→ IAM では `<DebateMemory ARN>/namespace/user/debate/*` の wildcard まで、actor_id 単位の分離は **Strands Agent コード内 f-string + CI Lint** で実現することを明示（PAT-D-SEC-02 / NFR-SEC-DEBATE-04 と整合）。
+
+**Major 修正（2 件）**:
+
+- **4IDM-1**: infrastructure-design.md §1.1 で `userPoolId` / `userPoolClientId` の取得方法が不明確（CDK synth 時 SSM 解決か、ランタイムか）→ コメントを「CDK synth 時に SSM `/yudane/<env>/platform/userpool-id` を `valueForStringParameter` で解決」に正規化。
+- **4IDM-2**: shared-infrastructure.md §1 の Unit-1 SSM 出力に `lambda-sg-id` があるが、Unit-3 は Public Network 採用で参照しない → CDK コードコメントに「Unit-1 platform-stack の `lambda-sg-id` は参照しない（VPC 内配置をしないため、SECURITY-07 の例外）」を追記。
+
+**修正対象ファイル（5 件）**:
+- `aidlc-docs/construction/unit-3-debate/nfr-design/logical-components.md`（LC-D-09 Mobile Client コード例）
+- `aidlc-docs/construction/unit-3-debate/infrastructure-design/infrastructure-design.md`（§1.1 リソース定義 + §1.3 IAM + §5 SSM 出力表）
+- `aidlc-docs/construction/unit-3-debate/infrastructure-design/deployment-architecture.md`（§2.2 SSM 参照表 + §6 カナリアリリース手順）
+- `aidlc-docs/construction/unit-3-debate/functional-design/business-rules.md`（ENDPOINT-06）
+
+**最終結果**: 全 5 ファイル diagnostics エラーゼロ（Kiro Spec Format 誤検知 7 件は Unit-1 と同様無害）、4 巡累計 17 件の矛盾・誤りを修正。Infrastructure Design 完了として承認可能な品質に到達。Code Generation Phase 1 の着手前に **4IDC-1 の修正による Mobile ビルドフロー（Expo `app.config.js` で SSM CLI 経由 → 環境変数注入）を task-breakdown.md Phase 1 T1.3 に反映する必要あり**（次ターンで対応推奨）。"
+**Context**: Unit-3 Infrastructure Design — cross-pass review with all 4 stages, 5 critical/major issues fixed for production-grade consistency
+
+---
+
+
+
+## Unit-3 Debate Infrastructure Design — 5/6 巡目最終クロスチェックレビュー
+**Timestamp**: 2026-05-30T11:30:00Z
+**User Input**: "全ての矛盾・誤理を修正して再度レビューしてください。"
+**AI Response**: "前回（4 巡目）の Critical 4IDC-1（Mobile-SSM 直接読みと Cognito Identity Pool 不採用の矛盾）の解消が部分的に残留していたため、Unit-3 全 8 ファイル（Functional Design 6 + NFR Requirements 1 + NFR Design 0 + Infrastructure Design 2）を網羅レビューし完全統一。
+
+**5 巡目 Major 1 + Minor 1**:
+
+- **5IDM-1**: task-breakdown.md スケジュール表（6/13）/ §3 Phase 5 見出し（6/14〜6/15）/ deployment-architecture.md staging 構築タイミング（6/14）の **Phase 5 開始日が 3 箇所で 6/13 / 6/14 / 6/15 に混在** → スケジュール表を正本として `Phase 5（6/13）` に統一、§3 と deployment-architecture を 6/13 に修正
+- **5idm-1**: 一部の旧記述で「Mobile が SSM から取得」が history 文として残っているが、文脈上「v3.3 旧版 / 4IDC-1 修正前」と明示されているため許容範囲
+
+**6 巡目 Major 2**:
+
+- **6IDM-1**: deployment-architecture.md §7 staging コスト最適化メモが `決勝前検証期間 6/14〜6/26` だったが、Phase 5 staging deploy が 6/13 に修正されたので **6/13〜6/26** が正しい
+- **6IDM-2**: task-breakdown.md スケジュール DAG 図に `★ 決勝 Readiness P1 完了 6/15`、§3 Phase 5 説明に `6/14 = 決勝 Readiness 確認` の **6/14 vs 6/15 不整合** → スケジュール表を確認、`2026-06-14 (Sun) ─┼─ ★ 決勝 Readiness 全 P1 完了（前倒し可）` で「前倒し可」が明記されており、§1 マイルストーン表は 6/15 がマイルストーン日（前倒し目標 = 6/14、最終マイルストーン = 6/15）。§3 Phase 5 説明文を「6/14 前倒し目標、決勝 Readiness 最終マイルストーン日は 6/15」に正規化、DAG 図の 6/15 はマイルストーン表と整合するため修正不要
+
+**追加修正対象ファイル（5/6 巡目）**:
+- `aidlc-docs/construction/unit-3-debate/nfr-requirements/tech-stack-decisions.md`（SSM 出力表 4 行）
+- `aidlc-docs/construction/unit-3-debate/functional-design/business-rules.md`（ENDPOINT-03 / 04）
+- `aidlc-docs/construction/unit-3-debate/functional-design/task-breakdown.md`（T1.3 + Phase 5 見出し + 完了条件）
+- `aidlc-docs/construction/unit-3-debate/functional-design/functional-design-plan.md`（Q17 推奨理由 + Q17 Answer + Phase 2 計画）
+- `aidlc-docs/construction/unit-3-debate/functional-design/sequence-diagrams.md`（§1 シーケンス図 + §8 Mobile env 切替シーケンス全面書き直し + サマリ表）
+- `aidlc-docs/construction/unit-3-debate/infrastructure-design/deployment-architecture.md`（§1 環境表 6/13 統一 / §6.1 昇格メカニズム / §6.2 ロールバック / §7 staging 検証期間）
+
+**Unit-3 Infrastructure Design 6 巡累計のクロスステージ矛盾解消サマリ**:
+
+| 巡 | Critical | Major | Minor | 主な発見 |
+|---|---|---|---|---|
+| 1 巡目 | 4 | 5 | 0 | タイマー責任主体 / Unit-7 削除権限 / E2E ID / Memory P0/P1 |
+| 2 巡目 | 1 | 1 | 0 | SSM 昇格メカニズム / Unit-7/8 並列 |
+| 3 巡目 | 0 | 1 | 1 | Memory custom P1 / lifecycleConfiguration |
+| 4 巡目（重要）| **3** | 2 | 0 | **Mobile-SSM 直接読み × Identity Pool 不採用の矛盾**、IAM actor_id 不可能 |
+| 5 巡目 | 0 | 1 | 1 | Phase 5 開始日 6/13/14/15 混在 |
+| 6 巡目 | 0 | 2 | 0 | staging 検証期間 / 決勝 Readiness 6/14/15 |
+| **計** | **8** | **12** | **2** | **22 件のクロスステージ矛盾を 6 巡で全て解消** |
+
+**最終結果**: Unit-3 全 10 設計ファイル（Functional Design 6 + NFR Requirements 2 + NFR Design 2 + Infrastructure Design 2）の整合性チェック完了。diagnostics は infrastructure-design.md / nfr-requirements.md の Kiro Spec Format 誤検知（Unit-1 と同様無害）以外は全 green。Code Generation Phase 1 着手可能な production-grade の品質に到達。"
+**Context**: Unit-3 Infrastructure Design — comprehensive 6-pass cross-stage review, 22 issues fixed for production-grade consistency
+
+---
+
+
+
+## Unit-3 Debate Code Generation Phase 1 Plan 作成 + 多巡セルフレビュー
+**Timestamp**: 2026-05-30T13:00:00Z
+**User Input**: "A"（Code Generation Phase 1 Planning へ進む）
+**AI Response**: "Unit-1 Code Generation Plan のフォーマットに整合する 1 ファイルを新規作成。
+
+**`aidlc-docs/construction/plans/unit-3-debate-code-generation-phase1-plan.md`**:
+
+- §0 コンテキスト: 期間 5/31〜6/2、担当 Member B、依存 Unit-1 SSM 5 個 + Unit-2 Cognito User Pool MFA フロー
+- §1 コード生成ステップ（8 Step）:
+  - **Step 1 Infra（Snapshot TDD）**: debate-stack scaffold、Runtime + Memory + Guardrail + Cooldowns + IAM + SSM 6 個
+  - **Step 2 SSM Loader（クラシック TDD）**: get_model_id / is_kill_switch_enabled
+  - **Step 3 Domain Models（クラシック TDD）**: DebateInvocationPayload + ClientSignals + CooldownState + CooldownDecision（Pydantic v2、camelCase alias）
+  - **Step 4 Cooldown DDB Adapter（クラシック TDD）**: check_cooldown / increment_refuse_count + PBT-03（hypothesis + boto3 stubber）
+  - **Step 5 main.py（クラシック TDD）**: BedrockAgentCoreApp + parse_jwt_actor_id + Strands Agent 初期化 + dummy compose_debate_prompt + agent.stream_async
+  - **Step 6 Mobile AgentCore Client（Outside-In TDD）**: DebateAgentCoreClient + EXPO_PUBLIC_* 環境変数経由 ARN 取得 + 1 回リトライ + AbortController
+  - **Step 7 Mobile Event Parser（Outside-In TDD）**: parseEventStream + 最小 4 種 EventType + 軸タグ抽出 + PBT-02
+  - **Step 8 疎通確認**: dev デプロイ → EAS Build → 実機疎通 → SSM model-id 動的反映確認 + Phase 1 完了サマリ作成
+
+- §2 Phase 1 完了後の主要ファイル一覧（infra/backend/mobile/aidlc-docs の合計 25 ファイル）
+- §3 ストーリートレーサビリティ（基盤疎通のため主担当ストーリーなし、Phase 2 以降の前提として US-DEBATE-01〜09 に貢献）
+- §4 上流依存（Unit-1 / Unit-2）+ 下流提供（Phase 2 以降）
+- §5 Phase 1 完了基準（Step 1〜8 / cdk-nag green / Coverage 目標 / E2E 疎通 / SSM 動的反映）
+- §6 スコープ外（Phase 2〜6）+ §7 リスクと緩和策 6 件 + §8 ハッカソン評価軸インパクト
+
+**多巡セルフレビュー（3 巡）**:
+
+**1 巡目 Critical 2 + Major 4**:
+- **P1C-1**: Step 4 で `parse_jwt_actor_id(context)` を実装する記述 → actor_id 解決は Step 5 main.py の責務（PAT-D-SEC-01）であり、Step 4 は不適切。Step 5 へ移管
+- **P1C-2**: `bedrock_kwargs={}` の Strands SDK 仕様が未確認 → Phase 1 では空 dict を省略し SDK デフォルト動作に委ねる注記追加
+- **P1M-1**: Step 1.1 Red test に RuntimeEndpoint live が抜けていた → 追加
+- **P1M-2**: Step 5.4 `agentcore invoke --dev` のローカルモード使用を明示
+- **P1M-3**: Step 6.1 Mobile test の `process.env.EXPO_PUBLIC_*` モック方法を vitest `vi.stubEnv` で明示
+- **P1M-4**: §6 スコープ外 Phase 5 日付 6/13 の整合確認（OK）
+
+**2 巡目 Major 2 + Minor 1**:
+- **2P1M-1**: Step 3 Cooldown が `CooldownState` / `CooldownDecision` を使うが、これは Step 4 で定義 → **Step 順序逆転を解消、Domain Models を Step 3 へ繰り上げ、Cooldown を Step 4 へ**
+- **2P1M-2**: Step 1.2 Green で `kms.Key.fromKeyArn()` での IKey 型復元が抜けていた → SSM `kms-key-arn` 取得後に `kms.Key.fromKeyArn` で復元、SNS Topic / Lambda Layer も同様に復元する記述を追加
+- **2p1idm-1**: Cognito MFA 未設定リスク緩和策の表現改善（「Phase 2 後半に延期可」→「Step 8.3 のみ Unit-2 完成後に検証へ延期可」）
+
+**3 巡目**: 残留矛盾なし（Step 1〜8 の論理順序、依存関係、TDD サイクル、ファイル一覧の整合性確認完了）
+
+**最終結果**: 全 1 ファイル diagnostics エラーゼロ、計 7 件の矛盾を 3 巡で修正。Code Generation Part 2（実装着手）に向けた Plan の品質確保。"
+**Context**: Unit-3 Code Generation Phase 1 Plan complete with multi-pass self-review, ready for Part 2 implementation
+
+---
+
+
+
+---
+
+## Unit-3 Debate — UI SSOT 切替（Direction D「黒服のコンシェルジュ」、A 案承認）
+**Timestamp**: 2026-05-30T15:00:00Z
+**User Input**: "AI-DLCを再開してUnit3の続きを実施します。コード生成に入る前にフロントエンドのデザインですが、 #YUDANE Concierge (Direction D) (offline).html を元に生成するようにしてください。" → 「A」（A 案: Direction D を新 SSOT、旧 `mockup/index.html` v0.4 は Inception 期参考資料として残置）→ 「はい。進めてください。」
+**AI Response**: "Direction D の Claude Design オフラインバンドル HTML を `.tmp-decode/decode_bundle.py` で復号、内訳を確認: dir-d.jsx（NotifD/DebateD/AffirmD）+ concierge-core.jsx（HomeD/ReelD/WatchlistD + DTabBar + アトム）+ concierge-meta.jsx（ChatD/MembershipD）+ concierge-app.jsx（DesignCanvas 構成）+ iOS.jsx + tweaks-panel.jsx + DesignCanvas.jsx + 多数の woff2（Shippori Mincho / Cinzel）。8 画面構成 / 漆黒 #0B0B0D × シャンパンゴールド #C9A24B/#E7CE8A / Shippori Mincho セリフ + Cinzel 英字 / 黒岩のひろゆき口調論破（M-1 + M-2 併走）と確認。A 案（Direction D を Construction 以降の新 SSOT、旧 v0.4 は Inception 期参考資料として残置）で 8 ファイル更新を実行: (1) `.kiro/steering/tech.md` §1 で旧 `mockup/` を Inception 参考資料に降格 + Direction D HTML を Construction 正本として追記、§2 デザインツール行で SSOT を Direction D に切替、§4 Figma 不採用条文の参照ページ修正。(2) `mockup/README.md` 冒頭で「2026-05-30 SSOT 切替」を強く明示、デザインツール節を「v0.4 当時の SSOT、現在は Direction D に移行」とし切替対比表（配色/トーン/画面数/役割）を追加、Claude Design セッション履歴テーブル末尾に Direction D の新行を追加。(3) `aidlc-docs/construction/design-system/direction-d-design-system.md`（新規）作成: コンセプト + デザイントークン正本（`--d-bg`/`--d-gold`/`--d-gold-2`/`--d-ink` 等 9 色 + Shippori Mincho/Cinzel + d-panel/d-pill/d-rule/d-cta/DSeal/DMonogram + d-shimmer/d-seal/alt-rise アニメ）+ 8 画面 × Unit マッピング表 + 黒岩の話法ガイド（4 核フレーズ + 軸タグ→話法対応 + NG コピー）+ NativeWind v4 移植方針（tailwind.config.js コード例）+ SSOT HTML 取り扱い規約。(4) `aidlc-docs/construction/unit-3-debate/functional-design/frontend-design.md`（新規）作成: Unit-3 主担当 D-2 DebateScreen ★ + D-3 AffirmScreen の構造図 + 軸タグ→Direction D ラベル 1:1 マッピング表（[FACT]=論破 I・データ → M-1 / [PSYCHOLOGY]=論破 II・感想 → M-1 / [REWARD]=論破 III・ご褒美 → M-2）+ タイマー演出規約（80ms tick + 90s graceful shutdown）+ NativeWind v4 Snippet（`<CounselBlock>` の参考実装）+ M-2 肯定フィードバック（封蝋シール `DSeal` + 「正しい判断だと思いますよ」）+ A11y（コントラスト比 15.97:1 AAA + reduced-motion 対応）+ Phase 1 影響範囲（Step 7.3 の `metadata.axis` 型定義 + 軸タグ抽出のみ、画面実装は Phase 2）。(5) `doc/backlog.md` に B-301「Direction D 移行に伴う旧 v0.4 アセット整理」を必須 4 項目で追加（後付けトリガー: 決勝後のプロダクト化判断 / 新規メンバーの誤認 / 流入導線消滅、優先度: 低）。(6) `aidlc-docs/construction/plans/unit-3-debate-code-generation-phase1-plan.md` §0 のコンテキスト表に「UI SSOT」行を追加（Phase 1 では UI 画面実装はせず、Step 7.3 の `metadata.axis` 型定義のみ Direction D 切替の影響を受ける）+ Step 7.3 に Direction D の論破画面ラベルへの 1:1 マッピング注記を追加。(7) `aidlc-docs/aidlc-state.md` Current Stage を Direction D 切替完了に更新、Construction Phase に SSOT 切替の完了行を追加（更新ファイル一覧 + diagnostics エラーゼロを記録）。(8) 本 audit.md に追記。Phase 1 Code Generation Part 2 着手時の影響: Step 1〜6 / Step 8 は影響なし、Step 7.3 で `StrandsStreamEvent.metadata.axis` を `'FACT' | 'PSYCHOLOGY' | 'REWARD' | undefined` 型で定義し、`extractAxis(text)` で `[FACT]`/`[PSYCHOLOGY]`/`[REWARD]` の string match による軸判別を実装する。これにより Phase 2 の DebateScreen 実装時に Direction D ラベルへ振り分けるだけで M-1 + M-2 併走 UI が成立する状態を Phase 1 で先回り構築する。"
+**Context**: Unit-3 Debate Construction Phase — UI SSOT を Inception 期 `mockup/index.html` v0.4 から Construction 期 Direction D「黒服のコンシェルジュ」に切替（A 案）。tech.md / mockup/README.md / 新規 design-system 2 ファイル / Phase 1 Plan / backlog / aidlc-state を一括更新。Phase 1 実装影響は Step 7.3 のみ（最小限）、Phase 2 の DebateScreen 実装で本格適用。

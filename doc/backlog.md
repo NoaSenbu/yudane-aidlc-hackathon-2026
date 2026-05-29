@@ -142,3 +142,95 @@
 - [aidlc-docs/construction/plans/parallel-dev-prerequisites.md](../aidlc-docs/construction/plans/parallel-dev-prerequisites.md) — 並列開発前提の決定
 - [aidlc-docs/aidlc-state.md](../aidlc-docs/aidlc-state.md) — AI-DLC 各ステージの進捗
 - [aidlc-docs/audit.md](../aidlc-docs/audit.md) — 対話履歴と判断証跡
+
+
+## 3. Unit-3 Debate v3.2 通常運用版全採用（2026-05-29 確定）
+
+### B-303. AgentCore Memory custom Strategy 採用検討 → MVP 採用済
+
+| 項目 | 内容 |
+|---|---|
+| **項目名** | AgentCore Memory の custom Strategy（M-1 / M-2 メカニズム特化のカスタム抽出プロンプト）の採用検討 |
+| **出典** | [Unit-3 Functional Design Plan v3 Q16](../aidlc-docs/construction/unit-3-debate/functional-design/functional-design-plan.md) で v3 当時は backlog 化推奨、v3.2 で MVP 採用に格上げ |
+| **当初推奨案（v3）** | MVP は組み込み 2 種（userPreference + semantic）のみ、custom Strategy は決勝前再評価 |
+| **後付け導入トリガー（v3 当時）** | (1) 決勝前に組み込み Strategy で論破成功率が伸び悩んだ場合 / (2) ハッカソン創造性軸「ダメ化メカニズム特化 AI」アピール材料の必要性 |
+| **優先度（v3 当時）** | 中 |
+| **概算工数（v3 当時）** | 0.5d（カスタム抽出プロンプト設計 + Strategy CDK 設定） |
+| **ステータス: 採用済み（2026-05-29）** | v3.2 オプション C（通常運用版全採用）採用に伴い、MVP 段階で `m1_m2_axis_extractor` という custom Strategy を新設して採用。Q1 = C / Q10 = B / Q16 = B と整合。実装は task-breakdown.md Phase 4 で実施（P1 タスク）。本エントリは履歴として保持（structure.md §6.1 ルール準拠、削除しない） |
+
+---
+
+### B-304. AgentCore Online Evaluation 導入
+
+| 項目 | 内容 |
+|---|---|
+| **項目名** | AgentCore Online Evaluation を Unit-3 Debate に導入し、論破成功率 / プロンプト品質 / 個別最適化精度を継続計測 |
+| **出典** | [Unit-3 Functional Design Plan v3.2 §6.4](../aidlc-docs/construction/unit-3-debate/functional-design/functional-design-plan.md#64-backlog-追加項目v32-で確定) Q16 v3 推奨案、v3.2 で「決勝後の運用評価」に降格 |
+| **当初推奨案** | AgentCore Online Evaluation で論破ターン履歴を継続的に評価、抽出精度 / 翻意成功率 / NG-6 違反率を CloudWatch Dashboard に表示 |
+| **見送り理由** | 決勝 6/26 までの実装に Phase 1〜6 のメインタスクで手一杯。Online Evaluation の評価プロンプト設計と CloudWatch 連携は決勝後の余裕がある時期に適切 |
+| **暫定運用** | Phase 4 で custom Strategy 抽出結果を 100 セッション分定性評価（手動）で代替。CloudWatch Logs Insights で論破成功率を SQL 集計（簡易版） |
+| **後付け導入トリガー** | 以下のいずれかで導入検討<br>1. 決勝後の運用フェーズ（プロダクト化判断）<br>2. 論破成功率の改善余地を継続計測する必要が出た<br>3. AgentCore Online Evaluation の正式 GA + 価格確定 |
+| **優先度** | **中**（決勝後のプロダクト化向け） |
+| **概算工数** | 評価プロンプト設計 + CloudWatch 連携 = 1.5d（Member B） |
+
+---
+
+### B-305. Sonnet 4.6 切替（プロンプト合成側）
+
+| 項目 | 内容 |
+|---|---|
+| **項目名** | Unit-3 Debate のプロンプト合成 / 論破ストリーミングを Haiku 4.5 → Sonnet 4.6 切替 |
+| **出典** | [Unit-3 Functional Design Plan v3.2 Q4](../aidlc-docs/construction/unit-3-debate/functional-design/functional-design-plan.md) Q4 = A + SSM model_id 切替（v3.2 で SSM 切替の仕組みのみ MVP 採用） |
+| **当初推奨案** | parallel-dev-prerequisites C-2 = B Haiku 4.5 単独確定。Sonnet 4.6 は backlog B-002 で記録済み |
+| **見送り理由** | B-002 と同じ理由（4 名 / 3 日制約 + Haiku 4.5 で要件達成）。v3.2 では SSM 切替の仕組み（`/yudane/<env>/debate/model-id`）だけ MVP に組み込み、切替はトリガー条件で実施 |
+| **暫定運用** | SSM Parameter `/yudane/<env>/debate/model-id` の既定値 `anthropic.claude-haiku-4-5` で運用。Sonnet 4.6 への切替は SSM 値変更 + Lambda 再起動で対応可能（Stack 再デプロイ不要） |
+| **後付け導入トリガー** | 以下のいずれかで切替検討<br>1. 決勝後にユーザー数 1000 超 + Haiku 4.5 のレート制限 / 品質制約検出<br>2. PBT-08 論破合意率 < 70% が連続 1 週間継続（B-002 と同じ）<br>3. ユーザー体感評価で「論破が浅い」が過半（B-002 と同じ） |
+| **優先度** | **中**（B-002 と同じ。SSM 切替の仕組みは MVP 採用済なので工数低い） |
+| **概算工数** | SSM 値変更（1 コマンド）+ Lambda 再起動 + 動作確認 = 0.5d（Member A or B） |
+
+---
+
+### B-306. Memory custom Strategy のプロンプト改善版
+
+| 項目 | 内容 |
+|---|---|
+| **項目名** | Q1 / Q10 / Q16 で MVP 採用した custom Strategy（`m1_m2_axis_extractor`）のプロンプト改善 |
+| **出典** | [Unit-3 Functional Design Plan v3.2 Q16](../aidlc-docs/construction/unit-3-debate/functional-design/functional-design-plan.md) v3.2 で MVP 採用 |
+| **当初推奨案** | Phase 4 で custom Strategy 第 1 版を実装。決勝後に 100 セッション以上の論破ログから抽出精度を計測し、プロンプト改善版（v2）に置換 |
+| **見送り理由** | MVP では「組み込み 2 種 + custom 1 種」で創造性軸をアピール、抽出精度の継続改善は決勝後の運用フェーズに適切 |
+| **暫定運用** | Phase 4 の第 1 版プロンプトで運用、定性評価のみ実施 |
+| **後付け導入トリガー** | 以下のいずれかで改善版作成<br>1. 決勝後の論破成功率分析で「翻意した軸」の抽出精度が組み込み Strategy より低い<br>2. Online Evaluation（B-304）の指標で改善余地が明確 |
+| **優先度** | **中**（決勝後の継続改善項目） |
+| **概算工数** | プロンプト v2 設計 + A/B テスト + デプロイ = 1.0d（Member B） |
+
+---
+
+### B-307. RuntimeEndpoint Auto-Pause 設定
+
+| 項目 | 内容 |
+|---|---|
+| **項目名** | dev / staging RuntimeEndpoint の Auto-Pause 設定（コスト最適化） |
+| **出典** | [Unit-3 Functional Design Plan v3.2 Q17](../aidlc-docs/construction/unit-3-debate/functional-design/functional-design-plan.md) Q17 = B（dev/staging/prd 3 endpoint） |
+| **当初推奨案** | dev / staging endpoint は Auto-Pause（一定時間アクセスがなければ自動停止）でコスト抑制 |
+| **見送り理由** | RuntimeEndpoint の追加料金は要確認、デモ期間中は Auto-Pause 不要、決勝後の運用最適化フェーズで適切 |
+| **暫定運用** | dev / staging endpoint も常時稼働。実コスト発生 |
+| **後付け導入トリガー** | 以下のいずれかで導入<br>1. dev/staging endpoint の月額が $X 超え（要確認）<br>2. 決勝後の運用最適化フェーズ |
+| **優先度** | **低**（決勝後のコスト最適化） |
+| **概算工数** | CDK 5 行追加 = 0.3d（Member B） |
+
+---
+
+## 4. UI SSOT 切替に伴う旧アセット整理（2026-05-30 確定）
+
+### B-301. Direction D 移行に伴う旧 `mockup/index.html` (v0.4) のアセット整理
+
+| 項目 | 内容 |
+|---|---|
+| **項目名** | Construction Phase 着手後、Direction D（黒服のコンシェルジュ）が UI SSOT に確定したため、旧 `mockup/index.html` v0.4（Indigo × cold rose × cyan、6 画面）の最終的なアーカイブ位置・命名・README 整合の確認 |
+| **出典** | [.kiro/steering/tech.md §2 デザインツール行](../.kiro/steering/tech.md)（2026-05-30 SSOT 切替）/ [aidlc-docs/construction/design-system/direction-d-design-system.md](../aidlc-docs/construction/design-system/direction-d-design-system.md) §1（旧 v0.4 を Inception 期参考資料として残置）/ [mockup/README.md](./README.md)（v0.4 を「Inception 期の参考資料」と明記済） |
+| **当初推奨案** | 旧 v0.4 を `mockup/` 配下にそのまま残置（書類審査の Inception 成果物として `git log` 含めて履歴を保つ）。tech.md / mockup/README.md / Direction D 設計システムの 3 ファイルで「v0.4 = Inception 期参考、Construction 以降は Direction D」と相互リンクで明示 |
+| **暫定運用** | 上記 3 ファイル + 本 backlog エントリで「v0.4 は Construction 実装の参照対象ではない」と読み手に伝える文言を確保。`mockup/` ディレクトリそのものの移動・名称変更（`mockup-v0.4-inception/` 等）は **未実施**（書類審査リンクが切れるリスクを避ける）|
+| **後付け導入トリガー** | 以下のいずれか 1 つで再評価<br>1. 決勝（2026-06-26）後にプロダクト化判断が下され、リポジトリ整理が必要になった場合<br>2. ハッカソン後に新規メンバーが参加し、`mockup/` を本実装と誤認するインシデントが起きた場合<br>3. README / Inception ドキュメント側のリンクが Direction D へ完全移行され、旧 v0.4 への流入導線が ≤ 0 となった場合 |
+| **優先度** | **低**（v0.4 は審査時の歴史的資料、放置でも実害は出ない見込み） |
+| **概算工数** | ディレクトリ rename + リンク追従修正 = 0.5d（Member A）。書類審査リンク切れの恐れがあるためアーカイブ判断は慎重に |
+
