@@ -16,9 +16,11 @@
     "@yudane/safeguard-policy": "*",
     "@yudane/schema": "*",
     "@yudane/telemetry-contracts": "*",
+    "uuid": "^11.0.0",
     "zustand": "^5.0.2"
   },
   "devDependencies": {
+    "@types/uuid": "^10.0.0",
     "fast-check": "^3.23.0",
     "msw": "^2.7.0",
     "vitest": "^2.1.8"
