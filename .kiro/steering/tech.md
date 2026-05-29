@@ -20,7 +20,8 @@ inclusion: always
 確定している成果物:
 
 - `aidlc-docs/` 配下の設計ドキュメント（日本語、Markdown + Mermaid）
-- `mockup/` 配下の静的 HTML モックアップ（ビジュアル検証用）
+- `mockup/` 配下の静的 HTML モックアップ（**Inception 期の参考資料**、Construction 以降の UI SSOT は Direction D に切替済 / 2026-05-30）
+- `aidlc-docs/construction/unit-3-debate/YUDANE Concierge (Direction D) (offline).html` — **Construction 以降の UI 正本（Direction D「黒服のコンシェルジュ」）**
 
 Construction フェーズ（Unit ごとの実装）は書類審査後に着手する。
 
@@ -41,7 +42,7 @@ Construction フェーズ（Unit ごとの実装）は書類審査後に着手�
 | IaC | AWS CDK (TypeScript, v2 系最新) + Node.js 22 LTS | Amplify CLI は不採用、Cognito User Pool も CDK で直接管理 |
 | CI/CD | GitHub Actions + SBOM（Snyk / Dependabot） | SECURITY-10 準拠 |
 | リージョン | `ap-northeast-1` | |
-| デザインツール | **Claude Design**（Anthropic Labs、2026-04-17 リリース） | 自然言語対話で HTML/CSS/JS を生成。SSOT は `mockup/index.html` に統一、Figma 不採用。Anthropic 主軸スタック（Bedrock Claude Haiku 4.5 + Claude Design）と整合。デザイントークンは NativeWind v4 の `tailwind.config.js` 側で集中管理 |
+| デザインツール | **Claude Design**（Anthropic Labs、2026-04-17 リリース） | 自然言語対話で HTML/CSS/JS を生成。**SSOT は `aidlc-docs/construction/unit-3-debate/YUDANE Concierge (Direction D) (offline).html`（Direction D「黒服のコンシェルジュ」、2026-05-30 切替）**。旧 `mockup/index.html`（v0.4）は Inception 期の参考資料として残置。Figma 不採用。Anthropic 主軸スタック（Bedrock Claude Haiku 4.5 + Claude Design）と整合。デザイントークンは NativeWind v4 の `tailwind.config.js` 側で集中管理（Direction D の `--d-*` トークンを移植） |
 
 ---
 
@@ -63,7 +64,7 @@ Construction フェーズ（Unit ごとの実装）は書類審査後に着手�
 - Stripe / Square 等の決済サンドボックス（決済は Amazon 側で完結）
 - Flutter / Dart（v0.3 以降 React Native に変更）
 - Step Functions（時間差制御は EventBridge Scheduler 単独）
-- **Figma / Sketch / Adobe XD**（デザインツールは Claude Design 単独 SSOT、二重管理を避ける。詳細は [doc/backlog.md](../../doc/backlog.md) でなく本ファイル §2 デザインツール行を参照）
+- **Figma / Sketch / Adobe XD**（デザインツールは Claude Design 単独 SSOT、二重管理を避ける。詳細は本ファイル §2 デザインツール行を参照）
 
 ---
 

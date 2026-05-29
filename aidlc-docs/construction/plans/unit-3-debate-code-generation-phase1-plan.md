@@ -20,6 +20,7 @@
 | 完了条件 | Mobile から dev Runtime に Cognito JWT で接続し、token を 1 つでも受信できる。SSM `model-id` 値変更で model_id が反映される（Lambda 再起動）。Snapshot test と Unit test が green |
 | プロジェクト種別 | 既存モノレポへの Unit 追加（Unit-1 完了済み）|
 | ワークスペースルート | リポジトリ直下 |
+| **UI SSOT** | **Direction D「黒服のコンシェルジュ」**（[`aidlc-docs/construction/unit-3-debate/YUDANE Concierge (Direction D) (offline).html`](../unit-3-debate/YUDANE%20Concierge%20%28Direction%20D%29%20%28offline%29.html)、2026-05-30 切替）。**Phase 1 では Mobile UI 画面実装はしない**（agentcore-client + event-parser の通信層のみ）ため、Direction D 切替の実装影響は **Step 7 の `metadata.axis` 型定義 + 軸タグ抽出のみ**。Phase 2 以降の M-04 DebateScreen 実装で Direction D を本格適用する。詳細は [`design-system/direction-d-design-system.md`](../../design-system/direction-d-design-system.md) と [`unit-3-debate/functional-design/frontend-design.md`](../unit-3-debate/functional-design/frontend-design.md) を参照 |
 
 ### Phase 1 で生成するコンポーネント
 
@@ -250,7 +251,7 @@
   - JSON parse + EventType 判別
   - `extractAxis(text)` で `[FACT]` / `[PSYCHOLOGY]` / `[REWARD]` 抽出
 
-- [ ] **Step 7.3（Refactor）**: `mobile/src/features/debate/types.ts` で `StrandsStreamEvent` / `EventType` を定義（domain-entities §3.1 準拠、Phase 1 では最小 4 種 + 軸タグのみ、Phase 2 で `moderation_blocked` / `graceful_shutdown_initiated` / `summary` / `debate.*` を追加）
+- [ ] **Step 7.3（Refactor）**: `mobile/src/features/debate/types.ts` で `StrandsStreamEvent` / `EventType` を定義（domain-entities §3.1 準拠、Phase 1 では最小 4 種 + 軸タグのみ、Phase 2 で `moderation_blocked` / `graceful_shutdown_initiated` / `summary` / `debate.*` を追加）。`metadata.axis` は `'FACT' | 'PSYCHOLOGY' | 'REWARD' | undefined` 型で、**Direction D の論破画面ラベル「論破 I・データ」/「論破 II・感想」/「論破 III・ご褒美」へ Phase 2 で 1:1 マッピングされる**（[frontend-design.md §2.2](../unit-3-debate/functional-design/frontend-design.md) 参照）
 
 - [ ] **Step 7.4（PBT 補強）**: `mobile/src/features/debate/event-parser.property.test.ts`
   - PBT-02 Round-trip: `任意の Strands chunk JSON → parseEventStream → 元の chunk 形式に再構成可能`（fast-check）

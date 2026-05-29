@@ -9,7 +9,7 @@
 - **Project Type**: Greenfield
 - **Start Date**: 2026-05-07T00:00:00Z
 - **Current Phase**: 🟢 CONSTRUCTION PHASE
-- **Current Stage**: Unit-3 Debate Code Generation Phase 1 Plan 完了（1 ファイル新規作成 + 多巡セルフレビュー、2026-05-30）。Code Generation Part 2（実装着手）前
+- **Current Stage**: Unit-3 Debate UI SSOT を Direction D「黒服のコンシェルジュ」に切替完了（2026-05-30）。Code Generation Phase 1 Part 2（実装着手）前
 - **User Language**: Japanese
 
 ## Workspace State
@@ -51,6 +51,7 @@
   - tech.md / tech-typescript.md / tech-cdk.md / api-contracts.md / dev-commands.md / AGENTS.md / mockup/README.md
 - [x] TDD 開発スタイルをステアリングに反映（2026-05-28、Outside-In / クラシック / Snapshot のハイブリッド方式）
 - [x] **main → develop マージ完了**（2026-05-29、Unit-1 Platform 実装 140 ファイルを develop に取り込み、ステアリング拡張は develop 版を維持）
+- [x] **UI SSOT を Direction D「黒服のコンシェルジュ」に切替**（2026-05-30、`aidlc-docs/construction/unit-3-debate/YUDANE Concierge (Direction D) (offline).html` を Construction 以降の正本に。旧 `mockup/index.html` v0.4 は Inception 期参考資料として残置。tech.md §1/§2/§4 / mockup/README.md / 新規 design-system/direction-d-design-system.md / 新規 unit-3-debate/functional-design/frontend-design.md / Phase 1 Plan §0 + Step 7.3 / doc/backlog.md B-301 を一括更新、diagnostics エラーゼロ）
 - [ ] Per-Unit Loop（進行中）
   - **Unit-1 Platform**（完了 ✅）
     - [x] Functional Design（承認済み、2026-05-29）
