@@ -4,8 +4,8 @@ userProfile:
   post:
     operationId: createUserProfile
     tags: [auth]
-    summary: オンボーディング情報登録（骨格）
-    description: 予算感・NG カテゴリ・負債フラグ等を登録（詳細は Unit-2 が追記、SVC-05）
+    summary: オンボーディング情報登録（US-AUTH-01）
+    description: 予算感・NG カテゴリ・負債フラグ等を段階保存（SVC-05、PAT2-ONB-01）
     parameters:
       - name: userId
         in: path
@@ -18,13 +18,44 @@ userProfile:
       content:
         application/json:
           schema:
-            type: object
-            description: オンボーディング情報（Unit-2 が定義）
+            $ref: '../components/schemas/auth.yaml#/UserProfile'
     responses:
       '201':
         description: 作成
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/auth.yaml#/UserProfile'
       '400':
         $ref: '../components/responses/problem-details.yaml#/ProblemDetails'
+      '401':
+        $ref: '../components/responses/problem-details.yaml#/Unauthorized'
+      '403':
+        $ref: '../components/responses/problem-details.yaml#/Forbidden'
+  patch:
+    operationId: updateUserProfile
+    tags: [auth]
+    summary: オンボーディング情報の段階更新（PATCH、冪等 upsert）
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+      - $ref: '../components/parameters/common.yaml#/CorrelationId'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/auth.yaml#/UserProfile'
+    responses:
+      '200':
+        description: 更新後プロファイル
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/auth.yaml#/UserProfile'
       '401':
         $ref: '../components/responses/problem-details.yaml#/Unauthorized'
       '403':

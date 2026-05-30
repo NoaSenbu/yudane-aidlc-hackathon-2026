@@ -1,0 +1,102 @@
+# Unit-2 Auth & Profile のドメインスキーマ（Q1=refinedA 非破壊追記）。
+# Unit-2 が auth パスで参照する詳細スキーマ。
+UserProfile:
+  type: object
+  description: オンボーディング 5 項目（US-AUTH-01）
+  required:
+    - userId
+  properties:
+    userId:
+      type: string
+    monthlyDisposableYen:
+      type: integer
+      minimum: 0
+      description: 月間使える額
+    monthlySavingsYen:
+      type: integer
+      minimum: 0
+      description: 月間貯金額
+    favoriteBrands:
+      type: array
+      items:
+        type: string
+      description: 好きなブランド（5+ 推奨）
+    ngCategories:
+      type: array
+      items:
+        type: string
+    hasDebt:
+      type: boolean
+      description: 負債フラグ（US-AUTH-03）
+    associatesDisclosureAcknowledged:
+      type: boolean
+      description: Associates 開示確認（NG-8）
+    onboardingStep:
+      type: integer
+      minimum: 0
+      maximum: 5
+    profileCompleted:
+      type: boolean
+
+SafeguardSettings:
+  type: object
+  description: セーフガード設定（US-AUTH-03 / UC-08）
+  required:
+    - monthlyLimitYen
+  properties:
+    monthlyLimitYen:
+      type: integer
+      minimum: 0
+    currentBudgetUsedYen:
+      type: integer
+      minimum: 0
+    remainingYen:
+      type: integer
+      minimum: 0
+    flags:
+      type: object
+      properties:
+        cooldownOn:
+          type: boolean
+        quietWeek:
+          type: boolean
+        hasDebt:
+          type: boolean
+    debtReleaseRequestedAt:
+      type: string
+      format: date-time
+      nullable: true
+
+Achievement:
+  type: object
+  description: 委ね Lv / 称号 / Streak（UC-05）
+  required:
+    - level
+    - exp
+  properties:
+    exp:
+      type: integer
+      minimum: 0
+    level:
+      type: integer
+      minimum: 1
+    titles:
+      type: array
+      items:
+        type: string
+    currentStreakDays:
+      type: integer
+      minimum: 0
+
+HomeSnapshot:
+  type: object
+  description: ホーム概況スナップショット（UC-06、Q6=A 概況のみ）
+  properties:
+    candidateCount:
+      type: integer
+    cartWatchCount:
+      type: integer
+    yudaneLevel:
+      type: integer
+    remainingBudgetYen:
+      type: integer

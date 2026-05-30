@@ -7,9 +7,14 @@
       "args": [
         "mcp-proxy-for-aws@latest",
         "https://aws-mcp.us-east-1.api.aws/mcp",
-        "--metadata", "AWS_REGION=us-west-2"
+        "--metadata",
+        "AWS_REGION=ap-northeast-1"
+      ],
+      "autoApprove": [
+        "aws___get_regional_availability",
+        "aws___search_documentation",
+        "aws___read_documentation"
       ]
     }
-
   }
 }

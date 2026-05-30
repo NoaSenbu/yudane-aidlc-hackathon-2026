@@ -1,8 +1,10 @@
-# YUDANE — Mockup v0.4
+# YUDANE — Mockup v0.4（Inception 期の参考資料）
 
-「買わない理由を論破する AI エージェント・コマース」のビジュアル仮説検証用モックアップ。
+> ⚠️ **2026-05-30 SSOT 切替**: Construction 以降の UI 正本は **Direction D「黒服のコンシェルジュ」**（`aidlc-docs/construction/unit-3-debate/YUDANE Concierge (Direction D) (offline).html`）に切替済。本 v0.4 は **Inception 期（書類審査向け）の参考資料**として履歴保持されています。実装時の参照禁止 — Direction D 側を見てください。詳細は [.kiro/steering/tech.md §2 デザインツール行](../.kiro/steering/tech.md) と [aidlc-docs/construction/design-system/direction-d-design-system.md](../aidlc-docs/construction/design-system/direction-d-design-system.md) を参照。
 
-> ⚠️ これは UI 仮説を伝えるためのモックアップで、実アプリではありません。React Native + AWS SDK v3 本実装の前段として、画面フロー・コピー・視覚トーンの合意形成に使います。
+「買わない理由を論破する AI エージェント・コマース」の Inception 期ビジュアル仮説検証用モックアップ（書類審査向け v0.4）。
+
+> ⚠️ これは UI 仮説を伝えるためのモックアップで、実アプリではありません。React Native + AWS SDK v3 本実装の前段として、画面フロー・コピー・視覚トーンの合意形成に使います。Construction 以降は Direction D を使ってください。
 
 ## 起動方法
 
@@ -91,16 +93,29 @@ mockup/
 - モックアップは要件書の §5 を逸脱しないことを原則とする
 
 
-## デザインツール: Claude Design（SSOT）
+## デザインツール: Claude Design（v0.4 当時の SSOT、2026-05-30 以降は Direction D に移行）
 
-本モックアップは **Claude Design**（Anthropic Labs、2026-04-17 リリース）を SSOT デザインツールとして採用する。Figma / Sketch / Adobe XD は採用しない。詳細決定の経緯は [parallel-dev-prerequisites.md §N-1](../aidlc-docs/construction/plans/parallel-dev-prerequisites.md) と [.kiro/steering/tech.md §2 デザインツール行](../.kiro/steering/tech.md) を参照。
+本モックアップ v0.4 は **Claude Design**（Anthropic Labs、2026-04-17 リリース）を使って Inception 期に作成された。Figma / Sketch / Adobe XD は採用しない。
 
-### 運用ルール
+### 2026-05-30 SSOT 切替（重要）
 
-- **SSOT**: 本ディレクトリ配下（`mockup/index.html` ほか）に Claude Design からエクスポートした HTML / CSS / JS を反映する
-- **デザイントークン**: 色 / フォント / スペーシング等のトークンは NativeWind v4 の `mobile/tailwind.config.js`（Construction Phase で生成）を一次の真実とする。Claude Design 出力で発生したトークン揺れは Member A が PR で吸収する
-- **モックアップ HEX → Tailwind トークン**: `mockup/styles.css` の HEX 値（Indigo `#4F4DDC` / cold rose `#E8B4D0` / cyan `#4DE1FF` 他）を `tailwind.config.js` の `theme.extend.colors` にミラーリング（Member A が Unit-1 Platform で実施）
-- **担当**: Member A が Claude Design アカウント（Pro 以上）を保有。新規画面 / 改良依頼は Member A 経由でリクエスト
+Construction Phase 着手時に Claude Design で **Direction D「黒服のコンシェルジュ」**（黒 × シャンパンゴールド、ひろゆき口調の論破コンシェルジュ「黒岩」が買わない理由を論破するダーク UX）を生成し、**Construction 以降の UI 正本**として採用。本 v0.4 は **Inception 期の書類審査用参考資料**として履歴保持される。
+
+| 項目 | v0.4（旧 SSOT、Inception 参考資料） | Direction D（新 SSOT、Construction 以降） |
+|---|---|---|
+| 場所 | `mockup/index.html`（本ファイル系） | `aidlc-docs/construction/unit-3-debate/YUDANE Concierge (Direction D) (offline).html` |
+| 配色 | Indigo `#4F4DDC` × cold rose × cyan | 漆黒 `#0B0B0D` × シャンパンゴールド `#C9A24B`/`#E7CE8A` |
+| トーン | 友達系タメ口（青い夜） | コンシェルジュ口調 + ひろゆき調論破（深夜の外商） |
+| 画面数 | 6（ホーム / カート / リール / 論破 / レポート / セーフガード） | 8（NotifD / DebateD / AffirmD / HomeD / ReelD / WatchlistD / ChatD / MembershipD） |
+| 役割 | Inception 書類審査向け視覚仮説 | Construction 実装の正本（NativeWind v4 トークンに移植） |
+
+詳細は [aidlc-docs/construction/design-system/direction-d-design-system.md](../aidlc-docs/construction/design-system/direction-d-design-system.md) と [.kiro/steering/tech.md §2 デザインツール行](../.kiro/steering/tech.md) を参照。
+
+### v0.4 当時の運用ルール（履歴保持、新規実装では参照しない）
+
+- **SSOT**（v0.4 当時）: 本ディレクトリ配下（`mockup/index.html` ほか）に Claude Design からエクスポートした HTML / CSS / JS を反映していた
+- **デザイントークン**（現運用）: Direction D の `--d-bg` / `--d-gold` / `--d-gold-2` / `--d-ink` 系を NativeWind v4 の `mobile/tailwind.config.js` に移植。Member A が PR で吸収する
+- **担当**: Member A が Claude Design アカウント（Pro 以上）を保有
 - **採用しない**: Figma / Sketch / Adobe XD（二重管理を避ける）
 
 ### バージョン管理: Claude Design セッション履歴
@@ -115,9 +130,10 @@ Claude Design で生成 / 改良した画面は、再現性確保のため以下
 | 論破チャット v0.4 | （セッション URL） | （プロンプト要約） | （commit hash） |
 | ダメ化レポート v0.4 | （セッション URL） | （プロンプト要約） | （commit hash） |
 | セーフガード v0.4 | （セッション URL） | （プロンプト要約） | （commit hash） |
+| **Direction D 全 8 画面 (2026-05-30, 新 SSOT)** | （セッション URL） | 黒服のコンシェルジュ「黒岩」がひろゆき口調で論破するダーク UX。漆黒 × シャンパンゴールド、Shippori Mincho セリフ、Cinzel 英字、ヘアライン罫、封蝋シール。NotifD / DebateD / AffirmD / HomeD / ReelD / WatchlistD / ChatD / MembershipD の 8 画面。 | （commit hash） |
 
 > 各セッション URL は Claude Pro ユーザーのみアクセス可能。チーム外への共有は Anthropic 利用規約に従う。
-> v0.4 までは Claude Design 不採用時代の手書き HTML のため、セッション URL は空欄でよい。**v0.5 以降の更新で Claude Design を使った場合に必須記録**。
+> v0.4 までは Claude Design 不採用時代の手書き HTML のため、セッション URL は空欄でよい。**v0.5 以降の更新で Claude Design を使った場合に必須記録**。Direction D（2026-05-30）以降は新 SSOT のため必須記録。
 
 ### 既存資産の扱い（v0.4 → v0.5 移行時）
 

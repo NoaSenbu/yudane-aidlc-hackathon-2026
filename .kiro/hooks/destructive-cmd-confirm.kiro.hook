@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "破壊的コマンド実行前の事前承認",
+  "description": "cdk destroy / rm -rf / git push --force / git reset --hard などの破壊的コマンドを検出し、ユーザー承認を強制する",
+  "version": "1",
+  "when": {
+    "type": "preToolUse",
+    "toolTypes": [
+      "shell"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "これから実行されるシェルコマンドが、以下の破壊的パターンに該当するか判定してください。\n\n**高リスク（事前承認必須、AGENTS.md §7 / tech.md §7）**:\n- `rm -rf` / `rm -fr`（ホームディレクトリ・ワークスペースルート・親ディレクトリを対象とするもの）\n- `cdk destroy`\n- `git push --force` / `git push -f` / `git push --force-with-lease`\n- `git reset --hard`\n- `git clean -f` / `git clean -fd`\n- `git branch -D`（未マージブランチの強制削除）\n- `aws ... delete-*`（DynamoDB テーブル / S3 バケット / Lambda 関数 / CloudFormation スタックの削除）\n- `aws s3 rm s3://... --recursive`\n- `dropdb` / `DROP TABLE` / `DROP DATABASE`\n- `npm run` / `poetry run` で削除系スクリプトを呼ぶもの\n\n**該当する場合**:\n\n1. コマンドの概要・想定される影響範囲・取り返しが効くかを 3 行で要約\n2. ユーザーに「実行してよいか」を明示的に確認（勝手に実行を継続しない）\n3. 代替手段がある場合（dry-run / バックアップ取得など）は提示\n\n**該当しない場合**:\n\n- 何もせず即座に終了。lint / build / test / read 系コマンドはこの Hook の対象外です。\n\n判定が曖昧な場合は保守的に「該当する」とみなし、ユーザー確認を求めてください。"
+  }
+}
