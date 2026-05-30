@@ -1,5 +1,5 @@
 {
-  "enabled": false,
+  "enabled": true,
   "name": "console.log / print 検出スキャン",
   "description": "アプリケーションコード保存時に console.log / print の混入を検出し、構造化ロガーへの置換を促す",
   "version": "1",

@@ -59,8 +59,10 @@ paths:
   # --- Unit-5 Cart Intercept ---
   /v1/cart-watch-items:
     $ref: './paths/cart.yaml#/cartWatchItems'
-  /v1/cart-watch-items/{itemId}:
+  /v1/cart-watch-items/{asin}:
     $ref: './paths/cart.yaml#/cartWatchItem'
+  /v1/push-tokens:
+    $ref: './paths/cart.yaml#/pushTokens'
   # --- Unit-6 Calendar ---
   /v1/calendar-categories:
     $ref: './paths/calendar.yaml#/calendarCategories'
@@ -109,6 +111,7 @@ components:
       $ref: './components/schemas/common.yaml#/User'
     CalendarEvent:
       $ref: './components/schemas/common.yaml#/CalendarEvent'
+    # --- Unit-2 Auth & Profile ---
     UserProfile:
       $ref: './components/schemas/auth.yaml#/UserProfile'
     SafeguardSettings:
@@ -117,3 +120,16 @@ components:
       $ref: './components/schemas/auth.yaml#/Achievement'
     HomeSnapshot:
       $ref: './components/schemas/auth.yaml#/HomeSnapshot'
+    # --- Unit-4 Reel ---
+    ProductMeta:
+      $ref: './components/schemas/reel.yaml#/ProductMeta'
+    OwnershipLabel:
+      $ref: './components/schemas/reel.yaml#/OwnershipLabel'
+    ReelCard:
+      $ref: './components/schemas/reel.yaml#/ReelCard'
+    ReelPage:
+      $ref: './components/schemas/reel.yaml#/ReelPage'
+    AmazonTransitionRequest:
+      $ref: './components/schemas/reel.yaml#/AmazonTransitionRequest'
+    ExpAward:
+      $ref: './components/schemas/reel.yaml#/ExpAward'

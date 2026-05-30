@@ -1,5 +1,5 @@
 {
-  "enabled": false,
+  "enabled": true,
   "name": "Markdown 保存でリンク・Mermaid 検証",
   "description": "aidlc-docs/ または doc/ の Markdown 保存時に、リンク切れと Mermaid 図の文法エラーをチェックする",
   "version": "1",

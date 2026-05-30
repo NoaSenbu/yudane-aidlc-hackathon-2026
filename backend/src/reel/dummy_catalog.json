@@ -1,0 +1,47 @@
+[
+  {
+    "asin": "B0DUMMY0001",
+    "title": "ワイヤレスノイズキャンセリングイヤホン",
+    "price_yen": 32800,
+    "image_url": "https://example.invalid/img/earbuds.jpg",
+    "review_summary": "静寂性が高評価",
+    "category": "audio",
+    "brand": "SoundCore"
+  },
+  {
+    "asin": "B0DUMMY0002",
+    "title": "アロマディフューザー",
+    "price_yen": 4980,
+    "image_url": "https://example.invalid/img/diffuser.jpg",
+    "review_summary": "寝室向けに人気",
+    "category": "home",
+    "brand": "MUJI"
+  },
+  {
+    "asin": "B0DUMMY0003",
+    "title": "プレミアムコーヒー豆 1kg",
+    "price_yen": 3200,
+    "image_url": "https://example.invalid/img/coffee.jpg",
+    "review_summary": "深煎り好きに",
+    "category": "food",
+    "brand": "BlueMountain"
+  },
+  {
+    "asin": "B0DUMMY0004",
+    "title": "高級万年筆",
+    "price_yen": 28000,
+    "image_url": "https://example.invalid/img/pen.jpg",
+    "review_summary": "プレゼンの相棒",
+    "category": "stationery",
+    "brand": "Pilot"
+  },
+  {
+    "asin": "B0DUMMY0005",
+    "title": "アロマキャンドルセット",
+    "price_yen": 5400,
+    "image_url": "https://example.invalid/img/candle.jpg",
+    "review_summary": "夜のリラックスに",
+    "category": "home",
+    "brand": "MUJI"
+  }
+]

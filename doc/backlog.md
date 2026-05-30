@@ -80,6 +80,162 @@
 
 ---
 
+### B-203. ストレス推定共有関数の正本配置（shared / platform）
+
+| 項目 | 内容 |
+|---|---|
+| **項目名** | Reel（B-03）と Debate（B-02）が共有する `estimate_stress_level()` の正本配置と切り出し先の確定 |
+| **出典** | [Unit-4 Reel Functional Design Plan §Q3](../aidlc-docs/construction/plans/unit-4-reel-functional-design-plan.md) 回答 = A（共有純関数化） |
+| **当初推奨案** | ストレス推定ロジックを Unit-1/共通の純関数として切り出し、Reel と Debate が同一関数で `low/mid/high` を算出（判定一致・重複実装回避） |
+| **見送り理由（保留理由）** | 正本を `shared/`（TS/Python 両実装）に置くか `backend` 共通（Python のみ）に置くかは、Reel が論破前のフィード生成でサーバー算出する前提（Q3=A / REEL-STRESS-04）と Debate の利用箇所を突き合わせて Member A と確定する必要がある。Unit-4 の Functional Design 時点では「同一関数を呼ぶ」前提のみ固定し、物理配置は保留 |
+| **暫定運用** | Unit-4 は `StressLevel` を共有関数から得る前提で設計（domain-entities §2.1 / REEL-STRESS-01〜05）。実装着手時は backend 内の共通モジュールに仮置きし、Debate 着手と同期して正本化 |
+| **後付け導入トリガー** | 以下のいずれかで確定<br>1. Unit-3 Debate の Functional Design / Code Generation で `estimate_stress_level()` の入出力が確定したとき<br>2. Reel と Debate のストレス判定差異が観測されたとき<br>3. Mobile 側でもストレス表示が必要になり TS 実装が要るとき（shared 化が必須化） |
+| **優先度** | **中**（Unit-3 と Unit-4 の実装合流前に確定が必要） |
+| **概算工数** | 共通関数の切り出し + 配置 + 両 Unit からの参照差し替え = 0.5〜1d（Member A + Member B/C 調整） |
+
+---
+
+### B-204. Reel 推薦のベクトル検索（Titan Embeddings + OpenSearch）導入
+| 項目 | 内容 |
+|---|---|
+| **項目名** | B-03 ReelRecommendationService の候補生成を購入履歴ヒューリスティックから Titan Embeddings V2 + OpenSearch Serverless のベクトル近傍検索へ拡張 |
+| **出典** | [Unit-4 Reel Functional Design Clarification CL-1](../aidlc-docs/construction/plans/unit-4-reel-functional-design-clarification.md) 回答 = A（MVP は購入履歴ベース、ベクトル検索は決勝で導入） |
+| **当初推奨案** | components.md の B-03 当初設計どおり、嗜好ベクトルを埋め込みクエリにして OpenSearch で近傍商品を候補化 |
+| **見送り理由** | 予選 5/30 までの実装・インフラ負荷を抑えるため、MVP は購入履歴のカテゴリ/ブランド一致 + 共購買ヒューリスティック（CL-1=A）で候補生成。OpenSearch Serverless 依存と埋め込みパイプラインを予選から外して軽量化・テスト容易化 |
+| **暫定運用** | MVP は ALG-RANK の候補生成段をカテゴリ/ブランド一致 + 共購買で実装（REEL-RANK-01）。リランク（決定論的スコアリング）は MVP から適用（CL-2=A）。OpenSearch は使わない |
+| **後付け導入トリガー** | 以下のいずれかで導入検討<br>1. 決勝 6/26 に向けて推薦精度の差別化が必要と判断されたとき<br>2. MVP デモで「推薦が浅い/関連性が弱い」フィードバックが過半<br>3. 購入履歴が十分蓄積し、ヒューリスティックの上限が見えたとき |
+| **優先度** | **中**（決勝の完成度・ビジネス価値で効く可能性） |
+| **概算工数** | Titan Embeddings 埋め込みパイプライン + OpenSearch Serverless インデックス + B-03 候補生成差し替え = 2〜3d（Member C + Member A インフラ支援） |
+
+---
+
+### B-205. Reel ラベル/コピーの非同期後追い生成（プレースホルダ → 差し替え）
+
+| 項目 | 内容 |
+|---|---|
+| **項目名** | リールカードの所有感ラベル/推薦コメント（ALG-PITCH/LABEL）を同期生成からプレースホルダ即返し → 非同期後追い差し替えに変更 |
+| **出典** | [Unit-4 Reel NFR Design Plan §Q3 / 矛盾解消3](../aidlc-docs/construction/plans/unit-4-reel-nfr-design-plan.md)（後追いは FD ドメインモデルと未整合のため MVP では不採用） |
+| **当初推奨案（採用済み = 同期）** | MVP は同期生成に統一。ソフト期限 350ms 内にテンプレートフォールバックで必ず非空ラベルを返す（FD: `ReelCard.ownershipLabel`/`pitch` は必須・同期） |
+| **見送り理由** | 後追い差し替えには `ownershipLabel`/`pitch` の nullable 化 + 差し替えチャネル（再取得 or SSE）+ クライアント UI の差し替え対応が必要で、FD ドメインモデル・`GET /v1/reel` レスポンス契約の変更を伴う。MVP のレイテンシ予算は同期 + フォールバックで達成可能なため、複雑化を避けて見送り |
+| **暫定運用** | 同期生成 + 350ms ソフト期限 + テンプレートフォールバック（R-PAT-LLM-01）。LLM ハードタイムアウト 1.5s |
+| **後付け導入トリガー** | 以下のいずれかで検討<br>1. 決勝でフィード初回描画 p95 が目標（500ms）を LLM ラベルが律速して超過<br>2. LLM ラベルの品質を上げるため生成時間を延ばしたい（後追いなら初回描画を阻害しない）<br>3. 事前生成キャッシュ（人気商品）でも吸収しきれない場合 |
+| **優先度** | **低**（同期 + フォールバックで MVP・決勝の予算を達成見込み） |
+| **概算工数** | ドメインモデル nullable 化 + 差し替えチャネル（SSE or ポーリング）+ Mobile UI 差し替え = 1.5〜2d（Member C） |
+
+---
+
+### B-501. B-06 NotificationDispatcher の通知コピー LLM 動的生成
+
+| 項目 | 内容 |
+|---|---|
+| **項目名** | 追撃通知（30m / 6h / 24h）のコピーを Bedrock Claude Haiku 4.5 で動的生成し、商品メタ + ユーザー嗜好 + ステップ情報からパーソナライズする |
+| **出典** | [Unit-5 Cart Intercept Functional Design Plan §Q3](../aidlc-docs/construction/unit-5-cart-intercept/functional-design/functional-design-plan.md) 回答 = A（MVP テンプレート → 決勝 LLM） |
+| **当初推奨案（採用済み）** | A（MVP）：30m / 6h / 24h の各ステップに 5〜10 パターンの「友達系トーン」テンプレートを用意し、商品名・価格・ユーザー名を埋め込む |
+| **見送り理由** | 予選 5/30 までの工数制約で LLM 通知コピー生成 + NG-6（脅迫禁止）モデレーションパイプラインは +2d。テンプレート 10 パターンで予選デモのバリエーションは確保可能 |
+| **暫定運用** | `backend/src/cart/notification_templates.py` に 30 パターン（10 × 3 ステップ）を静的定義。商品名・価格・残時間をプレースホルダで差し込む |
+| **後付け導入トリガー** | 以下のいずれかで導入検討<br>1. 決勝 6/26 に向けて M-2（ストレス × ご褒美軸の個別最適化）強化が必要となった場合<br>2. MVP デモ後のフィードバックで「通知が定型的」「もっとパーソナル感が欲しい」が過半<br>3. ストーリー US-03-02 AC-2 の「軽い論破 / 記憶想起 / 最終通告のトーン使い分け」がテンプレートでは不十分と判定された場合 |
+| **優先度** | **中**（決勝向けの差別化要素、M-2 の核心） |
+| **概算工数** | Bedrock Haiku 4.5 呼出 + プロンプトテンプレート + NG-6 出力モデレーション + Hypothesis PBT = **2d**（Member D / Member B 後半） |
+| **想定追加コスト** | Haiku 4.5 入力 1K tokens × 通知 1 件 ≒ $0.0001、月 1 万通知で $1 程度 |
+
+---
+
+### B-502. クリップボード検知（US-03-03）の MVP 実装
+
+| 項目 | 内容 |
+|---|---|
+| **項目名** | フォアグラウンド復帰時にクリップボードを読み取り Amazon URL があればサジェストする機能（US-03-03） |
+| **出典** | [Unit-5 Cart Intercept Functional Design Plan §Q6](../aidlc-docs/construction/unit-5-cart-intercept/functional-design/functional-design-plan.md) 回答 = B（MVP 見送り、決勝で実装） |
+| **当初推奨案（採用済み）** | B：MVP では Share Extension（US-03-01）が UC-03 の主導線として十分機能するため見送り、決勝で UIPasteControl（iOS）対応含めて実装 |
+| **見送り理由** | (1) US-03-01 Share Extension が UC-03 の核心動作であり予選デモで十分なインパクト、(2) iOS 16+ の paste 許可ダイアログが毎回出る UX 問題、(3) UIPasteControl（ボタン型）の Expo / RN 対応状況が不明確で要調査、(4) 工数 -1d で他のストーリーに集中 |
+| **暫定運用** | クリップボード検知機能は実装しない。Share Extension のみで UC-03 を完結。US-03-03 は「決勝で実装予定」として stories.md にもマーキングは不要（既に「サブ機能」位置づけ） |
+| **後付け導入トリガー** | 以下のいずれかで実装<br>1. 決勝 6/26 に向けて UC-03 の進化アピールが必要となった場合<br>2. UIPasteControl の Expo SDK 52+ 公式対応が確認できた場合<br>3. ユーザーテストで「Share Extension の操作が面倒」フィードバックが過半<br>4. 里奈ペルソナ（B）の「Share Extension すら面倒」体験を実装で示したい場合 |
+| **優先度** | **低**（決勝向けの差別化要素、Share Extension で代替可能） |
+| **概算工数** | iOS UIPasteControl 対応調査 + Native Module 拡張 + Android 通常 Clipboard API + サジェスト UI + 24h 拒否記録 = **1.5〜2d**（Member D） |
+
+---
+
+### B-503. ダミーカタログ（`backend/src/cart/_dummy_catalog.py`）の削除
+
+| 項目 | 内容 |
+|---|---|
+| **項目名** | Amazon Approved Mobile Application 申請承認後のダミーカタログ削除と Creators API 本接続への完全移行 |
+| **出典** | [Unit-5 Cart Intercept Functional Design §3.4 ダミーカタログ仕様](../aidlc-docs/construction/unit-5-cart-intercept/functional-design/functional-design.md) / 要件書 §8 A-10 |
+| **当初推奨案（採用済み）** | Approved 承認前は `backend/src/cart/_dummy_catalog.py` で 10 商品の固定データを返却、`USE_DUMMY_CATALOG` 環境変数で B-11 CreatorsApiClient と切替 |
+| **見送り理由** | Amazon Approved Mobile Application 申請が決勝（2026-06-26）前に必須だが、申請承認には数週間〜1 ヶ月を要する見込み。書類審査・予選（5/30）期間中はダミーで代替する |
+| **暫定運用** | dev 環境 / prd 環境とも 6/15 までは `USE_DUMMY_CATALOG=true`、Creators API 本接続は 6/15 以降に有効化判定 |
+| **後付け導入トリガー** | 以下のいずれかで削除実施<br>1. Amazon Approved Mobile Application 承認通知（要件書 §8 A-10 申請完了後）<br>2. Creators API の本番接続テストが green（IT-08 の dummy 版 → 実 API 版で同等動作）<br>3. 決勝後のプロダクト化判断 |
+| **優先度** | **中**（Amazon Approved 承認次第、決勝デモはダミーで実行可能） |
+| **概算工数** | `_dummy_catalog.py` 削除 + B-11 CreatorsApiClient の本実装テスト + USE_DUMMY_CATALOG 環境変数フラグ削除 + ダミー商品 4 件の S3 SVG ホスティング解除 = **0.5d**（Member D） |
+| **削除と同時に実施する確認事項** | (1) すべての E2E テスト（E2E-03 / E2E-03b）が実 Creators API 経由で pass、(2) Cache hit 率が 95% 以上で安定、(3) Creators API レート制限超過アラームが新規セットされている |
+
+---
+
+### B-504. APNs Production Certificate 取得（Apple Developer Program 登録）
+
+| 項目 | 内容 |
+|---|---|
+| **項目名** | prd 環境の Push 通知配信用 APNs Production Certificate 取得 + Apple Developer Program 登録（$99/年） |
+| **出典** | [Unit-5 Cart Intercept Infrastructure Design Plan §3 Q5 v3 改訂](../aidlc-docs/construction/plans/unit-5-cart-intercept-infrastructure-design-plan.md) / [requirements.md §6.1 リージョン](../aidlc-docs/inception/requirements/requirements.md) |
+| **当初推奨案（採用済み）** | dev = APNs Sandbox cert（Apple Developer 不要）+ prd = APNs Production cert（Apple Developer Program 必須）、SSM パス `/yudane/{env}/cart/eum-application-id` で別 Application 管理 |
+| **見送り理由** | Apple Developer Program は年間契約 $99 USD で経費承認必須、書類審査（2026-05-10）/ 予選（2026-05-30）期間中は dev cert のみで Sandbox 配信を実機検証する。prd cert は決勝デモ（2026-06-26）の直前に整備 |
+| **暫定運用** | 予選 MVP は dev 環境 + Sandbox cert + 個人開発者の Apple ID で実機検証、prd デモは Apple Developer Program 登録完了後に APNs Production cert を取得し End User Messaging に登録 |
+| **後付け導入トリガー** | 以下のすべてが揃った時点で実施<br>1. Member A が経費承認（$99 × 1 年）<br>2. Member D が Apple Developer Program 登録 → Keys タブで `.p8` Authentication Key 生成<br>3. End User Messaging Push の APNs Channel に Production Cert を登録（CDK で `CfnAPNSChannel` 設定）<br>4. 決勝デモ 2 週間前（2026-06-12）までに完了 |
+| **優先度** | **高**（決勝デモのコア体験 = Push 通知配信に必須、登録遅延でブロッカー化リスク） |
+| **概算工数** | Apple Developer Program 登録（オンライン申請、Apple 審査 24-48h）+ `.p8` Key 生成 + CDK `CfnAPNSChannel` 統合 + APNs Production への送信動作確認 = **0.5d**（Member D） |
+| **ブロッカー判定** | 2026-06-12 までに登録未完了の場合は Member A が緊急エスカレーション（[AGENTS.md §11.5](../.kiro/steering/AGENTS.md)）、決勝デモシナリオから Push 通知パートを縮退（dev cert で Sandbox 配信のみ表示する代替プラン） |
+
+---
+
+### B-506. PlatformStack の cdk-nag 7 件 error 抑制または修正
+
+| 項目 | 内容 |
+|---|---|
+| **項目名** | Unit-1 PlatformStack の cdk-nag が 7 件の未抑制 error を出力し、`infra/test/platform-stack.test.ts` の "cdk-nag の未抑制エラーがない" テストが fail |
+| **出典** | [Unit-5 Code Generation Build and Test 検証 2026-05-30](../aidlc-docs/audit.md) — `npm test --workspace infra` 実行時に検出 |
+| **検出した 7 件 error** | (1) Redis: AwsSolutions-AEC4 Multi-AZ なし<br>(2) Redis: AwsSolutions-AEC5 デフォルトポート使用<br>(3) Redis: AwsSolutions-AEC6 Redis AUTH なし<br>(4) PlatformVpc: AwsSolutions-VPC7 VPC Flow Log なし<br>(5) UserPool: AwsSolutions-COG1 パスワードポリシー不十分<br>(6) UserPool: AwsSolutions-COG8 プラスティアでない<br>(7) DataLakeBucket: AwsSolutions-S1 S3 サーバーアクセスログなし |
+| **当初推奨案** | 各 error について以下のいずれかで対応する: (a) 設定変更で解消（VPC Flow Log 追加、S3 Access Logs 追加、UserPool パスワードポリシー強化）/ (b) NagSuppressions で正当な理由付きで抑制（dev 環境で Multi-AZ 不要 / Redis AUTH は IAM 認証で代替 等） |
+| **見送り理由（Unit-5 視点）** | Unit-5 Cart Intercept のレビュー範囲外。Unit-1 PlatformStack の責務であり Member A 側で対応する。Unit-5 の `cart-stack.ts` は cdk-nag 抑制を完備しており、`infra/test/cart-stack.test.ts` 11/11 pass している |
+| **暫定運用** | `infra/test/platform-stack.test.ts` の "cdk-nag の未抑制エラーがない" テストは現在 fail。`bin/app.ts` 経由で PlatformStack を依存に含むスタック（CartStack 等）の `cdk synth` 時にも synth は通るが、cdk-nag warning が混在する状態 |
+| **後付け導入トリガー** | 以下のいずれかで対応開始<br>1. Member A の Unit-1 Platform Stack 完成 PR `#platform-additions-001` に組み込み（最有力）<br>2. dev 環境への CDK deploy 前に必須化（cdk-nag は deploy 時に検査されるため）<br>3. 決勝向け prd 環境構築時（要件書 §7 SECURITY-15 cdk-nag green 必須） |
+| **優先度** | **高**（Unit-1 完成 PR に組み込む必要があり、Member A の Stage 3 完了条件） |
+| **概算工数** | 設定変更（VPC Flow Log + S3 Access Logs + UserPool パスワードポリシー強化）= 1d / NagSuppressions 7 件 + 理由コメント = 0.5d、合計 1〜1.5d（Member A） |
+
+---
+
+### B-507. PlatformStack の TypeScript exactOptionalPropertyTypes 違反修正
+
+| 項目 | 内容 |
+|---|---|
+| **項目名** | Unit-1 PlatformStack の TypeScript コンパイルエラー 3 件（`cdk synth` 実行時の ts-node コンパイルで失敗） |
+| **出典** | [Unit-5 Code Generation Build and Test 検証 2026-05-30](../aidlc-docs/audit.md) — `npx cdk synth cart-dev-stack` 実行時に検出 |
+| **検出したエラー** | (1) `lib/platform-stack.ts:69` TS2375: `Vpc` を `IVpc` に渡せない（`vpnGatewayId: string \| undefined` が `string` に assignable でない、`exactOptionalPropertyTypes: true` 起因）<br>(2) `lib/platform-stack.ts:106` TS2375: 上と同じ Vpc → IVpc 違反<br>(3) `lib/platform-stack.ts:89` TS6133: `dataLake` 変数が未使用 |
+| **影響** | `tsconfig.base.json` で `exactOptionalPropertyTypes: true` が設定されているため、AWS CDK 内部型（`IVpc.vpnGatewayId?: string`）と衝突。**`vitest run test/platform-stack.test.ts` は通るが、`cdk synth` の ts-node モードでは fail**。これは vitest が Vite の transformer 経由でコンパイルする一方、`cdk synth` は ts-node で厳密にコンパイルするため判定が異なる |
+| **当初推奨案** | (a) `vpnGatewayId: undefined` を spread 条件分岐で省略（`...(opts.vpnGatewayId !== undefined ? { vpnGatewayId: opts.vpnGatewayId } : {})`）/ (b) `infra/tsconfig.json` で `exactOptionalPropertyTypes: false` に override（CDK との相性悪い設定の見直し）/ (c) `dataLake` を `_dataLake` にリネーム（未使用 → ignored 扱い） |
+| **見送り理由（Unit-5 視点）** | Unit-5 Cart Intercept のレビュー範囲外。`bin/app.ts` 経由で PlatformStack を import する関係で `cdk synth cart-dev-stack` 時にも露出するが、CartStack 自体のコードは `exactOptionalPropertyTypes: true` 環境で全 TS エラーを修正済み（`developerInitial` の spread 条件分岐 + `lambdaCommonProps: satisfies Pick<...>` パターン） |
+| **暫定運用** | Unit-5 単独テスト（`vitest run test/cart-stack.test.ts`）は 11/11 pass。`cdk synth cart-dev-stack` は PlatformStack の TS エラーで blocked、Member A の修正待ち |
+| **後付け導入トリガー** | Member A の Unit-1 Platform Stack 完成 PR `#platform-additions-001` に組み込み（B-506 と同じタイミング） |
+| **優先度** | **高**（B-506 と合わせて Member A の Stage 3 完了条件） |
+| **概算工数** | 推奨案 (a) + (c) で 0.5d（Member A） |
+
+---
+
+### B-505. Lambda packaging 統一方針（asset path / Layer / vendored shared）
+
+| 項目 | 内容 |
+|---|---|
+| **項目名** | Backend Lambda の packaging 統一（`backend.src.*` 絶対 import + `shared/*/python/` の vendoring 戦略） |
+| **出典** | [Unit-5 Code Generation 2 巡目セルフレビュー Issue W7 / W2-2](../aidlc-docs/construction/unit-5-cart-intercept/code/unit-5-code-summary.md) |
+| **当初推奨案** | (1) `lambda.Code.fromAsset` の対象を **リポジトリルート** にし、handler を `backend.src.cart.handlers.cart_intake.lambda_handler` 形式で指定 + `shared/*/python/` を Lambda Layer として packaging（または bundling 時に `vendor/` へコピー）<br>(2) Member A が Unit-1 の Telemetry Lambda で同じ問題を抱えているため、**Unit-1 packaging 方針**を先行確立し、Unit-5 / Unit-3 / Unit-4 等が追従する |
+| **見送り理由** | Code Generation 当初は handler パスを `handlers.xxx.handler` の単純形で書き、`backend.src.cart.repository` import が runtime で解決できない packaging 問題が顕在化。Unit-1 telemetry/handler.py も同パターンで未動作のため、**Unit-5 単独で先行解決すると Unit-1 の方針と齟齬が生じ書き直し**になる。Unit-1 で方針確立後に Unit-5 を追従修正するのが整合的 |
+| **暫定運用** | (1) cart-stack.ts と各 Lambda handler 冒頭に `TODO(unit-1-packaging-001): Member A の Unit-1 packaging 方針確立後に修正` コメントを残置<br>(2) ローカルテスト（pytest）は `backend/conftest.py` の sys.path = リポジトリルート で動作するため import 健全性は担保済み<br>(3) `shared/asin-extractor/python/asin_extractor.py` の `try/except ImportError` フォールバックは **dev 環境ローカル動作のため**のセーフネット、本番 Lambda 環境では packaging 修正後に削除予定 |
+| **後付け導入トリガー** | 以下のいずれかで実装開始<br>1. Member A が Unit-1 Telemetry Lambda の dev 環境デプロイで packaging エラーに直面した時点（**最有力、2026-05-29〜5/30 想定**）<br>2. Unit-1 / Unit-5 のいずれかで `cdk deploy` 後の Lambda 起動テストで `ImportError` が顕在化した時点<br>3. CI に `cdk synth` + `lambda invoke` の dry-run job を追加した時点 |
+| **優先度** | **高**（Unit-1 / Unit-3 / Unit-4 / Unit-5 すべての Backend Lambda が動作するための必須条件、決勝デプロイ前にブロッカー化） |
+| **概算工数** | (1) Unit-1 packaging 方針決定（asset = リポジトリルート + handler = 完全修飾形 + Layer 戦略）= **0.5d**（Member A）<br>(2) Unit-5 の cart-stack.ts asset path + handler 文字列書換 + asin_extractor.py の `try/except ImportError` 削除 = **0.3d**（Member D） |
+| **検討すべき選択肢** | A: asset = リポジトリルート + handler 完全修飾（最小工数、bundle サイズ大）<br>B: Lambda Layer に `shared/*/python/` を分離（bundle 効率最適、CDK 構成複雑化）<br>C: bundling 時に `shared/*/python/` を asset 配下にコピー（中庸、Layer なし） |
+
+---
+
 ## 3. Nice to have（決定不要、将来検討）
 
 > [parallel-dev-prerequisites.md §3](../aidlc-docs/construction/plans/parallel-dev-prerequisites.md) で「決定不要、参考」と判断した項目のうち、再評価の余地があるものを記録。

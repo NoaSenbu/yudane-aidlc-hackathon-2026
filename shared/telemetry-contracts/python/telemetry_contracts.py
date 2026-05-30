@@ -27,6 +27,15 @@ ALLOWED_FIELDS: frozenset[str] = frozenset(
         "category",
         "decision",
         "reasonCode",
+        # --- Unit-5 Cart Intercept（2026-05-29 追加、Issue B4）---
+        "asin",
+        "itemId",
+        "cartWatchItemId",
+        "step",
+        "templateId",
+        "previousStatus",
+        "platform",
+        "triggerSource",
     }
 )
 
@@ -41,6 +50,8 @@ PII_FIELDS: frozenset[str] = frozenset(
         "address",
         "phone",
         "creditCard",
+        # --- Unit-5 Cart Intercept（2026-05-29 追加、Issue B4）---
+        "pushEndpointId",   # AWS End User Messaging Endpoint ID（PII 隣接、伏字推奨）
     }
 )
 
@@ -52,6 +63,16 @@ METRIC_CATALOG: frozenset[str] = frozenset(
         "platform.telemetry.accepted",
         "platform.telemetry.dropped",
         "platform.health.status",
+        # --- Unit-5 Cart Intercept（2026-05-29 追加、Issue B4）---
+        "cart.intake.created",
+        "cart.intake.reactivated",
+        "cart.dismissed",
+        "cart.scheduler.create_failed",
+        "cart.scheduler.retry_succeeded",
+        "cart.scheduler.retry_failed",
+        "cart.notification.dispatched",
+        "cart.notification.delay_seconds",
+        "cart.notification.suppressed_by_safeguard",
     }
 )
 
@@ -62,6 +83,18 @@ EVENT_CATALOG: frozenset[str] = frozenset(
         "app_foreground",
         "app_background",
         "deeplink_open",
+        # --- Unit-5 Cart Intercept（2026-05-29 追加、Issue B4）---
+        "cart.intake_received",
+        "cart.attack_30m_fired",
+        "cart.attack_6h_fired",
+        "cart.attack_24h_fired",
+        "cart.dismiss",
+        "cart.amazon_transition",
+        "cart.notification_tap",
+        "cart.notification_suppressed",
+        "cart.share_extension_open",
+        "cart.push_permission_denied",
+        "cart.watching_orphaned",
     }
 )
 

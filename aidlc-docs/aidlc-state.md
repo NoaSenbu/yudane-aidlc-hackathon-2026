@@ -9,7 +9,7 @@
 - **Project Type**: Greenfield
 - **Start Date**: 2026-05-07T00:00:00Z
 - **Current Phase**: 🟢 CONSTRUCTION PHASE
-- **Current Stage**: 🟢 Unit-3 Debate Code Generation Phase 3+4+6 完了（2026-05-30、累計 363 tests green / 27 PBT properties / 1310+ Hypothesis examples / diagnostics 0、AWS デプロイ非依存範囲 完遂）。Phase 1 Step 8 / Phase 5 / Phase 6 T6.3-6.4 は AWS デプロイ前提のため保留
+- **Current Stage**: 🎉 Unit-1 + Unit-2 完了（Member A 前半フェーズ完了）→ Unit-3 Debate UI SSOT を Direction D「黒服のコンシェルジュ」に切替完了（2026-05-30）+ **Unit-3 Code Generation Phase 1+2+3+4+6 完了**（2026-05-30、累計 363 tests green / 27 PBT properties / 1310+ Hypothesis examples / diagnostics 0、AWS デプロイ非依存範囲 完遂、Phase 1 Step 8 / Phase 5 / Phase 6 T6.3-6.4 は AWS デプロイ前提のため保留）+ Unit-4 Reel Code Generation Part 2 完了（reel 実装・テスト・CDK 生成、Backend 40 件 pass、2026-05-30）+ Unit-5 Cart Intercept Code Generation Part 2 完了 + 1 巡目セルフレビュー Z1〜Z6 + 2 巡目セルフレビュー W1〜W7 + Build and Test 検証完了（2026-05-30、Unit-5 スコープ内 177 件すべて pass + 検証時修正 4 件 + Unit-1 由来問題 2 件 backlog 登録 = B-506 / B-507）。`feature/unit-4-reel` を develop にマージ（2026-05-30）。Unit-3/4/5 は承認ゲート通過、次 Unit / 次ステージ移行待ち
 - **User Language**: Japanese
 
 ## Workspace State
@@ -126,7 +126,6 @@
         - 2 巡目 Major: P2M-6 LC-D-10 拡張位置（Step 5）を明示 / P2M-7 命名規則整合 OK / P2M-8 Step 5 で Uint8Array → StrandsStreamEvent 変換経路を明示
         - 2 巡目 Minor: P2m-3 Step 順序（5 → 6/7 → 8）を Outside-In TDD と整合確認 / P2m-4 §0 と §6 重複は許容（参照しやすさ優先）
         - 3 巡目: 残留矛盾なし、diagnostics エラーゼロ
-    - [ ] **Code Generation Phase 2 Part 2 実装着手**（pending、Step 1〜9 を Part 2 で順次実行、L2 ローカル MVP 動作確認まで到達予定）
     - [x] **Code Generation Phase 2 Part 2 完了（2026-05-30、Step 1〜9、269+ tests green / diagnostics 0）**
       - **Step 1 Stress Estimator**: `backend/src/debate/stress.py` + PBT-07 集合性 / 11 unit + 4 PBT = 15 tests
       - **Step 2 Prompt Composition 6 モジュール**: `backend/src/debate/prompts/{base,m1_fact_axis,m1_psychology_axis,m2_reward_axis,affirmation,compose}.py` + `domain/memory_context.py` / 20 unit + 5 PBT-03/08 = 25 tests
@@ -140,7 +139,6 @@
       - **★L2 ローカル MVP 動作確認可能**: `agentcore dev --port 8080` + 実 Bedrock Haiku 4.5 + in-memory DDB/Memory で論破ロジック動作確認可能（要 AWS 認証情報 + Bedrock モデルアクセス申請承認）。完全オフラインは不可（Bedrock は AWS 上）
       - **Mobile React Native コンポーネント本体は Phase 2 範囲外**（純ロジック + Zustand slice + view-model のみ完成）、決勝直前の実機ビルド時に着手（B-309 backlog 候補）
       - **PBT 全体（Phase 1 + 2 累計）**: 780 examples 検証（PBT-02 ラウンドトリップ + PBT-03 不変条件 + PBT-07 集合性 + PBT-08 プロンプト整合性）
-    - [ ] **Code Generation Phase 3 着手予定**（L1 機能面の穴塞ぎ: graceful shutdown 80s / Memory streamDeliveryResources / Bedrock Guardrails 多層）
     - [x] **Code Generation Phase 3+4+6 完了（2026-05-30、AWS デプロイ非依存範囲）**
       - **Phase 3 Step 3-1**: Strands graceful shutdown 80s（`backend/src/debate/graceful_shutdown.py` 新規 + `main.py` 拡張、80s graceful + 90s hard cutoff、サマリ生成 10s timeout）/ 8 unit tests
       - **Phase 3 Step 3-2**: 第 3 層モデレーション（NG-3 / NG-6 系正規表現多層、`backend/src/debate/moderation/` パッケージ新規）+ main.py の `_convert_strands_event` 統合 + SECURITY-08 整合（matched_text を Mobile event に含めない）/ 37 unit tests + 5 PBT-09 properties / 250 examples
@@ -155,14 +153,44 @@
       - **PBT 全体**: NFR-PBT-DEBATE-01〜10 のうち Unit-3 範囲で適用可能な全 property がカバー / 27 properties / 1310+ Hypothesis examples
       - **Backlog 追加**: B-308（Memory streamDeliveryResources Kinesis Firehose 連鎖実装）/ B-309（Unit-3 React Native コンポーネント本体）の 2 件登録
       - **AWS デプロイ前提のため保留**: Phase 1 Step 8（dev デプロイ + EAS Build + 実機疎通）/ Phase 5 全部（RuntimeEndpoint canary deploy）/ Phase 6 T6.3（性能テスト 同時 100 セッション）/ Phase 6 T6.4（カナリアリリース 6/25 staging 30 分）
-  - **Unit-4 Reel / Unit-5 Cart Intercept**（コア 3 並行、pending）
+  - **Unit-4 Reel**（完了、2026-05-30）
+    - [x] Functional Design Part 1 Planning（2026-05-30、`feature/unit-4-reel` ブランチ作成 + Q1〜Q10 提示 + CL-1/2/3 clarification、全回答受領）
+    - [x] Functional Design Part 2 Generation（2026-05-30、`construction/reel/functional-design/` に domain-entities / business-logic-model / business-rules / frontend-components の 4 種生成、承認済み 2026-05-30）
+    - [x] NFR Requirements Part 1 Planning（2026-05-30、Q1〜Q10 提示、全 A 回答受領）
+    - [x] NFR Requirements Part 2 Generation（2026-05-30、`construction/reel/nfr-requirements/` に nfr-requirements / tech-stack-decisions 生成、承認済み 2026-05-30。再レビューで 5 件修正済み）
+    - [x] NFR Design Part 1 Planning（2026-05-30、Q1〜Q10 提示、全 A 回答受領）
+    - [x] NFR Design Part 2 Generation（2026-05-30、`construction/reel/nfr-design/` に nfr-design-patterns / logical-components 生成、矛盾 3 件解消 + 過剰設計・矛盾 2 件再修正、承認済み 2026-05-30）
+    - [x] Infrastructure Design Part 1 Planning（2026-05-30、Q1〜Q7 提示、全 A 回答受領）
+    - [x] Infrastructure Design Part 2 Generation（2026-05-30、`construction/reel/infrastructure-design/` に infrastructure-design / deployment-architecture 生成、Unit-1 基盤を SSM 参照で再利用、承認済み 2026-05-30。横断矛盾 3 件修正済み）
+    - [x] Code Generation Part 1 Planning（2026-05-30、`unit-4-reel-code-generation-plan.md` 10 ステップ提示、レビュー修正 3 件後承認）
+    - [x] Code Generation Part 2 Generation（2026-05-30、shared/schema + backend/src/reel + mobile/src/features/reel + infra/lib/reel-stack 生成。Backend ロジック+PBT 40 件 pass 実行確認。承認済み 2026-05-30、`feature/unit-4-reel` を develop にマージ）
+      - **cross-unit 依頼**: platform-stack の `api-id`/`api-root-resource-id` SSM 公開（Member A）、OpenSearch コレクション追加（決勝）
+  - **Unit-5 Cart Intercept**（完了、2026-05-30、Functional Design / NFR Requirements / NFR Design / Infrastructure Design 完了、Code Generation Part 2 完了、Build and Test 検証完了）
   - **Unit-6 Calendar / Unit-7 Safeguard / Unit-8 Dame Report**（サポート 3 並行、pending）
 - [ ] Functional Design (EXECUTE, per-unit)
+  - [x] Unit-1 Platform Functional Design Part 1 Planning（2026-05-27、Q1〜Q10 確定）
+  - [x] Unit-1 Platform Functional Design Part 2 Generation（2026-05-27、main 由来 + 4 ファイル新規 + 4 ファイル既存更新）
+  - [ ] Unit-2 Auth & Profile（pending）
+  - [ ] Unit-3 Debate（Part 1 Planning 進行中、2026-05-28、Q1〜Q15 提示済、main マージで前提見直し必要）
+  - [ ] Unit-4 Reel（コア並行、pending）
+  - [x] Unit-5 Cart Intercept Functional Design Part 1 Planning（2026-05-28、Q1〜Q8 全て推奨どおり確定）
+  - [x] Unit-5 Cart Intercept Functional Design Part 2 Generation（2026-05-28、4 ファイル新規 + backlog 2 件追記）
+  - [ ] Unit-6 Calendar / Unit-7 Safeguard / Unit-8 Dame Report（サポート 3 並行、pending）
 - [ ] NFR Requirements (EXECUTE, per-unit)
+  - [x] Unit-5 Cart Intercept NFR Requirements Part 1 Planning（2026-05-28、Q1〜Q10 確定、2 段階再検証で 10 件修正）
+  - [x] Unit-5 Cart Intercept NFR Requirements Part 2 Generation（2026-05-28、nfr-requirements.md + tech-stack-decisions.md）
 - [ ] NFR Design (EXECUTE, per-unit)
+  - [x] Unit-5 Cart Intercept NFR Design Part 1 Planning（2026-05-28、Q1〜Q6 確定、再検証で 3 件修正）
+  - [x] Unit-5 Cart Intercept NFR Design Part 2 Generation（2026-05-28、nfr-design-patterns.md + logical-components.md）+ 1 巡目セルフレビュー 5 件修正（Issue BBBB/CCCC/DDDD/EEEE/FFFF）+ 2 巡目セルフレビュー 6 件修正（Issue GGGG/HHHH/IIII/JJJJ/KKKK/LLLL、watching_orphaned 全文書整合 + retry_count 属性追加 + retry batch シーケンス図 §7 追加 + コスト試算更新 + Mock 戦略追記 + M-05 可視化方針）
 - [ ] Infrastructure Design (EXECUTE, per-unit)
+  - [x] Unit-5 Cart Intercept Infrastructure Design Part 1 Planning（2026-05-29、Q1〜Q10 確定 v3、再検証 2 巡目で v1 → v2 → v3 と 8 件修正・補強）
+  - [x] Unit-5 Cart Intercept Infrastructure Design Part 2 Generation（2026-05-29、infrastructure-design.md + deployment-architecture.md、1 巡目セルフレビュー 2 件修正、B-504 backlog 登録、diagnostics エラーゼロ）
 - [ ] Code Generation (EXECUTE, per-unit)
+  - [x] Unit-1 Platform Code Generation Part 1 + Part 2（2026-05-29、main 由来 20 Step 完了）
+  - [x] Unit-5 Cart Intercept Code Generation Part 1 Planning（2026-05-29、25 Step、v1 → v2 → v3 で 11 件修正）
+  - [x] Unit-5 Cart Intercept Code Generation Part 2 Generation（2026-05-29、25 Step すべて完了、純粋ロジック層 + Backend Lambda + CDK Stack 生成、NG-6 静的検証 CI スクリプト pass、全ファイル diagnostics エラーゼロ）+ 1 巡目セルフレビュー Z1〜Z6 修正（2026-05-29、重大 3 + 中 2 + 軽微 1 = 計 6 件即修正）+ 2 巡目セルフレビュー W1〜W7 完了（2026-05-30、即修正 4 系統 = W1 / W2-1 / W3（4 Lambda）/ W4 + B-505 backlog 登録 + TODO 残置 = W7 / W2-2 + 問題なし確認 = W5 / W6）
 - [ ] Build and Test (EXECUTE)
+  - [x] Unit-5 Cart Intercept Build and Test 検証（2026-05-30、Unit-5 スコープ内 177 件 pass / 検証時修正 4 件 / B-506 cdk-nag + B-507 TS compile を Unit-1 由来として backlog 登録）
 
 ### 🟡 OPERATIONS PHASE
 - [ ] Operations (placeholder)
