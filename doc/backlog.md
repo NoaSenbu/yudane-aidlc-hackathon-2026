@@ -234,3 +234,67 @@
 | **優先度** | **低**（v0.4 は審査時の歴史的資料、放置でも実害は出ない見込み） |
 | **概算工数** | ディレクトリ rename + リンク追従修正 = 0.5d（Member A）。書類審査リンク切れの恐れがあるためアーカイブ判断は慎重に |
 
+
+---
+
+## 5. Unit-1 Platform / Unit-3 Debate Phase 1 着手時に検出した既存技術債務（2026-05-30 確定）
+
+### B-302. `infra/test/platform-stack.test.ts > cdk-nag の未抑制エラーがない` の fail 解消
+
+| 項目 | 内容 |
+|---|---|
+| **項目名** | Unit-1 platform-stack のテスト 1 件（cdk-nag 未抑制エラーがない）が fail している問題の解消 |
+| **出典** | [Unit-3 Phase 1 Step 1 完了サマリ §6 既知の問題](../aidlc-docs/construction/unit-3-debate/code/debate-stack-summary.md) / 検出は 2026-05-30、stash 検証で Step 1 着手前から既に fail していたことを確認 |
+| **当初推奨案** | 7 件の cdk-nag エラー（`AwsSolutions-*`）を個別に分類し、(a) 直接修正可能なもの（cdk-nag ルール準拠で再実装）、(b) 正当な Suppression を理由コメント付きで追加するもの、(c) ルール抑制を runtime-role 等の単位で適用、の 3 段で対処 |
+| **見送り理由** | Unit-3 Phase 1 Step 1 の作業範囲外。Unit-1 担当（Member A）の責務領域、または cdk-nag バージョンアップに伴う既存 Stack の再点検作業。Unit-3 の進行を止めない判断 |
+| **暫定運用** | Unit-3 debate-stack のテストは独立した cdk-nag suppression 設定で green を維持。CI（`.github/workflows/ci.yml`）で `vitest run` 全体を実行している場合は本問題で red となる可能性があり、必要に応じ CI で `--exclude '**/platform-stack.test.ts'` 等の暫定回避を入れる |
+| **後付け導入トリガー** | 以下のいずれか 1 つで再評価<br>1. CI が無視できない Red のまま 1 週間以上継続した場合<br>2. Member A が Unit-1 後続改善（Unit-2 完了時点の追加 cdk-nag ルール対応）に着手するタイミング<br>3. 決勝 6/26 前の cdk-nag 全クリア要件達成時に対処必須化 |
+| **優先度** | **中**（Unit-3 進行はブロックしないが、決勝前の cdk-nag 全クリアには必須対応） |
+| **概算工数** | 7 件のエラー内訳調査 = 0.5d / 個別対処 = 1〜1.5d、合計 1.5〜2d（Member A） |
+
+---
+
+### B-303. `infra/lib/auth-stack.ts` 等で `pointInTimeRecovery` deprecation Warning の解消
+
+| 項目 | 内容 |
+|---|---|
+| **項目名** | aws-cdk-lib v2.170+ 系で `aws_dynamodb.TableOptions#pointInTimeRecovery is deprecated` の警告を `pointInTimeRecoverySpecification` への移行で解消 |
+| **出典** | [Unit-3 Phase 1 Step 1 完了サマリ §6 既知の問題](../aidlc-docs/construction/unit-3-debate/code/debate-stack-summary.md) / vitest 実行時に platform-stack / auth-stack / debate-stack（auth + 暫定の Cooldowns）で同警告を確認 |
+| **当初推奨案** | 全スタックの `dynamodb.Table` 定義を `pointInTimeRecovery: true` から `pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true }` に置換 |
+| **見送り理由** | Warning であり Snapshot fixture や cdk-nag green に影響しない。Unit-3 Phase 1 着手の優先度が高い |
+| **暫定運用** | 既存通り `pointInTimeRecovery: true` を全スタックで使用（debate-stack でも踏襲） |
+| **後付け導入トリガー** | 以下のいずれか 1 つで対処<br>1. aws-cdk-lib メジャーバージョンアップで `pointInTimeRecovery` が削除された場合<br>2. 警告を抑制したいタイミング（CI ログのノイズ削減目的）<br>3. 決勝前の依存ライブラリ最新化作業のタイミング |
+| **優先度** | **低**（警告のみで動作に影響なし） |
+| **概算工数** | 全 Stack の置換 + Snapshot 再生成 + 各 PR レビュー = 0.5d（Member A、または各 Unit 担当の小作業） |
+
+
+---
+
+### B-308. AgentCore Memory `streamDeliveryResources` の Memory ↔ S3 直結
+
+| 項目 | 内容 |
+|---|---|
+| **項目名** | AgentCore Memory の `streamDeliveryResources` を S3 Memory Export Bucket に紐付け、Memory イベント / 抽出済み軸データを S3 へストリーミング配信する経路の構築 |
+| **出典** | [Unit-3 Phase 3+4+6 統合 Plan §1 Step 3-3 / §6 リスク表](../aidlc-docs/construction/plans/unit-3-debate-code-generation-phase3-6-plan.md) / 検出は 2026-05-30、aws-cdk-lib v2 系の L1 `CfnMemory.StreamDeliveryResourcesProperty` が **Kinesis Data Streams 経由のみ**サポートで S3 直結を未対応であることを実装着手時に確認 |
+| **当初推奨案** | Memory `streamDeliveryResources` に `kinesis: { dataStreamArn, contentConfigurations }` を設定し、Kinesis Firehose で S3 MemoryExportBucket へ delivery（CFN 仕様準拠の正攻法経路）|
+| **見送り理由** | Phase 3-3 で「Memory が直接 S3 を参照する」設計を Plan に書いていたが、CFN 仕様上不可能であることが判明。Kinesis Firehose 連鎖実装は Phase 3 工数を 2d 以上膨張させ、決勝までの優先度（PBT 全面 / 統合テスト IT-DEBATE-01〜03 / デモシナリオ）を圧迫するため見送り。S3 Memory Export Bucket / Glue Crawler / IAM Role / SSM 7 個目は **Phase 3-3 で先行整備**し、Memory ↔ S3 のデータ流入経路だけ後付けする方針 |
+| **暫定運用** | 1) Phase 3-3 で S3 MemoryExportBucket（KMS + Lifecycle 30/90/365 日 + versioned）+ Glue Crawler を CDK Snapshot で整備し SSM 7 個目（`memory-export-bucket-arn`）を出力<br>2) Year 1 退化レポート（FR-REPORT-04）の「ダメ化ポートフォリオ」可視化が必要になるまでは Memory `Get*` API 経由でのデータ抽出を採用<br>3) Memory → S3 連結のためのデータ移送は Strands Agent 内で `s3:PutObject` を呼ぶ簡易バッチで代替（Phase 4 検討） |
+| **後付け導入トリガー** | 以下のいずれか 1 つで Kinesis Firehose 連鎖実装を再評価<br>1. 決勝デモで「ダメ化ポートフォリオ」を Athena view 経由で見せる要件が確定した場合<br>2. Memory イベント量が `Get*` API レスポンス上限（1MB or list 上限）を超え、bulk 抽出が必要になった場合<br>3. AWS CDK L2 の `agentcore.Memory` が将来 `streamDeliveryResources` をサポートし、L1 直書きの workaround が不要になった場合 |
+| **優先度** | **中**（決勝 Year 1 退化レポートのデータソースとして必要、5 月時点での L1 直書き工数は重い） |
+| **概算工数** | Kinesis Data Stream + Firehose + Memory `streamDeliveryResources` L1 直書き + cdk-nag suppression + Snapshot 再生成 + 接続テスト = 2d（Member B + Member A の確認）|
+
+---
+
+### B-309. Unit-3 Debate React Native コンポーネント本体（Direction D 実装）
+
+| 項目 | 内容 |
+|---|---|
+| **項目名** | `<DebateScreen>` / `<DSeal>` / `<AffirmScreen>` / Direction D 黒服コンシェルジュトーンの React Native コンポーネント本体実装 |
+| **出典** | [Unit-3 Phase 2 Plan §0](../aidlc-docs/construction/plans/unit-3-debate-code-generation-phase2-plan.md) / [Unit-3 Functional Design frontend-design.md](../aidlc-docs/construction/unit-3-debate/functional-design/frontend-design.md) / 検出は 2026-05-30、Phase 2 範囲外として明示 |
+| **当初推奨案** | Direction D HTML（`YUDANE Concierge (Direction D) (offline).html`）の 3 画面を React Native + NativeWind v4 + Reanimated でコンポーネント化し、Phase 2 で完成済みの `direction-d-labels` / `debate-view-model` / `affirm-view-model` / `debate-store` / `event-parser` / `agentcore-client` を結線して論破 → 翻意 → 受付の動作確認まで完了 |
+| **見送り理由** | Mobile Outside-In TDD の純ロジック層（reducer / view-model / Zustand slice）と Backend Strands Agent + ローカル開発モードの結線確認を Phase 2 の優先範囲とした。React Native コンポーネント本体は実機ビルド + EAS Build + iOS/Android シミュレータ検証が必要で、Phase 2 期間（4 日）には収まらない |
+| **暫定運用** | Phase 2 までの実装で「ロジック面の動作確認」は L1（純関数 unit）/ L2（`agentcore dev` + 実 Bedrock）レベルで可能。決勝デモは Direction D HTML プロトタイプ（offline）+ Backend ストリーミングの組み合わせで成立する |
+| **後付け導入トリガー** | 以下のいずれか 1 つで着手<br>1. Phase 1 Step 8 完了（dev デプロイ + EAS Build 環境整備）<br>2. 予選 5/30 デモで Direction D HTML プロトタイプの限界（実機操作感の差）が顕在化した場合<br>3. 決勝 6/26 前の実機 E2E（E2E-01〜03）が必要となった場合 |
+| **優先度** | **高**（決勝までに少なくとも `<DebateScreen>` `<AffirmScreen>` の 2 画面は実機で操作可能にする必要あり） |
+| **概算工数** | 3 画面 × Direction D トーン適用 = 2.5d（Member B、Phase 2 完成済の純ロジックを差し込むだけなのでロジック開発は不要）|
+
