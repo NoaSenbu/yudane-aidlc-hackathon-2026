@@ -1,18 +1,34 @@
 /**
- * HomeScreen: YUDANE PRIVÉ ホーム画面（v2 モックアップ移植）。
+ * HomeScreen: YUDANE PRIVÉ ホーム画面（v2 デザイン）。
+ * useHomeSnapshot 接続 + deriveMemberRank によるランク導出（R1, R5）。
  */
 
 import React from 'react';
-import { ScrollView, Text, View, Pressable } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import type { ApiClient } from '../../features/platform/api-client/api-client';
+import { useHomeSnapshot } from '../../features/auth/home/use-home-snapshot';
+import {
+  deriveMemberRank,
+  MEMBER_RANK_DISPLAY,
+  nextRankInfo,
+} from '../../features/auth/home/member-rank';
 import type { TabId } from '../../navigation/MainTabs';
 
 export interface HomeScreenProps {
   onNavigate: (tab: TabId) => void;
+  client: ApiClient;
 }
 
-export function HomeScreen({ onNavigate }: HomeScreenProps): React.JSX.Element {
+export function HomeScreen({ onNavigate, client }: HomeScreenProps): React.JSX.Element {
+  const { data, isLoading, isError, refetch } = useHomeSnapshot(client);
+
+  const yudaneLevel = data?.yudaneLevel ?? 0;
+  const rank = deriveMemberRank(yudaneLevel);
+  const rankDisplay = MEMBER_RANK_DISPLAY[rank];
+  const next = nextRankInfo(yudaneLevel);
+
   return (
     <SafeAreaView edges={['top']} className="flex-1 bg-prive-bg">
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
@@ -20,7 +36,7 @@ export function HomeScreen({ onNavigate }: HomeScreenProps): React.JSX.Element {
         <View className="px-6 pt-4 pb-2 flex-row justify-between items-start">
           <View>
             <Text className="text-prive-muted text-xs tracking-widest">YUDANE PRIVÉ</Text>
-            <Text className="text-prive-muted text-xs">MEMBER · NOIR</Text>
+            <Text className="text-prive-muted text-xs">MEMBER · {rankDisplay.en}</Text>
           </View>
           <Text className="text-prive-muted text-xs">金曜日 · 23:47</Text>
         </View>
@@ -46,32 +62,49 @@ export function HomeScreen({ onNavigate }: HomeScreenProps): React.JSX.Element {
         {/* YOUR STANDING */}
         <View className="mx-4 mt-4 rounded-2xl bg-prive-surface border border-prive-border p-5">
           <Text className="text-prive-muted text-xs tracking-widest mb-3">YOUR STANDING</Text>
-          <View className="flex-row items-baseline gap-2">
-            <Text className="text-prive-gold text-2xl font-bold">漆黒</Text>
-            <Text className="text-prive-cream text-lg">NOIR</Text>
-          </View>
-          <Text className="text-prive-muted text-sm mt-1">
-            本年のお任せ{' '}
-            <Text className="text-prive-cream font-bold">24</Text>
-            {' '}回
-          </Text>
-          <View className="mt-3 bg-prive-card rounded-xl p-3">
-            <Text className="text-prive-muted text-xs">
-              次のランク{' '}
-              <Text className="text-prive-cream">縞瑪瑙 ONYX</Text>
-              {'\n'}まであと
-              <Text className="text-prive-gold font-bold"> 1回 </Text>
-              なんですよね。ここで止まる理由、あります？
-            </Text>
-          </View>
+          {isLoading && !data ? (
+            <ActivityIndicator color="#C9A96E" />
+          ) : isError ? (
+            <View>
+              <Text style={{ color: '#E05A5A', fontSize: 13 }}>データを取得できませんでした</Text>
+              <Pressable onPress={() => refetch()} className="mt-2">
+                <Text className="text-prive-gold text-xs">再取得</Text>
+              </Pressable>
+            </View>
+          ) : (
+            <>
+              <View className="flex-row items-baseline gap-2">
+                <Text className="text-prive-gold text-2xl font-bold">{rankDisplay.ja}</Text>
+                <Text className="text-prive-cream text-lg">{rankDisplay.en}</Text>
+              </View>
+              <Text className="text-prive-muted text-sm mt-1">
+                本年のお任せ{' '}
+                <Text className="text-prive-cream font-bold">{yudaneLevel}</Text>
+                {' '}回
+              </Text>
+              {next && (
+                <View className="mt-3 bg-prive-card rounded-xl p-3">
+                  <Text className="text-prive-muted text-xs">
+                    次のランク{' '}
+                    <Text className="text-prive-cream">
+                      {MEMBER_RANK_DISPLAY[next.nextRank].ja}{' '}{MEMBER_RANK_DISPLAY[next.nextRank].en}
+                    </Text>
+                    {'\n'}まであと
+                    <Text className="text-prive-gold font-bold"> {next.remaining}回 </Text>
+                    なんですよね。ここで止まる理由、あります？
+                  </Text>
+                </View>
+              )}
+            </>
+          )}
         </View>
 
         {/* 統計行 */}
         <View className="mx-4 mt-4 flex-row gap-3">
           {[
-            { label: 'お取り置き', value: '14', unit: '点' },
-            { label: '今月のご用命', value: '¥58.2', unit: '万' },
-            { label: '代行成約', value: '78', unit: '%' },
+            { label: 'お取り置き', value: data ? String(data.cartWatchCount)                              : '…', unit: '点' },
+            { label: '残予算',      value: data ? `¥${(data.remainingBudgetYen / 10000).toFixed(1)}` : '…', unit: '万' },
+            { label: '委ねLv',      value: data ? String(data.yudaneLevel)                                 : '…', unit: '' },
           ].map((stat) => (
             <View key={stat.label} className="flex-1 bg-prive-surface border border-prive-border rounded-2xl p-4 items-center">
               <Text className="text-prive-muted text-xs text-center">{stat.label}</Text>
@@ -89,7 +122,9 @@ export function HomeScreen({ onNavigate }: HomeScreenProps): React.JSX.Element {
             <Text className="text-prive-cream text-sm font-semibold">
               今日、論破しときました
             </Text>
-            <Text className="text-prive-gold text-xs">4 ITEMS</Text>
+            <Text className="text-prive-gold text-xs">
+              {data ? `${data.candidateCount} ITEMS` : '…'}
+            </Text>
           </View>
 
           {/* 優先アイテム */}
@@ -110,8 +145,8 @@ export function HomeScreen({ onNavigate }: HomeScreenProps): React.JSX.Element {
           {/* 最近の対応 */}
           <Text className="text-prive-muted text-xs tracking-widest mb-2">RECENTLY ATTENDED</Text>
           {[
-            { name: 'Anker USB-C ハブ', ago: '3日前', status: '論破済み', price: '¥6,480', statusColor: 'text-prive-teal' },
-            { name: 'COMOLI バンドカラーシャツ', ago: '5日前', status: '逃げた', price: '¥24,200', statusColor: 'text-prive-rouge' },
+            { name: 'Anker USB-C ハブ',        ago: '3日前', status: '論破済み', price: '¥6,480',  statusColor: 'text-prive-teal'  },
+            { name: 'COMOLI バンドカラーシャツ', ago: '5日前', status: '逃げた',   price: '¥24,200', statusColor: 'text-prive-rouge' },
           ].map((item) => (
             <View
               key={item.name}

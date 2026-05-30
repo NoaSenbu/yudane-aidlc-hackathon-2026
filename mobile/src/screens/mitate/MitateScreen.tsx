@@ -1,62 +1,88 @@
 /**
  * MitateScreen: お見立て（リール）画面（v2 デザイン）。
- *
- * 「黒岩の論破リスト」形式で商品を縦スワイプ。
- * 既存 ReelScreen ロジック（gestures / hooks）を流用し、
- * v2 PRIVÉ スタイルで上書きする。
+ * useReelFeed + useAmazonRedirect 接続（R2, R6, R7）。
  */
 
-import React, { useState } from 'react';
-import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-interface MitateCard {
-  lot: number;
-  total: number;
-  name: string;
-  brand: string;
-  category: string;
-  priceYen: number;
-  pitch: string;
-  subPoints: string[];
-  nextItems: { name: string; reason: string; priceYen: number }[];
+import type { ApiClient } from '../../features/platform/api-client/api-client';
+import type { ReelApiClient } from '../../features/reel/reel-api';
+import { useReelFeed } from '../../features/reel/use-reel-feed';
+import { useAmazonRedirect } from '../../features/reel/use-amazon-redirect';
+import type { ReelCard } from '../../features/reel/types';
+import type { TabId } from '../../navigation/MainTabs';
+
+interface MitateScreenProps {
+  client: ApiClient;
+  reelClient: ReelApiClient;
+  onNavigate: (tab: TabId) => void;
 }
 
-const MOCK_CARD: MitateCard = {
-  lot: 2,
-  total: 8,
-  name: 'WF-1000XM6',
-  brand: 'SONY · オーディオ',
-  category: 'SONY · オーディオ',
-  priceYen: 24800,
-  pitch: '会議6本の夜に。時給換算で 11時間分 なんですよ。これ買わない理由、なんかあります？',
-  subPoints: ['会議6本の夜', '同僚の8割が所有'],
-  nextItems: [
-    { name: 'COMOLI シャツ', reason: '土曜のデートに', priceYen: 24200 },
-    { name: 'Santal 33', reason: '初対面ではないが', priceYen: 24500 },
-    { name: 'Brain Sleep', reason: '深夜の労いに', priceYen: 7200 },
-  ],
-};
+export function MitateScreen({ reelClient, onNavigate }: MitateScreenProps): React.JSX.Element {
+  const feed = useReelFeed(reelClient);
+  const { redirect, isPending: isRedirecting } = useAmazonRedirect(reelClient);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-export function MitateScreen(): React.JSX.Element {
-  const [currentLot, setCurrentLot] = useState(MOCK_CARD.lot);
+  const allCards: ReelCard[] = useMemo(
+    () => feed.data?.pages.flatMap((p) => p.cards) ?? [],
+    [feed.data],
+  );
+
+  const currentCard = allCards[currentIndex] ?? null;
+  const upNext = allCards.slice(currentIndex + 1);
+  const totalCards = allCards.length;
 
   function handleRefuse(): void {
-    Alert.alert(
-      '感想で見送る',
-      '「今日は見送ります」\n\n黒岩: それ感想ですよね。また明日、データで話しましょう。',
-      [{ text: '閉じる' }],
-    );
+    setCurrentIndex((i) => i + 1);
   }
 
   function handleBuy(): void {
-    Alert.alert(
-      '論破されて買う',
-      `Sony WF-1000XM6\n¥${MOCK_CARD.priceYen.toLocaleString()}\n\nAmazon に遷移します。\n（Unit-3 Debate 論破完了画面は今後実装予定）`,
-      [
-        { text: 'やめとく', style: 'cancel' },
-        { text: 'Amazon で買う', onPress: () => setCurrentLot((n) => n + 1) },
-      ],
+    if (!currentCard) return;
+    void redirect({
+      cardId: currentCard.cardId,
+      asin: currentCard.product.asin,
+      context: 'reel',
+    });
+  }
+
+  // ─── ローディング ────────────────────────────────────────────────────────────
+  if (feed.isLoading) {
+    return (
+      <SafeAreaView edges={['top']} className="flex-1 bg-prive-bg items-center justify-center">
+        <ActivityIndicator color="#C9A96E" size="large" />
+        <Text className="text-prive-muted text-sm mt-3">黒岩が選定中…</Text>
+      </SafeAreaView>
+    );
+  }
+
+  // ─── エラー ───────────────────────────────────────────────────────────────────
+  if (feed.isError) {
+    return (
+      <SafeAreaView edges={['top']} className="flex-1 bg-prive-bg items-center justify-center px-8">
+        <Text className="text-prive-cream text-base font-semibold text-center">
+          お見立てを取得できませんでした
+        </Text>
+        <Pressable
+          className="mt-4 bg-prive-gold rounded-xl px-6 py-3"
+          onPress={() => feed.refetch()}
+        >
+          <Text className="text-prive-bg font-bold">再取得</Text>
+        </Pressable>
+      </SafeAreaView>
+    );
+  }
+
+  // ─── 空状態（全カード見送り済み or 0件）──────────────────────────────────────
+  if (!currentCard) {
+    return (
+      <SafeAreaView edges={['top']} className="flex-1 bg-prive-bg items-center justify-center px-8">
+        <Text className="text-prive-gold text-lg font-bold text-center">本日の論破リスト 完了</Text>
+        <Text className="text-prive-muted text-sm text-center mt-2">
+          黒岩が明日また用意します。
+        </Text>
+      </SafeAreaView>
     );
   }
 
@@ -67,49 +93,64 @@ export function MitateScreen(): React.JSX.Element {
         <View className="px-6 pt-4 pb-3 flex-row justify-between items-center">
           <View>
             <Text className="text-prive-muted text-xs tracking-widest">黒岩の論破リスト</Text>
-            <Text className="text-prive-cream text-sm font-semibold">本日 8点</Text>
+            <Text className="text-prive-cream text-sm font-semibold">本日 {totalCards}点</Text>
           </View>
           <Text className="text-prive-gold text-xs">
-            LOT {String(currentLot).padStart(2, '0')} / {String(MOCK_CARD.total).padStart(2, '0')}
+            LOT {String(currentIndex + 1).padStart(2, '0')} / {String(totalCards).padStart(2, '0')}
           </Text>
         </View>
 
         {/* メインカード */}
         <View className="mx-4 rounded-2xl bg-prive-surface border border-prive-border overflow-hidden">
-          {/* 商品カテゴリ */}
+          {/* 商品情報 */}
           <View className="px-5 pt-5 pb-3 border-b border-prive-border">
-            <Text className="text-prive-muted text-xs tracking-widest">{MOCK_CARD.category}</Text>
-            <Text className="text-prive-cream text-2xl font-bold mt-1">{MOCK_CARD.name}</Text>
+            <Text className="text-prive-muted text-xs tracking-widest">
+              {currentCard.origin.replace(/-/g, ' ').toUpperCase()}
+            </Text>
+            <Text className="text-prive-cream text-2xl font-bold mt-1">
+              {currentCard.product.title}
+            </Text>
             <Text className="text-prive-gold font-bold text-xl mt-0.5">
-              ¥{MOCK_CARD.priceYen.toLocaleString()}
+              ¥{currentCard.product.priceYen.toLocaleString()}
             </Text>
           </View>
 
           {/* 論破ピッチ */}
           <View className="px-5 py-4">
-            <Text className="text-prive-cream text-base leading-relaxed">{MOCK_CARD.pitch}</Text>
+            <Text className="text-prive-cream text-base leading-relaxed">
+              {currentCard.pitch}
+            </Text>
 
-            {/* サブポイント */}
-            <View className="mt-4 gap-2">
-              {MOCK_CARD.subPoints.map((point) => (
-                <View key={point} className="flex-row items-center gap-2">
-                  <View className="w-1 h-1 rounded-full bg-prive-gold" />
-                  <Text className="text-prive-muted text-sm">{point}</Text>
-                </View>
-              ))}
+            {/* 所有感ラベル */}
+            <View className="mt-4 bg-prive-card rounded-xl px-4 py-3">
+              <Text className="text-prive-gold text-xs font-semibold">
+                {currentCard.ownershipLabel.text}
+              </Text>
+              <Text className="text-prive-muted text-xs mt-0.5">
+                {currentCard.ownershipLabel.rationale}
+              </Text>
             </View>
+
+            {/* タグ */}
+            {currentCard.tags.length > 0 && (
+              <View className="mt-3 flex-row gap-2 flex-wrap">
+                {currentCard.tags.map((tag) => (
+                  <View key={tag} className="bg-prive-surface border border-prive-border rounded-full px-3 py-1">
+                    <Text className="text-prive-muted text-xs">{tag}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
           </View>
 
           {/* アクション */}
           <View className="px-4 pb-5 gap-3">
             <Pressable
-              testID="mitate-buy"
+              testID="mitate-gosodan"
               className="bg-prive-gold rounded-xl py-4 items-center"
-              onPress={handleBuy}
+              onPress={() => onNavigate('gosodan')}
             >
-              <Text className="text-prive-bg font-bold tracking-wider">
-                論破されて買う · ¥{MOCK_CARD.priceYen.toLocaleString()}
-              </Text>
+              <Text className="text-prive-bg font-bold tracking-wider">相談する</Text>
             </Pressable>
             <Pressable
               testID="mitate-refuse"
@@ -125,20 +166,26 @@ export function MitateScreen(): React.JSX.Element {
         <View className="mx-4 mt-4 mb-6">
           <View className="flex-row justify-between items-center mb-3">
             <Text className="text-prive-muted text-xs tracking-widest">UP NEXT · 次のお見立て</Text>
-            <Text className="text-prive-gold text-xs">全8点を見る</Text>
+            <Text className="text-prive-gold text-xs">全{totalCards}点</Text>
           </View>
-          {MOCK_CARD.nextItems.map((item) => (
-            <View
-              key={item.name}
-              className="flex-row justify-between items-center bg-prive-surface border border-prive-border rounded-xl px-4 py-3 mb-2"
-            >
-              <View>
-                <Text className="text-prive-cream text-sm">{item.name}</Text>
-                <Text className="text-prive-muted text-xs">{item.reason}</Text>
+          {upNext.length === 0 ? (
+            <Text className="text-prive-muted text-xs">次のアイテムはありません</Text>
+          ) : (
+            upNext.map((item) => (
+              <View
+                key={item.cardId}
+                className="flex-row justify-between items-center bg-prive-surface border border-prive-border rounded-xl px-4 py-3 mb-2"
+              >
+                <View className="flex-1">
+                  <Text className="text-prive-cream text-sm">{item.product.title}</Text>
+                  <Text className="text-prive-muted text-xs">{item.ownershipLabel.text}</Text>
+                </View>
+                <Text className="text-prive-muted text-sm">
+                  ¥{item.product.priceYen.toLocaleString()}
+                </Text>
               </View>
-              <Text className="text-prive-muted text-sm">¥{item.priceYen.toLocaleString()}</Text>
-            </View>
-          ))}
+            ))
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>

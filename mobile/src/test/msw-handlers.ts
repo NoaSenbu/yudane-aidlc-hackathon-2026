@@ -89,4 +89,22 @@ export const handlers = [
       remainingBudgetYen: 42_000,
     }),
   ),
+
+  // GET /v1/cart-watch-items（監視リスト一覧、R8.1）
+  http.get(`${BASE}/v1/cart-watch-items`, () =>
+    HttpResponse.json({
+      items: [
+        { itemId: 'cw-01', asin: 'B0MSWCARD1', status: 'watching',          productMeta: { title: 'Sony WF-1000XM6',          priceYen: 24800 }, createdAt: '2026-05-29T10:00:00Z', updatedAt: '2026-05-29T10:00:00Z' },
+        { itemId: 'cw-02', asin: 'B0MSWCARD2', status: 'notified-24h',      productMeta: { title: 'COMOLI バンドカラーシャツ', priceYen: 24200 }, createdAt: '2026-05-28T18:00:00Z', updatedAt: '2026-05-29T08:00:00Z' },
+        { itemId: 'cw-03', asin: 'B0MSWCARD3', status: 'notified-6h',       productMeta: { title: 'Le Labo Santal 33',         priceYen: 24500 }, createdAt: '2026-05-29T06:00:00Z', updatedAt: '2026-05-29T12:00:00Z' },
+        { itemId: 'cw-04', asin: 'B0CRTWTCH4', status: 'watching_orphaned', productMeta: { title: 'HHKB Professional HYBRID',  priceYen: 32800 }, createdAt: '2026-05-24T10:00:00Z', updatedAt: '2026-05-24T10:00:00Z' },
+        { itemId: 'cw-05', asin: 'B0CRTWTCH5', status: 'watching',          productMeta: { title: '@aroma Brain Sleep ピロー', priceYen:  7200 }, createdAt: '2026-05-29T08:00:00Z', updatedAt: '2026-05-29T08:00:00Z' },
+      ],
+    }),
+  ),
+
+  // DELETE /v1/cart-watch-items/{asin}（監視解除 204、R8.4）
+  http.delete(`${BASE}/v1/cart-watch-items/:asin`, () =>
+    new HttpResponse(null, { status: 204 }),
+  ),
 ];

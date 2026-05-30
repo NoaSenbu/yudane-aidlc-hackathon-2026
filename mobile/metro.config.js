@@ -14,4 +14,9 @@ config.resolver.nodeModulesPaths = [
   path.resolve(workspaceRoot, 'node_modules'),
 ];
 
+// @yudane/api-client → モノレポ内の実装へのエイリアス
+config.resolver.extraNodeModules = {
+  '@yudane/api-client': path.resolve(projectRoot, 'src/features/platform/api-client/api-fetch.ts'),
+};
+
 module.exports = withNativeWind(config, { input: './global.css' });
