@@ -454,3 +454,49 @@
 | **優先度** | **高**（決勝までに少なくとも `<DebateScreen>` `<AffirmScreen>` の 2 画面は実機で操作可能にする必要あり） |
 | **概算工数** | 3 画面 × Direction D トーン適用 = 2.5d（Member B、Phase 2 完成済の純ロジックを差し込むだけなのでロジック開発は不要）|
 
+
+
+---
+
+### B-310. Backend ruff lint failure（develop 既存問題）の解消
+
+| 項目 | 内容 |
+|---|---|
+| **項目名** | `backend/src/{cart,reel}/**` 配下の ruff lint エラー（docstring 内の特殊記号、エラーハンドリング周辺）の解消 |
+| **出典** | PR #6（`feature/unit-3-debate` → `develop`）の CI run 26674767480 / Backend (Python 3.13) ジョブ / 検出は 2026-05-30、Unit-4 Reel と Unit-5 Cart Intercept が develop に直接マージされた時点で混入していた既存問題 |
+| **当初推奨案** | (a) ruff の対象 rule（D205, D400, RUF002 等）を `pyproject.toml` で局所抑制、または (b) 該当 docstring を ruff 規約に整合する形で書き換え |
+| **見送り理由** | Unit-3 PR の責務範囲外（Unit-4/5 担当領域）。Unit-3 merge を急ぐ必要があり、既存 develop の品質ゲート違反として記録した上で別 PR で修正する判断 |
+| **暫定運用** | PR #6 は `--admin` でマージ。Unit-3 内のコードは ruff green を維持（既に確認済み）。Backend 全体の CI が red のまま develop に残るが、ハッカソン期間中の運用方針として許容 |
+| **後付け導入トリガー** | 以下のいずれか 1 つで着手<br>1. develop の CI を緑に戻す方針が再合意された場合<br>2. 決勝 6/26 前の品質ゲート全面適用タイミング<br>3. Unit-4 / Unit-5 担当者（Member C / D）が次の修正サイクルに入った時 |
+| **優先度** | **中**（既存問題、Unit-3 進行はブロックしないが develop の CI 緑には必須） |
+| **概算工数** | ruff エラー一覧化 + 対処方針決定 = 0.5d / 個別修正 + テスト = 0.5〜1d、合計 1〜1.5d（Member C / D） |
+
+---
+
+### B-311. Infra (CDK) auth-stack の TypeScript strict null check エラーの解消
+
+| 項目 | 内容 |
+|---|---|
+| **項目名** | `infra/lib/auth-stack.ts` 65-83 行付近の `tables.users / tables.achievements is possibly 'undefined'`（TS18048 / TS2532）エラーの解消 |
+| **出典** | PR #6 CI run 26674767480 / Infra (CDK) ジョブ / 検出は 2026-05-30、Unit-2 Auth & Profile が main / develop にマージされた時点から残存していた既存問題（`tsconfig` の `strictNullChecks` または `noUncheckedIndexedAccess` が後から有効化された可能性） |
+| **当初推奨案** | (a) `tables` のアクセサで non-null assertion (`tables.users!`) または安全なフォールバック (`tables.users ?? this.fallbackTable`) を入れる、または (b) Record 型を `Record<string, Table>` 固定にして `noUncheckedIndexedAccess` を局所的に緩和 |
+| **見送り理由** | Unit-2 Auth & Profile の責務領域、Unit-3 PR の責務範囲外。修正には Unit-2 のテーブル管理設計（PlatformStack vs AuthStack のテーブル所有境界）を理解して入る必要があり、Unit-3 の merge を急ぐタイミングでは不適切 |
+| **暫定運用** | PR #6 は `--admin` でマージ。Unit-3 の `debate-stack.ts` は Snapshot TDD でクリーンに実装されており、本問題は Unit-3 進行に直接影響しない |
+| **後付け導入トリガー** | 以下のいずれか 1 つで着手<br>1. Member A が Unit-1 / Unit-2 の strict mode 整備に着手するタイミング<br>2. CI を緑に戻す方針が再合意された場合<br>3. 決勝前の cdk synth 全 Stack 通過確認の必須化タイミング |
+| **優先度** | **中**（決勝前の `cdk deploy` 全 Stack 成功には必須対応） |
+| **概算工数** | エラー箇所修正（6 行程度の null check 追加）+ Snapshot 再生成 + テスト = 0.5d（Member A） |
+
+---
+
+### B-312. SBOM / SCA (SECURITY-10) ジョブの Dependency graph 有効化
+
+| 項目 | 内容 |
+|---|---|
+| **項目名** | リポジトリ Settings → Security → Dependency graph を有効化し、SECURITY-10（SBOM / SCA）CI ジョブを動作可能にする |
+| **出典** | PR #6 CI run 26674767480 / SBOM / SCA (SECURITY-10) ジョブのエラー：`Dependency review is not supported on this repository. Please ensure that Dependency graph is enabled` |
+| **当初推奨案** | リポジトリ owner（KousukeNagano）が GitHub UI で Settings → Security → "Dependency graph" を Enabled に切替（プライベートリポジトリでは GitHub Advanced Security ライセンスが必要な場合あり） |
+| **見送り理由** | リポジトリ設定変更が必要で AI 操作範囲外。ハッカソン期間中の品質ゲートとしての SECURITY-10 適用は Member A の運用判断にゆだねる |
+| **暫定運用** | PR #6 は `--admin` でマージ。SBOM/SCA ジョブが赤いまま develop / main に残るが、ローカルでの依存追加時に `secure-dependency-install` skill による CVE チェックを継続することで補完 |
+| **後付け導入トリガー** | 以下のいずれか 1 つで対応<br>1. リポジトリ owner が GitHub Advanced Security ライセンスを取得 or 有効化したタイミング<br>2. 決勝前の SECURITY 全面適用要件で必須化したタイミング<br>3. 公開リポジトリへの切替（Public 化で Dependency graph は無料）|
+| **優先度** | **低**（SECURITY-10 は本来必須、ただしリポジトリ設定変更が必要なため AI スコープ外） |
+| **概算工数** | リポジトリ設定切替 = 5 分（Member A、GitHub UI 操作）。Public 化判断や Advanced Security ライセンス取得を伴う場合は別途協議 |
