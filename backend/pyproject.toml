@@ -57,6 +57,7 @@ exclude = ["src/common/models/api.py"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "--cov=src --cov-report=term-missing --cov-branch"
+asyncio_mode = "auto"
 
 [tool.coverage.run]
 omit = ["src/common/models/api.py"]

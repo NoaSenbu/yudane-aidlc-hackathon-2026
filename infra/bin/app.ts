@@ -13,6 +13,7 @@ import { AwsSolutionsChecks } from 'cdk-nag';
 
 import { AuthStack } from '../lib/auth-stack';
 import { CartStack } from '../lib/cart-stack';
+import { DebateStack } from '../lib/debate-stack';
 import { PlatformStack } from '../lib/platform-stack';
 import { ReelStack } from '../lib/reel-stack';
 
@@ -31,6 +32,12 @@ new PlatformStack(app, `platform-${env}${stackSuffix}-stack`, {
 
 // Unit-2 Auth & Profile
 new AuthStack(app, `auth-${env}-stack`, {
+  envName: env,
+  env: { region },
+});
+
+// Unit-3 Debate（AgentCore Runtime + Memory + Cooldowns DDB + SSM、Unit-1 基盤を SSM 参照で連携）
+new DebateStack(app, `debate-${env}${stackSuffix}-stack`, {
   envName: env,
   env: { region },
 });

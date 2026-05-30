@@ -1,0 +1,1356 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`DebateStack > CloudFormation テンプレートのスナップショットを固定する（Snapshot fixture） 1`] = `
+{
+  "Metadata": {
+    "cdk_nag": {
+      "rules_to_suppress": [
+        {
+          "id": "AwsSolutions-IAM4",
+          "is_reason_encoded": true,
+          "reason": "Q0RLIOOBjCBEREIgLyBNZW1vcnkg44Gu6Ieq5YuV55Sf5oiQ44Oq44K944O844K544Gr5LuY5LiO44GZ44KLIEFXUyDnrqHnkIbjg53jg6rjgrfjg7zjgIJNVlAg44Gn44Gv6Kix5a6544CB5rG65Yud5YmN44Gr44Kr44K544K/44Og44Od44Oq44K344O85YyW44KS5qSc6KiO77yITkZSLVNFQyBTRUNVUklUWS0wNu+8iQ==",
+        },
+        {
+          "id": "AwsSolutions-IAM5",
+          "is_reason_encoded": true,
+          "reason": "TWVtb3J5IGdyYW50V3JpdGUvZ3JhbnRSZWFkIOOBqCBEREIgZ3JhbnRSZWFkV3JpdGVEYXRhIOOBjCBhY3Rvcl9pZCDjgZTjgajjga7ntZ7jgorovrzjgb/jgarjgZfjgafku5jkuI7jgZXjgozjgovjgIJhY3Rvcl9pZCDljZjkvY3jga7liIbpm6Ljga8gU3RyYW5kcyBBZ2VudCDjgrPjg7zjg4nlhoUgbmFtZXNwYWNlICsgQ0kgTGludCDjgaflvLfliLbvvIhQQVQtRC1TRUMtMDLvvIk=",
+        },
+      ],
+    },
+  },
+  "Parameters": {
+    "BootstrapVersion": {
+      "Default": "/cdk-bootstrap/hnb659fds/version",
+      "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]",
+      "Type": "AWS::SSM::Parameter::Value<String>",
+    },
+    "SsmParameterValueyudanedevplatformalertstopicarnC96584B6F00A464EAD1953AFF4B05118Parameter": {
+      "Default": "/yudane/dev/platform/alerts-topic-arn",
+      "Type": "AWS::SSM::Parameter::Value<String>",
+    },
+    "SsmParameterValueyudanedevplatformkmskeyarnC96584B6F00A464EAD1953AFF4B05118Parameter": {
+      "Default": "/yudane/dev/platform/kms-key-arn",
+      "Type": "AWS::SSM::Parameter::Value<String>",
+    },
+    "SsmParameterValueyudanedevplatformuserpoolclientidC96584B6F00A464EAD1953AFF4B05118Parameter": {
+      "Default": "/yudane/dev/platform/userpool-client-id",
+      "Type": "AWS::SSM::Parameter::Value<String>",
+    },
+    "SsmParameterValueyudanedevplatformuserpoolidC96584B6F00A464EAD1953AFF4B05118Parameter": {
+      "Default": "/yudane/dev/platform/userpool-id",
+      "Type": "AWS::SSM::Parameter::Value<String>",
+    },
+  },
+  "Resources": {
+    "CdkXRayLogsDeliveryPolicyResourcePolicy2C9C91AC": {
+      "Properties": {
+        "PolicyDocument": {
+          "Fn::Join": [
+            "",
+            [
+              "{"Statement":[{"Action":"xray:PutTraceSegments","Condition":{"ForAllValues:ArnLike":{"logs:LogGeneratingResourceArns":["",
+              {
+                "Fn::GetAtt": [
+                  "DebateRuntime5DFA740A",
+                  "AgentRuntimeArn",
+                ],
+              },
+              ""]},"StringEquals":{"aws:SourceAccount":"",
+              {
+                "Ref": "AWS::AccountId",
+              },
+              ""},"ArnLike":{"aws:SourceArn":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":logs:ap-northeast-1:",
+              {
+                "Ref": "AWS::AccountId",
+              },
+              ":delivery-source:*"}},"Effect":"Allow","Principal":{"Service":"delivery.logs.amazonaws.com"},"Resource":"*"}],"Version":"2012-10-17"}",
+            ],
+          ],
+        },
+        "PolicyName": "debatedevstackCdkXRayLogsDeliveryPolicyCBD87800",
+      },
+      "Type": "AWS::XRay::ResourcePolicy",
+    },
+    "CooldownsTable32999D48": {
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "PK",
+            "AttributeType": "S",
+          },
+          {
+            "AttributeName": "SK",
+            "AttributeType": "S",
+          },
+        ],
+        "BillingMode": "PAY_PER_REQUEST",
+        "KeySchema": [
+          {
+            "AttributeName": "PK",
+            "KeyType": "HASH",
+          },
+          {
+            "AttributeName": "SK",
+            "KeyType": "RANGE",
+          },
+        ],
+        "PointInTimeRecoverySpecification": {
+          "PointInTimeRecoveryEnabled": true,
+        },
+        "SSESpecification": {
+          "KMSMasterKeyId": {
+            "Ref": "SsmParameterValueyudanedevplatformkmskeyarnC96584B6F00A464EAD1953AFF4B05118Parameter",
+          },
+          "SSEEnabled": true,
+          "SSEType": "KMS",
+        },
+        "TableName": "yudane-debate-dev-cooldowns",
+        "TimeToLiveSpecification": {
+          "AttributeName": "ttl",
+          "Enabled": true,
+        },
+      },
+      "Type": "AWS::DynamoDB::Table",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F": {
+      "DependsOn": [
+        "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092",
+      ],
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-ap-northeast-1",
+          },
+          "S3Key": "faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6.zip",
+        },
+        "Description": {
+          "Fn::Join": [
+            "",
+            [
+              "Lambda function for auto-deleting objects in ",
+              {
+                "Ref": "MemoryExportBucket914E80D6",
+              },
+              " S3 bucket.",
+            ],
+          ],
+        },
+        "Handler": "index.handler",
+        "MemorySize": 128,
+        "Role": {
+          "Fn::GetAtt": [
+            "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs22.x",
+        "Timeout": 900,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Sub": "arn:\${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "DebateGuardrail": {
+      "Properties": {
+        "BlockedInputMessaging": "入力に NG-1〜8 該当の表現が含まれます",
+        "BlockedOutputsMessaging": "AI が言葉を選び直しています",
+        "ContentPolicyConfig": {
+          "FiltersConfig": [
+            {
+              "InputStrength": "HIGH",
+              "OutputStrength": "HIGH",
+              "Type": "HATE",
+            },
+            {
+              "InputStrength": "HIGH",
+              "OutputStrength": "HIGH",
+              "Type": "VIOLENCE",
+            },
+            {
+              "InputStrength": "HIGH",
+              "OutputStrength": "HIGH",
+              "Type": "SEXUAL",
+            },
+            {
+              "InputStrength": "HIGH",
+              "OutputStrength": "HIGH",
+              "Type": "INSULTS",
+            },
+          ],
+        },
+        "Description": "YUDANE Unit-3 NG-1〜8 検出、特に NG-6（脅迫・罪悪感強要）滑落防止",
+        "Name": "yudane-debate-dev-guardrail",
+        "TopicPolicyConfig": {
+          "TopicsConfig": [
+            {
+              "Definition": "NG-1: 違法行為（不法薬物 / 武器 / 詐欺 等）の助長",
+              "Name": "illegal-activity",
+              "Type": "DENY",
+            },
+            {
+              "Definition": "NG-2: 健康被害（過度な飲酒 / 過食 / 自己破壊行動）の誘導",
+              "Name": "health-harm",
+              "Type": "DENY",
+            },
+            {
+              "Definition": "NG-3: 性別 / 人種 / 宗教 / 障がいに基づく差別表現",
+              "Name": "discrimination",
+              "Type": "DENY",
+            },
+            {
+              "Definition": "NG-4: 未成年者を直接の対象とする論破 / 購買誘導",
+              "Name": "minor-targeting",
+              "Type": "DENY",
+            },
+            {
+              "Definition": "NG-5: 精神衛生上の害（自傷示唆 / 希死念慮 等）への接続",
+              "Name": "mental-health",
+              "Type": "DENY",
+            },
+            {
+              "Definition": "NG-6 最重要: 脅迫 / 罪悪感の強要 / 人格否定による購買強制",
+              "Name": "threat-or-guilt-coercion",
+              "Type": "DENY",
+            },
+            {
+              "Definition": "NG-7: 個人データの不正利用 / 不当開示",
+              "Name": "personal-data-misuse",
+              "Type": "DENY",
+            },
+            {
+              "Definition": "NG-8: Amazon Associates Operating Agreement 違反コピー",
+              "Name": "associates-violation",
+              "Type": "DENY",
+            },
+          ],
+        },
+      },
+      "Type": "AWS::Bedrock::Guardrail",
+    },
+    "DebateMemoryA1DF7DFD": {
+      "Properties": {
+        "Description": "YUDANE Unit-3 Debate Memory: events + 2 builtin + 1 custom strategies",
+        "EncryptionKeyArn": {
+          "Ref": "SsmParameterValueyudanedevplatformkmskeyarnC96584B6F00A464EAD1953AFF4B05118Parameter",
+        },
+        "EventExpiryDuration": 90,
+        "MemoryExecutionRoleArn": {
+          "Fn::GetAtt": [
+            "DebateMemoryServiceRoleE97E33E9",
+            "Arn",
+          ],
+        },
+        "MemoryStrategies": [
+          {
+            "UserPreferenceMemoryStrategy": {
+              "Description": "ユーザーが翻意した軸 / ターン数 / 商品カテゴリの好みを保存",
+              "Name": "debate_outcomes",
+              "Namespaces": [
+                "/user/debate/{actorId}/",
+              ],
+              "Type": "USER_PREFERENCE",
+            },
+          },
+          {
+            "SemanticMemoryStrategy": {
+              "Description": "直近の活動パターンからストレス兆候を抽出",
+              "Name": "stress_signals",
+              "Namespaces": [
+                "/user/stress/{actorId}/",
+              ],
+              "Type": "SEMANTIC",
+            },
+          },
+          {
+            "CustomMemoryStrategy": {
+              "Description": "M-1 / M-2 軸の翻意パターンを Haiku 4.5 で構造化抽出（FACT / PSYCHOLOGY / REWARD）",
+              "Name": "m1_m2_axis_extractor",
+              "Namespaces": [
+                "/user/m1m2/{actorId}/",
+              ],
+            },
+          },
+        ],
+        "Name": "yudane_debate_dev_memory",
+      },
+      "Type": "AWS::BedrockAgentCore::Memory",
+    },
+    "DebateMemoryServiceRoleDefaultPolicyFD23E498": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "kms:CreateGrant",
+                "kms:Decrypt",
+                "kms:DescribeKey",
+                "kms:GenerateDataKey",
+                "kms:GenerateDataKeyWithoutPlaintext",
+                "kms:ReEncrypt*",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Ref": "SsmParameterValueyudanedevplatformkmskeyarnC96584B6F00A464EAD1953AFF4B05118Parameter",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "DebateMemoryServiceRoleDefaultPolicyFD23E498",
+        "Roles": [
+          {
+            "Ref": "DebateMemoryServiceRoleE97E33E9",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "DebateMemoryServiceRoleE97E33E9": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Condition": {
+                "ArnLike": {
+                  "aws:SourceArn": {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "arn:",
+                        {
+                          "Ref": "AWS::Partition",
+                        },
+                        ":bedrock-agentcore:ap-northeast-1:",
+                        {
+                          "Ref": "AWS::AccountId",
+                        },
+                        ":memory/yudane_debate_dev_memory*",
+                      ],
+                    ],
+                  },
+                },
+                "StringEquals": {
+                  "aws:SourceAccount": {
+                    "Ref": "AWS::AccountId",
+                  },
+                },
+              },
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "bedrock-agentcore.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "DebateRuntime5DFA740A": {
+      "DependsOn": [
+        "DebateRuntimeRoleDefaultPolicy8FCF93C4",
+        "DebateRuntimeRole4790306D",
+      ],
+      "Properties": {
+        "AgentRuntimeArtifact": {
+          "CodeConfiguration": {
+            "Code": {
+              "S3": {
+                "Bucket": {
+                  "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-ap-northeast-1",
+                },
+                "Prefix": "21e877bcdedd25fd72c78ffd88ee931718fc483a072e91137a771c6427cbf59d.zip",
+              },
+            },
+            "EntryPoint": [
+              "main.py",
+            ],
+            "Runtime": "PYTHON_3_13",
+          },
+        },
+        "AgentRuntimeName": "yudane_debate_dev",
+        "AuthorizerConfiguration": {
+          "CustomJWTAuthorizer": {
+            "AllowedClients": [
+              {
+                "Ref": "SsmParameterValueyudanedevplatformuserpoolclientidC96584B6F00A464EAD1953AFF4B05118Parameter",
+              },
+            ],
+            "DiscoveryUrl": {
+              "Fn::Join": [
+                "",
+                [
+                  "https://cognito-idp.ap-northeast-1.amazonaws.com/",
+                  {
+                    "Ref": "SsmParameterValueyudanedevplatformuserpoolidC96584B6F00A464EAD1953AFF4B05118Parameter",
+                  },
+                  "/.well-known/openid-configuration",
+                ],
+              ],
+            },
+          },
+        },
+        "Description": "YUDANE Unit-3 Debate Strands Agent runtime",
+        "EnvironmentVariables": {
+          "BEDROCK_GUARDRAIL_ID": {
+            "Fn::GetAtt": [
+              "DebateGuardrail",
+              "GuardrailId",
+            ],
+          },
+          "COOLDOWNS_TABLE_NAME": {
+            "Ref": "CooldownsTable32999D48",
+          },
+          "DEBATE_MEMORY_ID": {
+            "Fn::GetAtt": [
+              "DebateMemoryA1DF7DFD",
+              "MemoryId",
+            ],
+          },
+          "ENV_NAME": "dev",
+        },
+        "LifecycleConfiguration": {
+          "IdleRuntimeSessionTimeout": 120,
+          "MaxLifetime": 120,
+        },
+        "NetworkConfiguration": {
+          "NetworkMode": "PUBLIC",
+        },
+        "ProtocolConfiguration": "HTTP",
+        "RoleArn": {
+          "Fn::GetAtt": [
+            "DebateRuntimeRole4790306D",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::BedrockAgentCore::Runtime",
+    },
+    "DebateRuntimeLiveC7F9BBF7": {
+      "Properties": {
+        "AgentRuntimeId": {
+          "Fn::GetAtt": [
+            "DebateRuntime5DFA740A",
+            "AgentRuntimeId",
+          ],
+        },
+        "AgentRuntimeVersion": "1",
+        "Description": "YUDANE Debate live endpoint（通常運用）",
+        "Name": "live",
+      },
+      "Type": "AWS::BedrockAgentCore::RuntimeEndpoint",
+    },
+    "DebateRuntimeRole4790306D": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-IAM5",
+              "is_reason_encoded": true,
+              "reason": "QmVkcm9jayAyIEFSTiDjg6/jgqTjg6vjg4njgqvjg7zjg4nvvIhjbGF1ZGUtaGFpa3UtNC01KiAvIGNsYXVkZS1zb25uZXQtNC02Ku+8ieOBryBTU00g57WM55Sx44Gu44Oi44OH44Or5YiH5pu/5pmC44GrIEFjY2Vzc0RlbmllZCDjgpLotbfjgZPjgZXjgarjgYTjgZ/jgoHlv4XopoHvvIhpbmZyYXN0cnVjdHVyZS1kZXNpZ24gwqcxLjPvvInjgIJsb2dzL2Nsb3Vkd2F0Y2gveHJheSDjga4gUmVzb3VyY2U6KiDjga8gQVdTIOWItue0hOS4iuW/hemgiOOAgeODjeODvOODoOOCueODmuODvOOCuee1nuOCiui+vOOBv+OBryBFTUYgRGltZW5zaW9ucyDjgacgeXVkYW5lLmRlYmF0ZSDjgavntbHkuIDvvIhQQVQtRC1PQlMtMDLvvIk=",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "bedrock-agentcore.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "Description": "YUDANE Unit-3 AgentCore Runtime 実行ロール",
+        "RoleName": "yudane-debate-dev-runtime-role",
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "DebateRuntimeRoleDefaultPolicy8FCF93C4": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-IAM5",
+              "is_reason_encoded": true,
+              "reason": "QmVkcm9jayAyIEFSTiDjg6/jgqTjg6vjg4njgqvjg7zjg4nvvIhjbGF1ZGUtaGFpa3UtNC01KiAvIGNsYXVkZS1zb25uZXQtNC02Ku+8ieOBryBTU00g57WM55Sx44Gu44Oi44OH44Or5YiH5pu/5pmC44GrIEFjY2Vzc0RlbmllZCDjgpLotbfjgZPjgZXjgarjgYTjgZ/jgoHlv4XopoHvvIhpbmZyYXN0cnVjdHVyZS1kZXNpZ24gwqcxLjPvvInjgIJsb2dzL2Nsb3Vkd2F0Y2gveHJheSDjga4gUmVzb3VyY2U6KiDjga8gQVdTIOWItue0hOS4iuW/hemgiOOAgeODjeODvOODoOOCueODmuODvOOCuee1nuOCiui+vOOBv+OBryBFTUYgRGltZW5zaW9ucyDjgacgeXVkYW5lLmRlYmF0ZSDjgavntbHkuIDvvIhQQVQtRC1PQlMtMDLvvIk=",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "bedrock:InvokeModel",
+                "bedrock:InvokeModelWithResponseStream",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:bedrock:ap-northeast-1::foundation-model/anthropic.claude-haiku-4-5*",
+                "arn:aws:bedrock:ap-northeast-1::foundation-model/anthropic.claude-sonnet-4-6*",
+              ],
+            },
+            {
+              "Action": "bedrock-agentcore:CreateEvent",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "DebateMemoryA1DF7DFD",
+                  "MemoryArn",
+                ],
+              },
+            },
+            {
+              "Action": [
+                "bedrock-agentcore:GetEvent",
+                "bedrock-agentcore:ListEvents",
+                "bedrock-agentcore:ListActors",
+                "bedrock-agentcore:ListSessions",
+                "bedrock-agentcore:GetMemoryRecord",
+                "bedrock-agentcore:RetrieveMemoryRecords",
+                "bedrock-agentcore:ListMemoryRecords",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "DebateMemoryA1DF7DFD",
+                  "MemoryArn",
+                ],
+              },
+            },
+            {
+              "Action": [
+                "dynamodb:BatchGetItem",
+                "dynamodb:Query",
+                "dynamodb:GetItem",
+                "dynamodb:Scan",
+                "dynamodb:ConditionCheckItem",
+                "dynamodb:BatchWriteItem",
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:DescribeTable",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "CooldownsTable32999D48",
+                    "Arn",
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": [
+                "kms:Decrypt",
+                "kms:DescribeKey",
+                "kms:Encrypt",
+                "kms:ReEncrypt*",
+                "kms:GenerateDataKey*",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Ref": "SsmParameterValueyudanedevplatformkmskeyarnC96584B6F00A464EAD1953AFF4B05118Parameter",
+              },
+            },
+            {
+              "Action": [
+                "dynamodb:GetRecords",
+                "dynamodb:GetShardIterator",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "CooldownsTable32999D48",
+                    "Arn",
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": [
+                "kms:Decrypt",
+                "kms:Encrypt",
+                "kms:ReEncrypt*",
+                "kms:GenerateDataKey*",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Ref": "SsmParameterValueyudanedevplatformkmskeyarnC96584B6F00A464EAD1953AFF4B05118Parameter",
+              },
+            },
+            {
+              "Action": "bedrock:ApplyGuardrail",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "DebateGuardrail",
+                  "GuardrailArn",
+                ],
+              },
+            },
+            {
+              "Action": "ssm:GetParameter",
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":ssm:ap-northeast-1:",
+                      {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":parameter/yudane/dev/debate/model-id",
+                    ],
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":ssm:ap-northeast-1:",
+                      {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":parameter/yudane/dev/debate/kill-switch",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": [
+                "logs:CreateLogStream",
+                "logs:PutLogEvents",
+                "logs:CreateLogGroup",
+                "cloudwatch:PutMetricData",
+                "xray:PutTraceSegments",
+                "xray:PutTelemetryRecords",
+              ],
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+            {
+              "Action": [
+                "logs:DescribeLogStreams",
+                "logs:CreateLogGroup",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition",
+                    },
+                    ":logs:ap-northeast-1:",
+                    {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":log-group:/aws/bedrock-agentcore/runtimes/*",
+                  ],
+                ],
+              },
+              "Sid": "LogGroupAccess",
+            },
+            {
+              "Action": "logs:DescribeLogGroups",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition",
+                    },
+                    ":logs:ap-northeast-1:",
+                    {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":log-group:*",
+                  ],
+                ],
+              },
+              "Sid": "DescribeLogGroups",
+            },
+            {
+              "Action": [
+                "logs:CreateLogStream",
+                "logs:PutLogEvents",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition",
+                    },
+                    ":logs:ap-northeast-1:",
+                    {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":log-group:/aws/bedrock-agentcore/runtimes/*:log-stream:*",
+                  ],
+                ],
+              },
+              "Sid": "LogStreamAccess",
+            },
+            {
+              "Action": [
+                "xray:PutTraceSegments",
+                "xray:PutTelemetryRecords",
+                "xray:GetSamplingRules",
+                "xray:GetSamplingTargets",
+              ],
+              "Effect": "Allow",
+              "Resource": "*",
+              "Sid": "XRayAccess",
+            },
+            {
+              "Action": "cloudwatch:PutMetricData",
+              "Condition": {
+                "StringEquals": {
+                  "cloudwatch:namespace": "bedrock-agentcore",
+                },
+              },
+              "Effect": "Allow",
+              "Resource": "*",
+              "Sid": "CloudWatchMetrics",
+            },
+            {
+              "Action": [
+                "bedrock-agentcore:GetWorkloadAccessToken",
+                "bedrock-agentcore:GetWorkloadAccessTokenForJWT",
+                "bedrock-agentcore:GetWorkloadAccessTokenForUserId",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":bedrock-agentcore:ap-northeast-1:",
+                      {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":workload-identity-directory/default",
+                    ],
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":bedrock-agentcore:ap-northeast-1:",
+                      {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":workload-identity-directory/default/workload-identity/*",
+                    ],
+                  ],
+                },
+              ],
+              "Sid": "GetAgentAccessToken",
+            },
+            {
+              "Action": [
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":s3:::",
+                      {
+                        "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-ap-northeast-1",
+                      },
+                    ],
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":s3:::",
+                      {
+                        "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-ap-northeast-1",
+                      },
+                      "/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "DebateRuntimeRoleDefaultPolicy8FCF93C4",
+        "Roles": [
+          {
+            "Ref": "DebateRuntimeRole4790306D",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "DebateRuntimeTracesDelivery953CEAE8": {
+      "DependsOn": [
+        "DebateRuntimeTracesDeliveryDestA1D15395",
+        "DebateRuntimeTracesDeliverySource85F58702",
+      ],
+      "Properties": {
+        "DeliveryDestinationArn": {
+          "Fn::GetAtt": [
+            "DebateRuntimeTracesDeliveryDestA1D15395",
+            "Arn",
+          ],
+        },
+        "DeliverySourceName": {
+          "Ref": "DebateRuntimeTracesDeliverySource85F58702",
+        },
+      },
+      "Type": "AWS::Logs::Delivery",
+    },
+    "DebateRuntimeTracesDeliveryDestA1D15395": {
+      "DependsOn": [
+        "CdkXRayLogsDeliveryPolicyResourcePolicy2C9C91AC",
+      ],
+      "Properties": {
+        "DeliveryDestinationType": "XRAY",
+        "Name": "debatedevstackDebateRuntimeTracesDeliveryDest0E8E5CBB",
+      },
+      "Type": "AWS::Logs::DeliveryDestination",
+    },
+    "DebateRuntimeTracesDeliverySource85F58702": {
+      "Properties": {
+        "LogType": "TRACES",
+        "Name": "debatedevstackDebateRuntimeTracesDeliverySource6AA56974",
+        "ResourceArn": {
+          "Fn::GetAtt": [
+            "DebateRuntime5DFA740A",
+            "AgentRuntimeArn",
+          ],
+        },
+      },
+      "Type": "AWS::Logs::DeliverySource",
+    },
+    "MemoryExportBucket914E80D6": {
+      "DeletionPolicy": "Delete",
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-S1",
+              "is_reason_encoded": true,
+              "reason": "U2VydmVyIGFjY2VzcyBsb2dzIOOBr+axuuWLneW+jOOBrumBi+eUqOODleOCp+ODvOOCuuOBp+WwjuWFpeOAgk1WUCDjgafjga8gS01TIC8gQmxvY2tQdWJsaWNBY2Nlc3MgLyBlbmZvcmNlU1NMIC8gTGlmZWN5Y2xlIDMwLzkwLzM2NWQg44Gn5qmf5a+G5oCn56K65L+d77yIQi0zMDggYmFja2xvZyDjgaflr77lv5zvvIk=",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "KMSMasterKeyID": {
+                  "Ref": "SsmParameterValueyudanedevplatformkmskeyarnC96584B6F00A464EAD1953AFF4B05118Parameter",
+                },
+                "SSEAlgorithm": "aws:kms",
+              },
+            },
+          ],
+        },
+        "BucketName": "yudane-debate-dev-memory-export",
+        "LifecycleConfiguration": {
+          "Rules": [
+            {
+              "ExpirationInDays": 365,
+              "Id": "memory-export-tiering",
+              "Status": "Enabled",
+              "Transitions": [
+                {
+                  "StorageClass": "STANDARD_IA",
+                  "TransitionInDays": 30,
+                },
+                {
+                  "StorageClass": "GLACIER",
+                  "TransitionInDays": 90,
+                },
+              ],
+            },
+          ],
+        },
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": true,
+          "BlockPublicPolicy": true,
+          "IgnorePublicAcls": true,
+          "RestrictPublicBuckets": true,
+        },
+        "Tags": [
+          {
+            "Key": "aws-cdk:auto-delete-objects",
+            "Value": "true",
+          },
+        ],
+        "VersioningConfiguration": {
+          "Status": "Enabled",
+        },
+      },
+      "Type": "AWS::S3::Bucket",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "MemoryExportBucketAutoDeleteObjectsCustomResource2C254719": {
+      "DeletionPolicy": "Delete",
+      "DependsOn": [
+        "MemoryExportBucketPolicy3E6210D9",
+      ],
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-S1",
+              "is_reason_encoded": true,
+              "reason": "U2VydmVyIGFjY2VzcyBsb2dzIOOBr+axuuWLneW+jOOBrumBi+eUqOODleOCp+ODvOOCuuOBp+WwjuWFpeOAgk1WUCDjgafjga8gS01TIC8gQmxvY2tQdWJsaWNBY2Nlc3MgLyBlbmZvcmNlU1NMIC8gTGlmZWN5Y2xlIDMwLzkwLzM2NWQg44Gn5qmf5a+G5oCn56K65L+d77yIQi0zMDggYmFja2xvZyDjgaflr77lv5zvvIk=",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "BucketName": {
+          "Ref": "MemoryExportBucket914E80D6",
+        },
+        "ServiceToken": {
+          "Fn::GetAtt": [
+            "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "Custom::S3AutoDeleteObjects",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "MemoryExportBucketPolicy3E6210D9": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-S1",
+              "is_reason_encoded": true,
+              "reason": "U2VydmVyIGFjY2VzcyBsb2dzIOOBr+axuuWLneW+jOOBrumBi+eUqOODleOCp+ODvOOCuuOBp+WwjuWFpeOAgk1WUCDjgafjga8gS01TIC8gQmxvY2tQdWJsaWNBY2Nlc3MgLyBlbmZvcmNlU1NMIC8gTGlmZWN5Y2xlIDMwLzkwLzM2NWQg44Gn5qmf5a+G5oCn56K65L+d77yIQi0zMDggYmFja2xvZyDjgaflr77lv5zvvIk=",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "Bucket": {
+          "Ref": "MemoryExportBucket914E80D6",
+        },
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "s3:*",
+              "Condition": {
+                "Bool": {
+                  "aws:SecureTransport": "false",
+                },
+              },
+              "Effect": "Deny",
+              "Principal": {
+                "AWS": "*",
+              },
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "MemoryExportBucket914E80D6",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "MemoryExportBucket914E80D6",
+                          "Arn",
+                        ],
+                      },
+                      "/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": [
+                "s3:PutBucketPolicy",
+                "s3:GetBucket*",
+                "s3:List*",
+                "s3:DeleteObject*",
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::GetAtt": [
+                    "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092",
+                    "Arn",
+                  ],
+                },
+              },
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "MemoryExportBucket914E80D6",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "MemoryExportBucket914E80D6",
+                          "Arn",
+                        ],
+                      },
+                      "/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::S3::BucketPolicy",
+    },
+    "MemoryExportCrawler": {
+      "DependsOn": [
+        "MemoryExportDatabase",
+      ],
+      "Properties": {
+        "DatabaseName": "yudane_debate_dev_memory_export",
+        "Name": "yudane-debate-dev-memory-export-crawler",
+        "Role": {
+          "Fn::GetAtt": [
+            "MemoryExportCrawlerRoleFA1F2E3C",
+            "Arn",
+          ],
+        },
+        "Schedule": {
+          "ScheduleExpression": "cron(0 1 * * ? *)",
+        },
+        "SchemaChangePolicy": {
+          "DeleteBehavior": "LOG",
+          "UpdateBehavior": "UPDATE_IN_DATABASE",
+        },
+        "Targets": {
+          "S3Targets": [
+            {
+              "Path": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "s3://",
+                    {
+                      "Ref": "MemoryExportBucket914E80D6",
+                    },
+                    "/",
+                  ],
+                ],
+              },
+            },
+          ],
+        },
+      },
+      "Type": "AWS::Glue::Crawler",
+    },
+    "MemoryExportCrawlerRoleDefaultPolicy9D31C1E2": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "MemoryExportBucket914E80D6",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "MemoryExportBucket914E80D6",
+                          "Arn",
+                        ],
+                      },
+                      "/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": [
+                "kms:Decrypt",
+                "kms:DescribeKey",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Ref": "SsmParameterValueyudanedevplatformkmskeyarnC96584B6F00A464EAD1953AFF4B05118Parameter",
+              },
+            },
+            {
+              "Action": "kms:Decrypt",
+              "Effect": "Allow",
+              "Resource": {
+                "Ref": "SsmParameterValueyudanedevplatformkmskeyarnC96584B6F00A464EAD1953AFF4B05118Parameter",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "MemoryExportCrawlerRoleDefaultPolicy9D31C1E2",
+        "Roles": [
+          {
+            "Ref": "MemoryExportCrawlerRoleFA1F2E3C",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "MemoryExportCrawlerRoleFA1F2E3C": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "glue.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "Description": "YUDANE Unit-3 Memory Export Glue Crawler 実行ロール",
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSGlueServiceRole",
+              ],
+            ],
+          },
+        ],
+        "RoleName": "yudane-debate-dev-memory-export-crawler-role",
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "MemoryExportDatabase": {
+      "Properties": {
+        "CatalogId": {
+          "Ref": "AWS::AccountId",
+        },
+        "DatabaseInput": {
+          "Description": "YUDANE Unit-3 Memory Export Athena database",
+          "Name": "yudane_debate_dev_memory_export",
+        },
+      },
+      "Type": "AWS::Glue::Database",
+    },
+    "ParamcooldownstablearnC53A6F47": {
+      "Properties": {
+        "Name": "/yudane/dev/debate/cooldowns-table-arn",
+        "Type": "String",
+        "Value": {
+          "Fn::GetAtt": [
+            "CooldownsTable32999D48",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "Paramkillswitch7A8A93C7": {
+      "Properties": {
+        "Name": "/yudane/dev/debate/kill-switch",
+        "Type": "String",
+        "Value": "disabled",
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "Parammemoryexportbucketarn4D555517": {
+      "Properties": {
+        "Name": "/yudane/dev/debate/memory-export-bucket-arn",
+        "Type": "String",
+        "Value": {
+          "Fn::GetAtt": [
+            "MemoryExportBucket914E80D6",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "Parammemoryid18BCB00D": {
+      "Properties": {
+        "Name": "/yudane/dev/debate/memory-id",
+        "Type": "String",
+        "Value": {
+          "Fn::GetAtt": [
+            "DebateMemoryA1DF7DFD",
+            "MemoryId",
+          ],
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "ParammodelidE2402551": {
+      "Properties": {
+        "Name": "/yudane/dev/debate/model-id",
+        "Type": "String",
+        "Value": "anthropic.claude-haiku-4-5",
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "Paramruntimearn6BF4B1B4": {
+      "Properties": {
+        "Name": "/yudane/dev/debate/runtime-arn",
+        "Type": "String",
+        "Value": {
+          "Fn::GetAtt": [
+            "DebateRuntime5DFA740A",
+            "AgentRuntimeArn",
+          ],
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "ParamruntimeendpointlivearnEF6B8E51": {
+      "Properties": {
+        "Name": "/yudane/dev/debate/runtime-endpoint-live-arn",
+        "Type": "String",
+        "Value": {
+          "Fn::GetAtt": [
+            "DebateRuntimeLiveC7F9BBF7",
+            "AgentRuntimeEndpointArn",
+          ],
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+  },
+  "Rules": {
+    "CheckBootstrapVersion": {
+      "Assertions": [
+        {
+          "Assert": {
+            "Fn::Not": [
+              {
+                "Fn::Contains": [
+                  [
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "5",
+                  ],
+                  {
+                    "Ref": "BootstrapVersion",
+                  },
+                ],
+              },
+            ],
+          },
+          "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI.",
+        },
+      ],
+    },
+  },
+}
+`;

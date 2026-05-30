@@ -2,8 +2,8 @@
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
     "jsx": "react-jsx",
-    "rootDir": "src",
-    "types": ["vitest/globals"],
+    "baseUrl": "./",
+    "types": ["vitest/globals", "nativewind/types"],
     "paths": {
       "@yudane/schema": ["../shared/schema/types/api.ts"],
       "@yudane/safeguard-policy": ["../shared/safeguard-policy/src/index.ts"],
@@ -11,5 +11,5 @@
       "@/*": ["src/*"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "App.tsx", "index.ts"]
 }
