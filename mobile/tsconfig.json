@@ -2,8 +2,9 @@
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
     "jsx": "react-jsx",
+    "jsxImportSource": "nativewind",
     "baseUrl": "./",
-    "types": ["vitest/globals", "nativewind/types"],
+    "types": ["vitest/globals"],
     "paths": {
       "@yudane/schema": ["../shared/schema/types/api.ts"],
       "@yudane/safeguard-policy": ["../shared/safeguard-policy/src/index.ts"],
