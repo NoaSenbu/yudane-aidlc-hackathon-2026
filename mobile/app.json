@@ -1,0 +1,17 @@
+{
+  "expo": {
+    "name": "YUDANE",
+    "slug": "yudane",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "ios": {
+      "bundleIdentifier": "com.yudane.app",
+      "supportsTablet": false
+    },
+    "android": {
+      "package": "com.yudane.app"
+    }
+  }
+}

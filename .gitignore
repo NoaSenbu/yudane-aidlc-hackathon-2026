@@ -64,6 +64,13 @@ node_modules/
 coverage/
 .vitest/
 
+# --- Expo / EAS Build（mobile/、machine specific・署名鍵） ---
+.expo/
+.expo-shared/
+*.jks
+*.keystore
+expo-env.d.ts
+
 # --- OpenAPI 生成物の扱い ---
 # 生成型（shared/schema/types/api.ts, backend/src/common/models/api.py）は
 # api-contracts.md §3 によりコミット必須。ここでは無視しない
