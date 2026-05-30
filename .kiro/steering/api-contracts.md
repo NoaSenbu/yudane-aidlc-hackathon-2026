@@ -15,6 +15,19 @@ fileMatchPattern: 'shared/schema/**'
 - **REST API 契約の正本**: `shared/schema/openapi.yaml`（OpenAPI 3.1）
 - **非同期イベント契約**: `shared/schema/events/*.json`（AsyncAPI または JSON Schema、将来拡張）
 - **ドメイン型（UI / Backend 共有）**: `shared/schema/domain/*.ts`（TypeScript 型定義）
+- **クライアントテレメトリ契約**: `shared/schema/telemetry/event.ts`（[§12 Telemetry スキーマ](#12-クライアントテレメトリスキーマ-i-1--a-確定) を参照）
+
+### 1.1 第 1 版作成主体（C-3 = A 確定）
+
+- **方針**: Member A が一括ドラフトし、各 Unit オーナーが PR で詳細化
+- **担当**: Member A（Unit-1 Platform の Functional Design / Code Generation で実施）
+- **凍結期限**: **Day 4（Unit-2 Auth & Profile 着手前）**
+- **第 1 版に含めるエンドポイント**: 28 ストーリーから派生する MVP エンドポイントのみ（dame report 集計など決勝向けは v0.2）
+- **作成スコープ（Member A の責務）**:
+  - `paths/auth.yaml` / `paths/debate.yaml` / `paths/reel.yaml` / `paths/cart.yaml` / `paths/calendar.yaml` / `paths/safeguard.yaml` / `paths/report.yaml` を全部スケルトン作成（200 OK / Problem Details / 主要エンドポイントのみ）
+  - `components/schemas/` の共通モデル（User / ProblemDetails / TimeRange / TelemetryEvent 等）を整備
+- **Unit オーナーの責務**: 自分の Unit の paths を PR で詳細化、`examples` を整備（[§7 Mock Server](#7-mock-server並行開発) 参照）
+- **凍結後の変更プロセス**: 本ファイル §6 + [git-ops.md](./git-ops.md) §API 契約変更時の追加手順（API 契約 PR 先行 → 実装 PR 追従）
 
 ## 2. 変更の基本順序
 
@@ -127,6 +140,15 @@ fileMatchPattern: 'shared/schema/**'
 - Mobile 側は環境変数 `API_BASE_URL` を `http://localhost:4010` に指定することで Backend 実装完了を待たずに UI 実装可能
 - Unit Test / Integration Test 時は **MSW（Mock Service Worker）** で API をモック（`mobile/src/test/msw-handlers.ts` に集約）
 
+### 7.1 examples 更新責任（I-3 = A 確定）
+
+- **配置**: `shared/schema/examples/<resource>.yaml` に集約
+- **更新責任**: 各 Unit オーナーが自分の Unit の examples を更新する責任を持つ（Member A による集中管理ではない）
+- **起動コマンド**: `npm run mock:api`（root の `package.json` に定義、内部で `prism mock shared/schema/openapi.yaml --port 4010`）
+- **CI 確認**: PR 単位で `npm run mock:api` がエラーなく起動することを smoke check
+- **Mobile 接続**: `mobile/.env.development` に `API_BASE_URL=http://localhost:4010`、本番は `https://api.yudane.app/v1`（仮）
+- **Lambda local invoke での代替は不採用**（[parallel-dev-prerequisites.md I-3](../../aidlc-docs/construction/plans/parallel-dev-prerequisites.md) の選択肢 C）
+
 ## 8. 契約テスト
 
 - **Backend**: Schemathesis による fuzz test
@@ -198,3 +220,67 @@ shared/schema/
 | IT-05 | 月間上限到達 → Safeguard 発動 → 論破・リール停止 | Unit-7 (Safeguard) → Unit-3 / Unit-4 |
 | IT-06 | 週次集計バッチ → DameReport 生成 → プッシュ通知 | Unit-8 (Dame Report) |
 | IT-07 | サインアップ → MFA 設定 → 予算感アンケート → プロファイル永続化 | Unit-2 (Auth & Profile) |
+
+
+## 12. クライアントテレメトリスキーマ（I-1 = A 確定）
+
+全 Unit が `B-14 TelemetryIngestionService` に書き込む Telemetry イベントの最小スキーマを共通化する。Unit-1 Platform で確定させ、Unit-3/4/5 の telemetry 呼び出しを揃える。
+
+### 12.1 スキーマ定義
+
+```typescript
+// shared/schema/telemetry/event.ts
+export type TelemetryEvent = {
+  eventId: string;          // ULID
+  userId: string;           // 匿名化ハッシュ（非認証イベントでも必須）
+  sessionId: string;        // 起動セッション
+  timestamp: string;        // ISO 8601 UTC
+  eventType: string;        // 例: "debate.started", "reel.amazon_tap", "cart.intercept_received"
+  unit: 'platform' | 'auth' | 'debate' | 'reel' | 'cart' | 'calendar' | 'safeguard' | 'report';
+  properties: Record<string, unknown>;  // イベント固有 payload
+  context: {
+    appVersion: string;
+    osVersion: string;
+    locale: string;
+  };
+};
+```
+
+### 12.2 Event Type 命名規約
+
+- 形式: `<unit>.<verb>`
+- 例: `debate.started` / `cart.attack_30m_fired` / `reel.swiped` / `auth.signup_completed`
+- 機能名 → 動詞の順で揃え、後方検索（`debate.*`）で機能横断分析が可能になるようにする
+
+### 12.3 PII の扱い（厳格）
+
+- `properties` には PII を含めない
+- `userId` は Cognito `sub` の SHA-256 ハッシュなど匿名化済みの値のみ送信
+- 違反検知は CI の `check-pii-fields.sh` スクリプトで自動 reject（§9.1 と同枠）
+
+### 12.4 投入経路
+
+```
+Mobile (M-13 Telemetry)
+  ↓ HTTP POST /v1/telemetry
+API Gateway
+  ↓
+B-14 TelemetryIngestionService (Lambda)
+  ↓
+Kinesis Data Firehose
+  ↓
+S3 (Data Lake, Parquet)
+  ↓ (将来)
+Athena / QuickSight
+```
+
+### 12.5 リテンション
+
+- dev 環境: **7 日**で自動削除（S3 ライフサイクルルール）
+- prd 環境: **90 日**で自動削除
+
+### 12.6 実装責任
+
+- **第 1 版**: Member A が Unit-1 Platform Code Generation で `shared/schema/telemetry/event.ts` を作成
+- **イベント追加**: 各 Unit オーナーが自分の Unit の `eventType` を追加する責任を持つ（命名規約 §12.2 を遵守）
+- **B-14 受け側**: Unit-1 で TypeScript 型と整合する Pydantic v2 モデルを `backend/src/telemetry/models.py` に生成

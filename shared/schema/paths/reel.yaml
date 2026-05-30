@@ -1,9 +1,13 @@
-# Unit-4 Reel のパス骨格（Q1=refinedA）。詳細は Unit-4 が非破壊で追記。
+# Unit-4 Reel のパス（UC-02）。Unit-1 凍結骨格への非破壊追記（API-03）。
+# 設計: reel/functional-design/business-rules.md REEL-API-01〜07。
 reel:
   get:
     operationId: getReel
     tags: [reel]
-    summary: リールフィード取得（骨格、UC-02）
+    summary: リールフィード取得（UC-02、FR-REEL-01）
+    description: >
+      嗜好 × 時刻 × カレンダー × 疲労度の推薦カードをカーソルページングで返す。
+      認証必須（Authorizer + sub 照合）。
     parameters:
       - $ref: '../components/parameters/common.yaml#/Cursor'
       - $ref: '../components/parameters/common.yaml#/Limit'
@@ -14,15 +18,20 @@ reel:
         content:
           application/json:
             schema:
-              type: object
+              $ref: '../components/schemas/reel.yaml#/ReelPage'
       '401':
         $ref: '../components/responses/problem-details.yaml#/Unauthorized'
+      '403':
+        $ref: '../components/responses/problem-details.yaml#/Forbidden'
 
 amazonTransitions:
   post:
     operationId: recordAmazonTransition
     tags: [reel]
-    summary: Amazon 遷移記録（骨格、B-13 / EXP 加算）
+    summary: Amazon 遷移記録（B-13 / EXP 加算、US-02-02）
+    description: >
+      「🛍 Amazon で買う」タップを冪等に記録し EXP +1 を同期付与する。
+      遷移前に Safeguard ゲートを通り、上限到達なら 409。レート制限超過は 429。
     parameters:
       - $ref: '../components/parameters/common.yaml#/CorrelationId'
     requestBody:
@@ -30,15 +39,23 @@ amazonTransitions:
       content:
         application/json:
           schema:
-            type: object
+            $ref: '../components/schemas/reel.yaml#/AmazonTransitionRequest'
     responses:
       '201':
-        description: 記録（EXP 加算結果）
+        description: 記録成功（EXP 加算結果）
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/reel.yaml#/ExpAward'
       '401':
         $ref: '../components/responses/problem-details.yaml#/Unauthorized'
+      '403':
+        $ref: '../components/responses/problem-details.yaml#/Forbidden'
       '409':
-        description: セーフガード発動（safeguard.monthly-limit-exceeded 等）
+        description: セーフガード発動（safeguard.monthly-limit-exceeded / cooldown 等、REEL-TR-03）
         content:
           application/problem+json:
             schema:
               $ref: '../components/schemas/common.yaml#/ProblemDetails'
+      '429':
+        $ref: '../components/responses/problem-details.yaml#/RateLimited'

@@ -31,15 +31,65 @@ fileMatchPattern: 'infra/**'
 - L1 Construct（`Cfn*`）直接使用は最後の手段。L2 / L3 Construct を優先
 - `removalPolicy` は dev = `DESTROY`、prd = `RETAIN` を明示
 
+### 3.1 Lambda SnapStart 適用ルール（Unit-1 Q5 確定）
+
+レイテンシクリティカルな Lambda（特に Bedrock ストリーミング系の B-02 DebateLlmService）には SnapStart を適用してコールドスタートを短縮する。Python 3.13 / .NET は追加料金なし、Java はキャッシュ料金あり。
+
+```typescript
+const fn = new lambda.Function(this, 'DebateLambda', {
+  runtime: lambda.Runtime.PYTHON_3_13,
+  architecture: lambda.Architecture.ARM_64,  // 20% コスト削減
+  snapStart: lambda.SnapStartConf.ON_PUBLISHED_VERSIONS,
+  // ...
+});
+
+// SnapStart は公開バージョン + Alias が必須
+const liveAlias = new lambda.Alias(this, 'DebateLive', {
+  aliasName: 'live',
+  version: fn.currentVersion,
+});
+
+// API Gateway 統合は Alias を指す
+api.root.addResource('debate-sessions').addMethod(
+  'POST',
+  new apigw.LambdaIntegration(liveAlias),
+);
+```
+
+**SnapStart 適用時の制約**:
+
+- `$LATEST` 版では SnapStart 効果なし、必ず公開バージョン + Alias で運用
+- ハンドラ外でランダム値 / UUID 生成 / DB コネクション初期化等を行う場合は `@register_after_restore`（Python）/ `Core.beforeCheckpoint` Hook（Java）で snapshot 復元後に再生成
+- VPC 内 / VPC 外いずれでも適用可能（VPC 外配置 + SnapStart の組み合わせで効果最大化）
+
+**適用対象 Lambda（YUDANE）**:
+
+- B-02 DebateLlmService（必須、Q5 確定）
+- B-03 ReelRecommendationService（要検討、初回トークン要件次第）
+- 他 Lambda は SnapStart 不要（バックグラウンドジョブ等）
+
 ## 4. CDK 固有命名
 
 | 対象 | 規則 | 例 |
 |---|---|---|
-| Stack | `<unit>-<env>-stack` | `debate-dev-stack`、`platform-prd-stack` |
+| Stack（共有結合 dev / prd） | `<unit>-<env>-stack` | `debate-dev-stack`、`platform-prd-stack` |
+| Stack（個人 sandbox dev） | `<unit>-dev-<initial>-stack` | `debate-dev-b-stack`（Member B の個人 dev） |
 | Construct | PascalCase | `DebateLambdaConstruct` |
 | Logical ID | 意味ある PascalCase | `DebateStreamingLambda` |
 | Resource Name（Cognito User Pool 等） | `yudane-<unit>-<env>-<resource>` | `yudane-auth-dev-userpool` |
 | SSM Parameter | `/yudane/<env>/<unit>/<key>` | `/yudane/dev/debate/bedrock-model-id` |
+
+### 4.1 環境構成（C-4 = C 確定: 単一アカウント + suffix）
+
+- **AWS アカウント**: 単一アカウント運用。Member A が Builder ID で取得・管理（ハッカソン参加要件）
+- **環境分離**: env = `dev`（共有結合用）+ `prd`（決勝向け）の 2 環境
+- **個人 sandbox**: 個人別の作業衝突は CDK Context の `developer` キー + Stack 名 suffix で回避
+  - 個人 sandbox: `<unit>-dev-<initial>-stack`（例: `platform-dev-a-stack`、`debate-dev-b-stack`）
+  - 共有結合 dev: `<unit>-dev-stack`（Member A が管理、`cdk deploy` は事前承認必須）
+  - 決勝 prd: `<unit>-prd-stack`（Member A のみ実行可、本番相当の cdk-nag を全適用）
+- **CDK Context 注入例**: `cdk.context.json` または環境変数 `CDK_DEVELOPER=b` で suffix を渡し、Stack 名末尾に注入する
+- **リージョン**: `ap-northeast-1` 固定（要件書 §7）
+- **採用しないもの**: 個人別 AWS アカウント / Control Tower（[parallel-dev-prerequisites.md C-4](../../aidlc-docs/construction/plans/parallel-dev-prerequisites.md) の選択肢 B）
 
 ## 5. Unit 対応
 
@@ -64,6 +114,58 @@ fileMatchPattern: 'infra/**'
 | cdk-nag 検証 | CI で `cdk synth` 時に自動検査 | — |
 
 Snapshot の破壊的変更は PR description で必ず差分を説明。
+
+### 6.1 Snapshot TDD（CDK 必須）
+
+[AGENTS.md §12](./AGENTS.md#12-tdd-開発スタイル全-unit-必須) の TDD 開発スタイルを CDK 側で具体化:
+
+| Phase | やること | ツール |
+|---|---|---|
+| **Red** | `Template.fromStack(stack)` で期待プロパティを `hasResourceProperties` で書く（最小 1 リソース） | `aws-cdk-lib/assertions` |
+| **Green** | Stack に該当リソースを追加して assertion 通過 | `lib/*-stack.ts` |
+| **Refactor** | KMS / TTL / IAM ポリシー等の細目を整理、テストは触らない | エディタ |
+| **Snapshot 固定** | cdk-nag を pass する状態で `toMatchSnapshot()` で全体を fixture 化 | `jest` |
+
+#### Snapshot TDD の流れ（CDK 例）
+
+```typescript
+// Step 1 (Red): infra/test/platform-stack.test.ts
+import { Template } from 'aws-cdk-lib/assertions';
+import * as cdk from 'aws-cdk-lib';
+import { PlatformStack } from '../lib/platform-stack';
+
+describe('PlatformStack', () => {
+  test('DebateRateLimits テーブルを含む', () => {
+    const app = new cdk.App();
+    const stack = new PlatformStack(app, 'TestStack', { envName: 'dev' });
+    const template = Template.fromStack(stack);
+    template.hasResourceProperties('AWS::DynamoDB::Table', {
+      TableName: 'yudane-dev-debate-rate-limits',
+      BillingMode: 'PAY_PER_REQUEST',
+    });
+  });
+
+  test('IdempotencyKeys テーブルを含む', () => {
+    // 同様
+  });
+
+  test('cdk synth は cdk-nag をパスする', () => {
+    // AwsSolutionsChecks rule pack を満たすことを検証
+  });
+});
+
+// Step 2 (Green): infra/lib/platform-stack.ts に DynamoDB Table を追加
+// Step 3 (Refactor): KMS / TTL / pointInTimeRecoverySpecification / DeletionProtection の細目を追加
+// Step 4 (Snapshot 固定): cdk-nag pass 後に Template.fromStack(stack).toJSON() で snapshot fixture 化
+```
+
+#### TDD 例外（テストファースト緩和、AGENTS.md §12.3）
+
+- `cdk.context.json` の宣言的設定
+- `bin/yudane.ts` のエントリポイント（Stack インスタンス化のみ）
+- SSM Parameter Store の値登録のみの操作
+
+例外時は PR description に「TDD 例外: ◯◯」と明記。
 
 ## 7. セキュリティ（SECURITY Extension 抜粋）
 

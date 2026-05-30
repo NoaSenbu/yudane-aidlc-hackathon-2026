@@ -11,15 +11,50 @@ import 'source-map-support/register';
 import { App, Aspects } from 'aws-cdk-lib';
 import { AwsSolutionsChecks } from 'cdk-nag';
 
+import { AuthStack } from '../lib/auth-stack';
+import { CartStack } from '../lib/cart-stack';
+import { DebateStack } from '../lib/debate-stack';
 import { PlatformStack } from '../lib/platform-stack';
+import { ReelStack } from '../lib/reel-stack';
 
 const app = new App();
 
 const env = (app.node.tryGetContext('env') as string | undefined) ?? 'dev';
 const region = (app.node.tryGetContext('region') as string | undefined) ?? 'ap-northeast-1';
+const developerInitial = app.node.tryGetContext('developer') as string | undefined;
 
-new PlatformStack(app, `platform-${env}-stack`, {
+const stackSuffix = developerInitial && env === 'dev' ? `-${developerInitial}` : '';
+
+new PlatformStack(app, `platform-${env}${stackSuffix}-stack`, {
   envName: env,
+  env: { region },
+});
+
+// Unit-2 Auth & Profile
+new AuthStack(app, `auth-${env}-stack`, {
+  envName: env,
+  env: { region },
+});
+
+// Unit-3 Debate（AgentCore Runtime + Memory + Cooldowns DDB + SSM、Unit-1 基盤を SSM 参照で連携）
+new DebateStack(app, `debate-${env}${stackSuffix}-stack`, {
+  envName: env,
+  env: { region },
+});
+
+// Unit-4 Reel（platform-stack の後段にデプロイ、SSM 参照で連携）
+new ReelStack(app, `reel-${env}-stack`, {
+  envName: env,
+  env: { region },
+});
+
+// Unit-5 Cart Intercept（infrastructure-design.md / cart-stack.ts 整合）
+// exactOptionalPropertyTypes: true のため、developerInitial が undefined のときは
+// プロパティ自体を省略する（spread で条件付きマージ）
+new CartStack(app, `cart-${env}${stackSuffix}-stack`, {
+  envName: env as 'dev' | 'prd',
+  ...(developerInitial !== undefined ? { developerInitial } : {}),
+  // platformKmsKey: 未指定（PlatformStack 整備中のため Stack 内 fallback、Member A 整備後に切替）
   env: { region },
 });
 

@@ -28,6 +28,15 @@ export const ALLOWED_FIELDS: ReadonlySet<string> = new Set<string>([
   'category',
   'decision',
   'reasonCode',
+  // --- Unit-5 Cart Intercept（2026-05-29 追加、Issue B4）---
+  'asin',           // Amazon ASIN（10 桁、PII ではない公開識別子）
+  'itemId',         // CartWatchItems の ULID
+  'cartWatchItemId', // FK 参照用（NotificationLogs から）
+  'step',           // '30m' | '6h' | '24h'
+  'templateId',     // 通知テンプレート番号（'30m-3' 等）
+  'previousStatus', // ステータス遷移前の値
+  'platform',       // 'APNS' | 'GCM'
+  'triggerSource',  // 'share-extension' | 'reel-swipe-right' | 'clipboard-suggest'
 ]);
 
 /**
@@ -43,6 +52,8 @@ export const PII_FIELDS: ReadonlySet<string> = new Set<string>([
   'address',
   'phone',
   'creditCard',
+  // --- Unit-5 Cart Intercept（2026-05-29 追加、Issue B4）---
+  'pushEndpointId', // AWS End User Messaging Endpoint ID（PII 隣接、伏字推奨）
 ]);
 
 /**
@@ -55,6 +66,16 @@ export const METRIC_CATALOG: ReadonlySet<string> = new Set<string>([
   'platform.telemetry.accepted',
   'platform.telemetry.dropped',
   'platform.health.status',
+  // --- Unit-5 Cart Intercept（2026-05-29 追加、Issue B4）---
+  'cart.intake.created',
+  'cart.intake.reactivated',
+  'cart.dismissed',
+  'cart.scheduler.create_failed',
+  'cart.scheduler.retry_succeeded',
+  'cart.scheduler.retry_failed',
+  'cart.notification.dispatched',
+  'cart.notification.delay_seconds',
+  'cart.notification.suppressed_by_safeguard',
 ]);
 
 /** メトリクス命名規約の検証（NFR-OBS-02）。 */
@@ -87,6 +108,18 @@ export const EVENT_CATALOG: ReadonlySet<string> = new Set<string>([
   'app_foreground',
   'app_background',
   'deeplink_open',
+  // --- Unit-5 Cart Intercept（2026-05-29 追加、Issue B4）---
+  'cart.intake_received',
+  'cart.attack_30m_fired',
+  'cart.attack_6h_fired',
+  'cart.attack_24h_fired',
+  'cart.dismiss',
+  'cart.amazon_transition',
+  'cart.notification_tap',
+  'cart.notification_suppressed',
+  'cart.share_extension_open',
+  'cart.push_permission_denied',
+  'cart.watching_orphaned',
 ]);
 
 export function isKnownEvent(name: string): boolean {

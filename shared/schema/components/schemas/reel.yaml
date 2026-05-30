@@ -1,0 +1,145 @@
+# Unit-4 Reel スキーマ（UC-02）。Unit-1 凍結契約への非破壊追記（API-03）。
+# 設計: reel/functional-design/domain-entities.md / business-rules.md REEL-*。
+
+ProductMeta:
+  type: object
+  description: 商品メタ（Creators API / ダミーカタログ由来）
+  required:
+    - asin
+    - title
+    - priceYen
+    - imageUrl
+  properties:
+    asin:
+      type: string
+      pattern: '^[A-Z0-9]{10}$'
+      description: 正規化済み ASIN（10 桁英数字、ASIN-01）
+    title:
+      type: string
+    priceYen:
+      type: integer
+      minimum: 0
+    imageUrl:
+      type: string
+      format: uri
+    reviewSummary:
+      type: string
+
+OwnershipLabel:
+  type: object
+  description: 所有感ラベル（「確保しておきました」系、US-02-05）
+  required:
+    - text
+    - rationale
+    - source
+  properties:
+    text:
+      type: string
+      description: ラベル本文（24h 連続重複なし、REEL-LABEL-03）
+    rationale:
+      type: string
+      description: 固有の根拠 1 文（US-02-05 AC-2）
+    source:
+      type: string
+      enum: [llm, template-fallback]
+      description: 生成元（LLM 生成 or 決定論フォールバック、Q4=A）
+
+ReelCard:
+  type: object
+  description: リールカード 1 枚（FR-REEL-01/03）
+  required:
+    - cardId
+    - product
+    - pitch
+    - ownershipLabel
+    - tags
+    - origin
+    - isHighPriceBoost
+  properties:
+    cardId:
+      type: string
+      description: フィード内一意 ID（遷移の冪等キー材料）
+    product:
+      $ref: '#/ProductMeta'
+    pitch:
+      type: string
+      description: AI 推薦コメント（FR-REEL-03）
+    ownershipLabel:
+      $ref: '#/OwnershipLabel'
+    tags:
+      type: array
+      items:
+        type: string
+      description: 表示タグ（「頑張ったあなたへ」「○○ のためのエージェント提案」等）
+    origin:
+      type: string
+      enum:
+        - purchase-related
+        - co-purchase
+        - late-night-boost
+        - calendar
+        - onboarding-seed
+        - curated-popular
+      description: カードの出自（CardOrigin）
+    isHighPriceBoost:
+      type: boolean
+      description: 深夜高単価ブースト枠か（US-02-01）
+
+ReelPage:
+  type: object
+  description: リールフィードのページ（カーソルページング、Q9=A）
+  required:
+    - cards
+    - generatedAt
+  properties:
+    cards:
+      type: array
+      items:
+        $ref: '#/ReelCard'
+    nextCursor:
+      type: [string, 'null']
+      description: 次ページ用の不透明カーソル。末尾なら null（REEL-PAGE-02）
+    generatedAt:
+      type: string
+      format: date-time
+
+AmazonTransitionRequest:
+  type: object
+  description: Amazon 遷移記録リクエスト（B-13、US-02-02）
+  required:
+    - cardId
+    - asin
+    - context
+    - clientTransitionId
+  properties:
+    cardId:
+      type: string
+      description: 遷移元 ReelCard の cardId
+    asin:
+      type: string
+      pattern: '^[A-Z0-9]{10}$'
+    context:
+      type: string
+      enum: [reel, debate-agree, cart-attack]
+      description: 遷移コンテキスト（Reel は主に reel）
+    clientTransitionId:
+      type: string
+      description: クライアント生成の冪等キー（戻る→再タップの二重計上防止、REEL-TR-01）
+
+ExpAward:
+  type: object
+  description: EXP 加算結果（B-13 が同期付与、US-02-02 AC-4）
+  required:
+    - awarded
+    - totalExp
+    - duplicate
+  properties:
+    awarded:
+      type: integer
+      description: 今回付与した EXP（1 遷移 +1、冪等重複時は 0）
+    totalExp:
+      type: integer
+      description: 加算後の累計 EXP（UC-05 連動）
+    duplicate:
+      type: boolean
+      description: 冪等キー重複で再加算しなかった場合 true

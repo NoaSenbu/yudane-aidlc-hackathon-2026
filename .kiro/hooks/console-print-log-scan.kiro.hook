@@ -1,0 +1,21 @@
+{
+  "enabled": true,
+  "name": "console.log / print 検出スキャン",
+  "description": "アプリケーションコード保存時に console.log / print の混入を検出し、構造化ロガーへの置換を促す",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "mobile/src/**/*.ts",
+      "mobile/src/**/*.tsx",
+      "backend/src/**/*.py",
+      "shared/**/*.ts",
+      "shared/**/*.py",
+      "infra/lib/**/*.ts"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "編集されたファイルに対し、以下のパターンを検出してください。\n\n- TypeScript / TSX: `console.log(`, `console.warn(`, `console.error(`, `console.info(`, `console.debug(`\n- Python: `print(`（ただしテストファイル内の意図的な print や `__main__` ガード内は除外可）\n\n**テストファイル**（`__tests__/` 配下、`*.test.ts`、`tests/`、`test_*.py`、`conftest.py`）はスキャン対象外として扱ってください。\n\n検出された場合:\n\n1. 該当行番号と文脈を報告\n2. AGENTS.md §8（機密情報のログ出力禁止）と SECURITY-08（構造化ロガー必須）に基づき、置換を提案\n   - TypeScript: `pino` / `winston` ベースの構造化ロガー\n   - Python: 標準 `logging` モジュール + JSON フォーマッタ（backend/src/common/ 配下に共通設定がある想定）\n3. ユーザーが置換を承認したら修正、未承認なら警告のみで終了\n\n検出されなければ「ログ規約 OK」と簡潔に報告してください。"
+  }
+}

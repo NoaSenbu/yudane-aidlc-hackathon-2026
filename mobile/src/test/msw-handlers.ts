@@ -24,6 +24,36 @@ export const handlers = [
     HttpResponse.json({ accepted: 1, dropped: 0 }, { status: 202 }),
   ),
 
+  // GET /v1/reel（Unit-4、examples/reel.yaml と整合）
+  http.get(`${BASE}/v1/reel`, () =>
+    HttpResponse.json({
+      cards: [
+        {
+          cardId: 'card-01J9ABC',
+          product: {
+            asin: 'B0EXAMPLE1',
+            title: 'ワイヤレスノイズキャンセリングイヤホン',
+            priceYen: 32800,
+            imageUrl: 'https://example.invalid/img/earbuds.jpg',
+            reviewSummary: '静寂性が高評価',
+          },
+          pitch: '今日の会議6本、よく戦った。ご褒美は当然じゃね？',
+          ownershipLabel: { text: '確保しておきました', rationale: '先週よく見てたやつ', source: 'llm' },
+          tags: ['頑張ったあなたへ'],
+          origin: 'late-night-boost',
+          isHighPriceBoost: true,
+        },
+      ],
+      nextCursor: null,
+      generatedAt: '2026-05-30T13:00:00Z',
+    }),
+  ),
+
+  // POST /v1/amazon-transitions（Unit-4）
+  http.post(`${BASE}/v1/amazon-transitions`, () =>
+    HttpResponse.json({ awarded: 1, totalExp: 42, duplicate: false }, { status: 201 }),
+  ),
+
   // 認可エラーのサンプル（IDOR）
   http.get(`${BASE}/v1/users/:userId`, ({ params }) => {
     if (params.userId === 'forbidden') {
@@ -38,4 +68,25 @@ export const handlers = [
     }
     return HttpResponse.json({ id: params.userId, createdAt: '2026-05-30T00:00:00Z' });
   }),
+
+  // POST/PATCH /v1/users/{userId}/profile（US-AUTH-01 オンボ段階保存）
+  http.post(`${BASE}/v1/users/:userId/profile`, ({ params }) =>
+    HttpResponse.json(
+      { userId: params.userId, onboardingStep: 1, profileCompleted: false },
+      { status: 201 },
+    ),
+  ),
+  http.patch(`${BASE}/v1/users/:userId/profile`, ({ params }) =>
+    HttpResponse.json({ userId: params.userId, onboardingStep: 5, profileCompleted: true }),
+  ),
+
+  // GET /v1/home（ホーム概況、Q6=A）
+  http.get(`${BASE}/v1/home`, () =>
+    HttpResponse.json({
+      candidateCount: 12,
+      cartWatchCount: 3,
+      yudaneLevel: 5,
+      remainingBudgetYen: 42_000,
+    }),
+  ),
 ];

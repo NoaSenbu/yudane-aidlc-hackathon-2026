@@ -33,7 +33,24 @@ fileMatchPattern: '*.ts*'
 
 - コンポーネントは **関数コンポーネント + Hooks** のみ。クラスコンポーネント禁止
 - Side effect は `useEffect` / `useLayoutEffect` 以外での実行禁止
-- Style は `StyleSheet.create` または `NativeWind`。インラインスタイルは単純な一時用途のみ
+- Style は **NativeWind v4**（Tailwind トークン）を第一選択。`StyleSheet.create` は v4 で表現できないアニメーション等の補助用途に限定。インラインスタイルは禁止
+
+### 3.1 デザインシステムとスタイリング基盤（C-1 = A 確定）
+
+- **採用**: NativeWind v4 + Tailwind 設計トークン
+- **トークン集中管理先**: `mobile/tailwind.config.js`（Member A が Unit-1 Platform で整備）
+- **モックアップとの 1:1 移植**: `mockup/styles.css` の HEX 値（Indigo `#4F4DDC` / cold rose `#E8B4D0` / cyan `#4DE1FF` 他）をそのまま `tailwind.config.js` の `theme.extend.colors` にミラーリング
+- **Claude Design 出力との同期**: `mockup/index.html` を SSOT として、Claude Design が生成した Tailwind クラスは `tailwind.config.js` のトークンに合わせて Member A が PR で吸収
+- **採用しないもの**: Tamagui / React Native Paper / 自作 StyleSheet（[parallel-dev-prerequisites.md C-1](../../aidlc-docs/construction/plans/parallel-dev-prerequisites.md) の選択肢 B/C/D）
+
+### 3.2 開発ワークフロー（C-5 = A 確定: Expo Dev Client + EAS Build）
+
+- **採用**: Expo SDK 52+ の Dev Client（New Architecture デフォルト ON）+ EAS Build（クラウドビルド）
+- **Bare React Native は不採用**: ローカル Xcode / Android Studio 環境差を Expo に集約することで Member A〜D の環境差ゼロ化を狙う
+- **Share Extension（iOS）/ Share Target（Android）**: Expo Config Plugin として実装（Member D の Unit-5 Cart Intercept 担当）。`@bacons/expo-share-extension` 等の OSS プラグインを利用、必要に応じてカスタム Plugin を作成
+- **AWS End User Messaging Push（APNs / FCM）**: `expo-notifications` 経由でトークン取得を半自動化
+- **配布**: 開発中 = Expo Dev Client、予選デモ = Dev Client、決勝 = EAS Build → TestFlight / Internal Testing
+- **EAS 課金回避策**: 月 30 ビルド超過時は `eas build --local`（ローカル Xcode 必須）にフォールバック
 
 ## 4. 命名規則
 
@@ -124,6 +141,36 @@ export async function* startDebate(...) { }
 - Integration Test: 主要シーケンス 100% カバー（詳細は [api-contracts.md](./api-contracts.md) §Integration Test の IT-01〜07）
 
 CI で自動計測。未達 PR はマージ不可。
+
+### 10.1 TDD サイクル（Outside-In、Mobile features 必須）
+
+[AGENTS.md §12](./AGENTS.md#12-tdd-開発スタイル全-unit-必須) の TDD 開発スタイルを TypeScript 側で具体化:
+
+| Phase | やること | ツール |
+|---|---|---|
+| **Red** | 失敗する `vitest` example test を 1 ケース書く | `vitest` `expect` |
+| **Green** | テストが通る最小コードを書く（仮実装可） | 実装ファイル |
+| **Refactor** | 重複排除・命名整理・抽象化、テストは触らない | エディタ |
+| **PBT 補強** | `fast-check` の `fc.assert(fc.property(...))` を同テストファイルに追加 | `fast-check` |
+
+#### Outside-In の流れ（Mobile 例）
+
+```
+Test 1 (Red): screen-level test → describe('DebateScreen') で UI 期待動作を書く
+Test 2 (Red): hook-level test → useDebateSession の戻り値を検証
+Test 3 (Red): service-level test → SSE 解析関数の単体検証
+   ↓ 各 Red を 1 つずつ Green に倒していく
+   ↓ 内側に向かって実装が組み上がる
+最後に PBT で property を補強
+```
+
+#### TDD 例外（テストファースト緩和、AGENTS.md §12.3）
+
+- Mockup HTML → RN コンポーネントの機械的移植
+- 純粋な型定義 / DTO 宣言（振る舞いなし）
+- 設定ファイル（`tailwind.config.js` / `babel.config.js` / `app.config.js` 等）
+
+例外時は PR description に「TDD 例外: ◯◯」と明記。
 
 ## 11. セキュリティ（SECURITY Extension 抜粋）
 

@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "YUDANE",
+    "slug": "yudane-mobile",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "yudane",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.yudane.mobile"
+    },
+    "android": {
+      "package": "com.yudane.mobile",
+      "adaptiveIcon": {
+        "backgroundColor": "#0B0B0D"
+      }
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": ["expo-font"],
+    "splash": {
+      "backgroundColor": "#0B0B0D"
+    },
+    "experiments": {
+      "tsconfigPaths": false,
+      "typedRoutes": false
+    }
+  }
+}

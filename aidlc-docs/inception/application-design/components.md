@@ -28,7 +28,7 @@
 | M-10 | `CalendarNativeModule` | iOS EventKit / Google Calendar 読み取り。端末ローカルで予定カテゴリ分類 | Platform Channel 経由、分類結果のみ RN へ |
 | M-11 | `AuthModule` | Cognito User Pool 認証（サインアップ / ログイン / MFA / トークン管理） | AWS Amplify JavaScript v6 (`aws-amplify/auth`)（`amazon-cognito-identity-js` は非推奨のため不採用） |
 | M-12 | `ApiClient` | REST API 呼び出しのラッパー、認証ヘッダ付与、エラーハンドリング、相関 ID 付与 | `fetch` + TanStack Query |
-| M-13 | `Telemetry` | クライアントイベント計測（画面遷移 / タップ / スワイプ / Amazon 遷移） | CloudWatch カスタムメトリクス REST エンドポイント経由 |
+| M-13 | `Telemetry` | クライアントイベント計測（画面遷移 / タップ / スワイプ / Amazon 遷移）。**Unit-1 Q3 / Q8 確定（2026-05-27）で `POST /v1/telemetry` 経由 → B-14 → ElastiCache 重複検知 → Kinesis Firehose → S3 経路に詳細化**。詳細は [Unit-1 functional-design.md §1.3 / sequence-diagrams.md §2](../../construction/unit-1-platform/functional-design/) を参照 | `fetch` + TanStack Query + AsyncStorage 永続キュー |
 
 ### Mobile 層の状態管理
 
@@ -43,19 +43,19 @@
 | # | コンポーネント | 責務 | トリガー |
 |---|---|---|---|
 | B-01 | `AuthEdgeLambda` | Cognito トリガーのカスタマイズ（サインアップ後処理、トークン clam 付与） | Cognito User Pool トリガー |
-| B-02 | `DebateLlmService` | 論破プロンプト合成（商品メタ + 嗜好 + 時刻 + 予定 + 達成率 + **ストレスレベル推定**） + Bedrock ストリーミング（M-1 の事実 + 心理 2 軸反論 + M-2 のストレス × ご褒美軸 + 購買後の肯定フィードバック生成 / FR-DEBATE-02 / FR-DEBATE-09） | API Gateway → Lambda（REST ストリーミング） |
+| B-02 | `DebateLlmService` | 論破プロンプト合成（商品メタ + 嗜好 + 時刻 + 予定 + 達成率 + **ストレスレベル推定**） + Bedrock ストリーミング（M-1 の事実 + 心理 2 軸反論 + M-2 のストレス × ご褒美軸 + 購買後の肯定フィードバック生成 / FR-DEBATE-02 / FR-DEBATE-09）。**Unit-1 Q5 確定（2026-05-27）で VPC 外配置 + SnapStart 適用、Redis 依存を排除し DynamoDB `DebateRateLimits` テーブルでレート制限**。詳細は [Unit-1 functional-design-plan.md §Q5](../../construction/unit-1-platform/functional-design/functional-design-plan.md) | API Gateway → Lambda（REST ストリーミング、VPC 外、SnapStart）|
 | B-03 | `ReelRecommendationService` | 嗜好ベクトル × コンテキストから商品候補生成、OpenSearch でベクトル検索 | API Gateway |
 | B-04 | `CartIntakeHandler` | Share 経由の URL 受取、ASIN 抽出、Creators API 呼出、カート監視登録 | API Gateway |
 | B-05 | `CartAttackScheduler` | 登録商品に対する 30m / 6h / 24h 追撃ジョブ作成（EventBridge Scheduler） | Cart 登録イベント（B-04 から同期呼出） |
 | B-06 | `NotificationDispatcher` | AWS End User Messaging Push で APNs/FCM に通知配信、コピー生成 | EventBridge Scheduler 発火 |
 | B-07 | `CalendarPredictionService` | カレンダー予定カテゴリ → 商品カテゴリ推定（LLM / ルールベース混合） | API Gateway |
 | B-08 | `PreferenceVectorUpdater` | 購買履歴 / スキップ / 論破成功率から嗜好ベクトル更新 | EventBridge（日次 cron） |
-| B-09 | `SafeguardRulesEngine` | 月間上限 / 冷却モード / 負債検知の判定、遷移阻止 | 各 API Lambda の前段 middleware、または API Gateway Authorizer |
+| B-09 | `SafeguardRulesEngine` | 月間上限 / 冷却モード / 負債検知の判定、遷移阻止。**Unit-1 Q5 セルフレビュー後修正（2026-05-27）で責務縮小**: API Gateway 前段の判定は Lambda Authorizer 内で S-03 SafeguardPolicy を直接 import + DDB 直接参照に統合され、B-09 自身は管理 UI / バッチ処理 / 監査ログ専用。詳細は [Unit-1 functional-design.md §3.1 / §4.2](../../construction/unit-1-platform/functional-design/functional-design.md) | API Gateway（管理 UI 経由）+ EventBridge（バッチ）|
 | B-10 | `AssociatesLinkGenerator` | Amazon Associates Special Link URL 生成、タグ付与 | 他 Lambda から内部呼出 |
 | B-11 | `CreatorsApiClient` | Amazon Creators API 呼出、ElastiCache Redis でキャッシュ（TTL 6h）、レート制限管理 | 他 Lambda から内部呼出 |
 | B-12 | `AuditLogger` | 構造化ログ、相関 ID、PII マスキング、CloudWatch Logs / X-Ray 統合 | ライブラリ |
 | B-13 | `AmazonTransitionRecorder` | 「🛍 Amazon で買う」タップ記録、EXP 加算、Associates レポートとの突合 | API Gateway |
-| B-14 | `TelemetryIngestionService` | フロントからの計測イベントを受け取り、CloudWatch Metrics (EMF) と S3 Data Lake へ投入。北極星指標の可視化基盤 | API Gateway |
+| B-14 | `TelemetryIngestionService` | フロントからの計測イベントを受け取り **Kinesis Data Firehose に投入**、S3 Data Lake へ蓄積。北極星指標の可視化基盤。**Unit-1 Q3 確定（2026-05-27）で EMF メトリクスは B-12 AuditLogger.metric() に分離、B-14 は Firehose 投入のみに責務縮小**。詳細は [Unit-1 functional-design.md §2.2](../../construction/unit-1-platform/functional-design/functional-design.md) を参照 | API Gateway |
 
 ### Backend 層の API 仕様
 

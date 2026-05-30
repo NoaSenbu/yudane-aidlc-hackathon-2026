@@ -1,0 +1,7 @@
+# Unit-3 Debate AgentCore Runtime 依存関係。
+# Phase 1 では skeleton のみ、Phase 2 で実際の依存解決と bundling を行う。
+bedrock-agentcore>=0.1.0
+strands-agents>=0.1.0
+boto3>=1.35.0
+pydantic>=2.9.0
+aws-lambda-powertools>=3.0.0
