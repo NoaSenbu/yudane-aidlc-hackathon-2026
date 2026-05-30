@@ -12,6 +12,7 @@ import { App, Aspects } from 'aws-cdk-lib';
 import { AwsSolutionsChecks } from 'cdk-nag';
 
 import { AuthStack } from '../lib/auth-stack';
+import { DebateStack } from '../lib/debate-stack';
 import { PlatformStack } from '../lib/platform-stack';
 
 const app = new App();
@@ -25,6 +26,11 @@ new PlatformStack(app, `platform-${env}-stack`, {
 });
 
 new AuthStack(app, `auth-${env}-stack`, {
+  envName: env,
+  env: { region },
+});
+
+new DebateStack(app, `debate-${env}-stack`, {
   envName: env,
   env: { region },
 });
