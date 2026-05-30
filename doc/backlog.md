@@ -458,18 +458,18 @@
 
 ---
 
-### B-310. Backend ruff lint failure（develop 既存問題）の解消
+### B-310. Backend ruff lint + Frontend ESLint 既存違反の解消
 
 | 項目 | 内容 |
 |---|---|
-| **項目名** | `backend/src/{cart,reel}/**` 配下の ruff lint エラー（docstring 内の特殊記号、エラーハンドリング周辺）の解消 |
-| **出典** | PR #6（`feature/unit-3-debate` → `develop`）の CI run 26674767480 / Backend (Python 3.13) ジョブ / 検出は 2026-05-30、Unit-4 Reel と Unit-5 Cart Intercept が develop に直接マージされた時点で混入していた既存問題 |
-| **当初推奨案** | (a) ruff の対象 rule（D205, D400, RUF002 等）を `pyproject.toml` で局所抑制、または (b) 該当 docstring を ruff 規約に整合する形で書き換え |
-| **見送り理由** | Unit-3 PR の責務範囲外（Unit-4/5 担当領域）。Unit-3 merge を急ぐ必要があり、既存 develop の品質ゲート違反として記録した上で別 PR で修正する判断 |
-| **暫定運用** | PR #6 は `--admin` でマージ。Unit-3 内のコードは ruff green を維持（既に確認済み）。Backend 全体の CI が red のまま develop に残るが、ハッカソン期間中の運用方針として許容 |
-| **後付け導入トリガー** | 以下のいずれか 1 つで着手<br>1. develop の CI を緑に戻す方針が再合意された場合<br>2. 決勝 6/26 前の品質ゲート全面適用タイミング<br>3. Unit-4 / Unit-5 担当者（Member C / D）が次の修正サイクルに入った時 |
+| **項目名** | `backend/src/{cart,reel}/**` の ruff lint エラー + Frontend / Shared の `simple-import-sort` / `no-unused-vars` / `no-non-null-assertion` / `no-require-imports` 等の既存 ESLint 違反一括解消 |
+| **出典** | PR #6（`feature/unit-3-debate` → `develop`）の CI run 26674767480 / 26675100306 / Backend (Python 3.13) ジョブ + Frontend / Shared (TypeScript) ジョブ / 検出は 2026-05-30、Unit-2/4/5 が develop に直接マージされた時点で混入していた既存問題 |
+| **当初推奨案** | (a) Backend: ruff の対象 rule（D205, D400, RUF002 等）を `pyproject.toml` で局所抑制、または該当 docstring の書き換え。(b) Frontend: `npm run lint -- --fix` で autofix 可能な `simple-import-sort` を一括修正、`no-non-null-assertion` / `no-unused-vars` は個別判断 |
+| **見送り理由** | Unit-3 PR の責務範囲外（Unit-2/4/5 担当領域）。Unit-3 内のコードは ruff / ESLint green を維持しており、Unit-3 merge を急ぐ必要があるため既存 develop の品質ゲート違反として記録した上で別 PR で修正する判断。Frontend の `typescript-eslint` umbrella package 不足は Unit-3 PR で先行修正済（CI ジョブが実行段階に到達できるようになった結果として既存違反が顕在化） |
+| **暫定運用** | PR #6 は `--admin` でマージ。Unit-3 内のコードは ruff / ESLint green を維持（既に確認済み）。Backend / Frontend の CI が red のまま develop に残るが、ハッカソン期間中の運用方針として許容 |
+| **後付け導入トリガー** | 以下のいずれか 1 つで着手<br>1. develop の CI を緑に戻す方針が再合意された場合<br>2. 決勝 6/26 前の品質ゲート全面適用タイミング<br>3. Unit-2 / Unit-4 / Unit-5 担当者が次の修正サイクルに入った時 |
 | **優先度** | **中**（既存問題、Unit-3 進行はブロックしないが develop の CI 緑には必須） |
-| **概算工数** | ruff エラー一覧化 + 対処方針決定 = 0.5d / 個別修正 + テスト = 0.5〜1d、合計 1〜1.5d（Member C / D） |
+| **概算工数** | Frontend autofix（`npm run lint -- --fix`）= 5 分 / Backend ruff 個別修正 + テスト = 0.5〜1d / 残る ESLint 個別エラー（non-null-assertion / no-undef / unused-vars）対処 = 0.5d、合計 1〜1.5d（Member A / C / D 分担） |
 
 ---
 
