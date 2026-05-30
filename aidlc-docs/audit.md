@@ -609,6 +609,131 @@ This file contains the complete audit trail of all user inputs and AI responses 
 **AI Response**: "main にあって develop にない 140 ファイル / +8569 行（unit1 ブランチ → main 直マージのコミット 352e4bc / b19c4c0）を検出。Unit-1 Platform の完全実装（mobile / backend / infra / shared / aidlc-docs/construction/unit-1-platform/{functional-design, nfr-requirements, nfr-design, infrastructure-design, code}）と CI/CD 設定が main 側のみに存在し、develop 側 (Q1〜Q10 の Functional Design 系設計ドキュメント) と二重化していた。ユーザー指示に基づき以下のマージ戦略を実行: (1) 未 commit 変更を git stash で退避、(2) develop に切替して git merge --no-ff origin/main を実行、(3) コンフリクト 2 ファイル（aidlc-state.md / audit.md）が発生、その他 137 ファイルは main 由来として自動ステージ、(4) ステアリング配下（.kiro/steering/）は両ブランチ間で main が縮小版（並列開発前提決定 / Backlog 運用 / TDD 開発スタイル / §11 チーム同期 / §12 Telemetry スキーマ等を削除）だったため、現在の作業ツリーが develop 版を維持していることを確認、(5) mockup/README.md も develop の Claude Design SSOT 拡張が維持されていることを確認、(6) aidlc-state.md を main 正本（Code Generation Part 2 完了）+ develop 進捗（並列開発前提決定 / Backlog 運用 / TDD 反映 / Unit-3 着手）の統合版で書き直し、(7) audit.md を時系列マージ（〜2026-05-10 共通 + 2026-05-27〜28 develop 系 + 2026-05-29 main 系 + 本マージ完了記録）。Unit-1 の二重化ドキュメントは main 側を正本（business-logic-model.md / business-rules.md / domain-entities.md / frontend-components.md と nfr-* / infrastructure-design / code/* 一式）とし、develop 系の Q1〜Q10 検討プロセス（functional-design-plan.md / functional-design.md / data-model.md / openapi-skeleton-plan.md / sequence-diagrams.md）は『検討プロセス記録』として残置する方針を aidlc-state.md に明記。"
 **Context**: Construction Phase / 2 系統並走の解消 — feature/unit1 → main 直マージで生じた main / develop 乖離を develop に main を取り込む形で解消、ステアリングは develop 拡張（並列開発前提決定 / TDD 等）を維持
 
+## Unit-4 Reel — Construction 着手 + Functional Design Part 1 Planning
+**Timestamp**: 2026-05-30T00:00:00Z
+**User Input**: "unit4のconstructionを始めたいです。まずはbranchを切ってください" → "Functional Designから開始"
+**AI Response**: "git-ops.md §1（コア 3 Unit は feature ブランチ + PR 必須）に従い、develop（origin と同期済み）から `feature/unit-4-reel` ブランチを作成。続いて Functional Design ステージ Part 1 を実施。Unit-4 のコンテキスト（unit-of-work.md / components.md M-03,B-03,B-10,B-11,B-13 / component-methods.md / services.md SVC-02 / stories.md US-02-01〜05 / 要件書 FR-REEL-01〜05・FR-REEL-03 の M-2 連動 / Unit-1 確定済み機能設計 / shared/schema/paths/reel.yaml 骨格）を分析。現ブランチに Unit-4 のソースは未着手（reel backend の __pycache__ は他ブランチ由来の stale）であることを確認。`aidlc-docs/construction/plans/unit-4-reel-functional-design-plan.md` を作成し、設計判断 Q1〜Q10（推薦スコアリング 2 段方式 / 深夜ブースト複合トリガー / ストレス信号の共有関数化 / 所有感ラベル LLM+フォールバック / ジェスチャー閾値・遷移ガード / 遷移記録の冪等性 + EXP + Safeguard / カタログのポート/アダプタ抽象化 + ダミー代替 / Special Link 生成 + NG-8 ガード / カーソルページング + 既出抑制 / カレンダー ctx の任意入力化）を [Answer]: タグ形式で提示。成果物配置は既存フォルダ構成に合わせ unit-name=`reel`（`aidlc-docs/construction/reel/functional-design/`）。diagnostics エラー 0。Q1〜Q10 の回答待ち（承認ゲート前）。"
+**Context**: Construction Phase / Per-Unit Loop / Unit-4 Reel — Functional Design Part 1 Planning（質問提示、回答待ち）
+
+---
+
+## Unit-4 Reel — Functional Design Q1〜Q10 回答受領 + Clarification 作成
+**Timestamp**: 2026-05-30T01:00:00Z
+**User Input**: "回答完了"（unit-4-reel-functional-design-plan.md の [Answer]: タグに記入。Q1=X「MVPの段階では過去に購入したものをもとに関連製品を推薦するようにしたいです。」/ Q2=A / Q3=A / Q4=A / Q5=A / Q6=A / Q7=A / Q8=A / Q9=A / Q10=A）
+**AI Response**: "Q1〜Q10 を解析。Q2〜Q10 は推奨 A で確定。Q1 のみ X（Other）で『MVP は購入履歴ベースの関連商品推薦』という候補生成方針が示されたが、Q2/Q3/Q10=A（深夜ブースト/ストレス係数/カレンダー一致のリランク前提）との統合方法、および購入履歴が乏しい cold start の扱いに曖昧さが残るため、推測で進めず `unit-4-reel-functional-design-clarification.md` を作成。CL-1（MVP 候補生成方式: カテゴリ/ブランド一致 + 共購買ヒューリスティック、OpenSearch は決勝で導入を推奨）/ CL-2（リランク適用範囲: 候補の上に決定論的リランクを MVP から適用を推奨）/ CL-3（cold start: オンボ嗜好 + キュレーション固定リストを推奨）の 3 点を [Answer]: タグで提示。plan のチェックボックスを更新。diagnostics エラー 0。CL-1〜3 の回答待ち。"
+**Context**: Construction Phase / Per-Unit Loop / Unit-4 Reel — Functional Design Part 1（Q1 曖昧さの follow-up clarification 提示、回答待ち）
+
+---
+
+## Unit-4 Reel — Clarification 回答受領 + Functional Design Part 2 Generation
+**Timestamp**: 2026-05-30T02:00:00Z
+**User Input**: "回答しました"（unit-4-reel-functional-design-clarification.md: CL-1=A / CL-2=A / CL-3=A）
+**AI Response**: "全設計判断が確定（Q2〜Q10=A、Q1=X『MVP は購入履歴ベース関連商品』、CL-1=A カテゴリ/ブランド一致 + 共購買、CL-2=A リランク MVP 適用、CL-3=A オンボ嗜好 + キュレーション）。Part 2 で `aidlc-docs/construction/reel/functional-design/` に 4 成果物を生成。(1) domain-entities.md: ReelCard / ReelPage / ReelCursor / RecommendationContext / StressLevel / RankingWeights / ScoredCandidate / OwnershipLabel / ProductCatalogPort / PurchaseHistoryItem / AmazonTransition系 / ExpAward / SpecialLink / ReelGesture を定義、Unit-1 横断型は参照のみ、Mermaid クラス図 + テキスト代替。(2) business-logic-model.md: ALG-RANK（候補生成→決定論リランク、CL-1/2）/ ALG-BOOST（深夜複合トリガー、Q2）/ ALG-PITCH・ALG-LABEL（LLM+フォールバック+24h重複防止、Q4）/ ALG-CATALOG（ポート/アダプタ+キャッシュ+ダミー、Q7）/ ALG-TRANSITION（冪等+EXP+Safeguardゲート、Q6）/ ALG-LINK（純関数+環境ガード+短縮禁止、Q8）/ ALG-GESTURE（優先順位、Q5）。(3) business-rules.md: REEL-RANK/BOOST/STRESS/LABEL/CAT/TR/LINK/GES/PAGE/CAL/API の各ルール + 設定値カタログ + Extension 適合表。(4) frontend-components.md: M-03 ReelScreen のコンポーネント階層 / state / ジェスチャー状態遷移図 / 確認オーバーレイ / API 連携点。見送り 2 件を doc/backlog.md に追記（B-203 ストレス推定共有関数の正本配置 / B-204 ベクトル検索の決勝導入）。全 5 ファイル diagnostics エラー 0。US-02-01〜05 の受入条件を ALG/ルールに紐付け済み。承認ゲート前（次ステージ = NFR Requirements）。"
+**Context**: Construction Phase / Per-Unit Loop / Unit-4 Reel — Functional Design Part 2 Generation 完了、承認待ち
+
+---
+
+## Unit-4 Reel — Functional Design 承認 + NFR Requirements Part 1 Planning
+**Timestamp**: 2026-05-30T03:00:00Z
+**User Input**: "NFR Requirementsへ進んでください"
+**AI Response**: "Unit-4 Reel Functional Design を承認として記録（plan のチェックボックス + aidlc-state 更新）。NFR Requirements ステージ Part 1 を実施。Functional Design 成果物 4 種と要件書 §6（リール 60fps / Share→メタ 2 秒 / 北極星リール遷移率 / PBT-02/03/04）、Unit-1 NFR 基盤（ApiClient タイムアウト・PII マスク・EMF・カバレッジ規約・SECURITY 基盤）を分析。`aidlc-docs/construction/plans/unit-4-reel-nfr-requirements-plan.md` を作成し、NFR 質問 Q1〜Q10（フィード性能 p95 / 遷移記録の整合性 / スケール前提 / 依存別 graceful degradation / カバレッジ階層 / PBT 性質割当 / Reel メトリクスカタログ / セキュリティ重点 / マイルストーン段階達成 / ジェスチャー UI の A11y）を [Answer]: タグ形式で提示。diagnostics エラー 0。Q1〜Q10 の回答待ち（承認ゲート前）。"
+**Context**: Construction Phase / Per-Unit Loop / Unit-4 Reel — Functional Design 承認、NFR Requirements Part 1 Planning（質問提示、回答待ち）
+
+---
+
+## Unit-4 Reel — NFR Requirements Q1〜Q10 回答受領 + Part 2 Generation
+**Timestamp**: 2026-05-30T04:00:00Z
+**User Input**: "回答しました"（unit-4-reel-nfr-requirements-plan.md: Q1〜Q10 すべて A）
+**AI Response**: "Q1〜Q10 全 A 確定、曖昧さなしのため clarification 不要。Part 2 で `aidlc-docs/construction/reel/nfr-requirements/` に 2 成果物を生成。(1) nfr-requirements.md: 性能（フィード p95 800ms→500ms / 遷移 p95 400ms / 60fps）/ スケール（〜10K DAU / On-Demand / Redis TTL 6h）/ 可用性（依存別 graceful degradation、Safeguard 失敗は fail-closed）/ カバレッジ（推薦・遷移・リンク 90%/85%、カタログ 85%、UI 全体目標）/ テスタビリティ（ALG ごと PBT 性質割当 NFR-PBT-01〜06、shrinking/seed/example 併存）/ セキュリティ（SECURITY-05/08/09/11 + NG-6/NG-8 + Secrets Manager、Unit-1 基盤継承）/ 観測（reel.<verb> メトリクス 8 種、北極星補助 reel.amazon_tap）/ A11y（ジェスチャーのボタン代替 + AA + SR）/ マイルストーン段階達成（MVP 必須 / 決勝最適化）。(2) tech-stack-decisions.md: Mobile（gesture-handler / reanimated / FlashList or FlatList / TanStack useInfiniteQuery）/ Backend（Haiku 4.5 ラベル生成 / ProductCatalogPort / Pydantic v2 / Powertools）/ データストア（AmazonTransitions / SafeguardStates / ReelImpressions / Redis）/ Unit-4 固有判断（MVP OpenSearch 不採用=B-204、条件付き書き込み冪等、カタログアダプタ）/ 未決定事項は Infra/NFR Design 送り。全 2 ファイル diagnostics 0。FD・要件書 §6・Unit-1 基盤と整合。承認ゲート前（次ステージ = NFR Design）。"
+**Context**: Construction Phase / Per-Unit Loop / Unit-4 Reel — NFR Requirements Part 2 Generation 完了、承認待ち
+
+---
+
+## Unit-4 Reel — 機能要件・非機能要件の再レビュー + 5 件修正
+**Timestamp**: 2026-05-30T05:00:00Z
+**User Input**: "ここまでで機能要件、非機能要件が問題ないかを再レビューしてください" → "修正して"
+**AI Response**: "FD（domain-entities/business-logic-model/business-rules/frontend-components）と NFR Requirements を要件書・openapi.yaml・component-methods.md と突き合わせて再レビュー。5 件のギャップを検出し全件修正。(1) [中] FR-AUTH-03『遷移直後 10 分は同カテゴリをリールに出さない』のカバレッジ漏れ → REEL-RANK-10 追加、ALG-RANK ステップ2 に遷移後カテゴリクールダウン除外を追加、RecommendationContext に recentTransitions 追加、設定値 POST_TRANSITION_CATEGORY_COOLDOWN_SECONDS=600 を 2 箇所に追加、不変条件に明記。(2) [中] POST 429 レート制限未定義（SECURITY-11 / Unit-1 API-09）→ REEL-API-07 追加、NFR-SEC に SECURITY-11 レート制限行追加、MVP マイルストーンに追記。(3) [中] reel.yaml 429 未定義 → REEL-API-07/NFR で『reel.yaml へ非破壊追記』方針を明記（Code Generation で契約詳細化に引き継ぎ）。(4) [軽] US-02-01 AC-2（深夜ブースト 3 秒無操作の誘導アニメ）漏れ → frontend-components のコンポーネント階層に誘導アニメ注記、State に boostNudge 追加、UI 検証観点に追記。(5) [軽] 論破トリガー名の不整合 → 左スワイプの trigger を `reel-refuse` に統一（business-rules REEL-GES-01 / business-logic-model ALG-GESTURE / domain-entities ReelGesture / frontend API 表）。全 5 ファイル diagnostics 0。NFR Design 着手前のクリーンアップ完了。"
+**Context**: Construction Phase / Per-Unit Loop / Unit-4 Reel — FD + NFR Requirements の再レビューと整合性修正（承認待ち）
+
+---
+
+## Unit-4 Reel — NFR Requirements 承認 + NFR Design Part 1 Planning
+**Timestamp**: 2026-05-30T06:00:00Z
+**User Input**: "NFR Designに進んでください"
+**AI Response**: "Unit-4 Reel NFR Requirements を承認として記録（再レビュー 5 件修正後）。NFR Design ステージ Part 1 を実施。NFR Requirements 成果物と Unit-1 NFR Design パターン（PAT-RESIL/PERF/SEC/OBS）を分析。`aidlc-docs/construction/plans/unit-4-reel-nfr-design-plan.md` を作成し、設計パターン/論理コンポーネントの質問 Q1〜Q10（カタログ cache-aside + stale-on-error / LLM タイムアウト + 並列 + フォールバック / フィードレイテンシ予算配分 + ラベル後追い / 2 層キャッシュ / 遷移 TransactWriteItems + 先行ゲート / On-Demand + SnapStart + Provisioned backlog / RecommendationStrategy ポートで MVP↔ベクトル検索分離 / 出力モデレーションパイプライン + Special Link 純関数ガード / Reel メトリクス二経路 + S-04 追記 / 仮想化リスト + UI スレッドジェスチャー + 画像最適化）を [Answer]: タグ形式で提示。diagnostics エラー 0。Q1〜Q10 の回答待ち（承認ゲート前）。"
+**Context**: Construction Phase / Per-Unit Loop / Unit-4 Reel — NFR Requirements 承認、NFR Design Part 1 Planning（質問提示、回答待ち）
+
+---
+
+## Unit-4 Reel — NFR Design Q1〜Q10 回答受領 + 矛盾レビュー + Part 2 Generation
+**Timestamp**: 2026-05-30T07:00:00Z
+**User Input**: "回答しました。矛盾がないかレビューしてください" → "はい"（推奨方針での 3 件矛盾解消に同意）
+**AI Response**: "Q1〜Q10 全 A を確認。回答間と既存確定事項（FD / services.md / Unit-1）との矛盾を批判的にレビューし 3 件検出 → 推奨方針で解消。(1) [高] VPC 配置矛盾（Q6 の B-03 VPC 外 vs Q1/Q4 の Redis キャッシュ = VPC 内リソース、services.md とも不整合）→ 解消案 a: R-PAT-VPC-01『B-11 を VPC 内、B-03/B-13 を VPC 外から Lambda invoke』。(2) [中] レイテンシ予算とタイムアウトの不整合（カタログ 2s vs 予算 300ms / LLM 1.5s vs 350ms）→ ソフト期限（予算）とハードタイムアウトを分離（R-PAT-PERF-01）。(3) [中] ラベル後追い差し替えが FD ドメインモデル（ownershipLabel/pitch 必須・同期）と未整合 → MVP は同期生成統一、後追いは backlog B-205。ユーザー同意後、Part 2 で `aidlc-docs/construction/reel/nfr-design/` に 2 成果物生成。nfr-design-patterns.md（Unit-1 継承 4 + Unit-4 固有 13 パターン、R-PAT-VPC-01 境界図含む）/ logical-components.md（RLC-01〜10、VPC 境界サマリ、CandidateSourcePort で B-204 非破壊導入の論理分離）。backlog に B-205（ラベル非同期後追い）追記。全 3 ファイル diagnostics 0。承認ゲート前（次ステージ = Infrastructure Design）。"
+**Context**: Construction Phase / Per-Unit Loop / Unit-4 Reel — NFR Design Part 2 Generation 完了（矛盾 3 件解消）、承認待ち
+
+---
+
+## Unit-4 Reel — NFR Design の過剰設計・矛盾 再点検 + 2 件修正
+**Timestamp**: 2026-05-30T08:00:00Z
+**User Input**: "本当に問題ないですか？矛盾やtoomuchになっていれば修正してください"
+**AI Response**: "ハッカソン文脈（予選 5/30 / 4 名 / MVP はダミーカタログ）で NFR Design 2 ファイルを再精読し 2 件の実質問題を検出・修正。(1) [過剰設計] MVP のカタログは DummyCatalogAdapter（プロセス内）なのに、MVP から VPC 分割 + Redis L1 + B-11 別 Lambda invoke を前提化していた。Lambda invoke のホップが p95 800ms 予算を逆に圧迫し、VPC/SG/Endpoint の構築コストも 4 名規模に不要。→ R-PAT-CAT-01/PERF-02/VPC-01 を『決勝のみ』に明示、§0.1 に MVP/決勝 構成マトリクスを新設、MVP は B-03 プロセス内でダミー完結（VPC/Redis/invoke なし）に修正。NFR-Requirements の NFR-SCALE-04（Redis を MVP ダミーにも適用していた記述）も決勝のみに訂正。Mermaid/テキスト代替/VPC 境界サマリ/配置/Infra 引き継ぎも同期修正。(2) [矛盾] R-PAT-TXN-01 と RLC-07 で EXP を『TransactWriteItems 内（同期）』と『B-08 へ非同期供給』に二重定義。さらに EXP/Lv 正本は Unit-2 所有のため 3 テーブル横断トランザクションは所有境界侵害。→ 原子トランザクションを Reel 所有の 2 項目（遷移記録 + 月間カウント）に限定、EXP は Unit-2 へ非同期供給 + レスポンスは楽観 +1（US-02-02 AC-4 トースト用）に統一。その他（Q5 TransactWriteItems / Q7 CandidateSourcePort / Q8/Q9/Q10）は MVP 妥当で過剰なしと判断。全 3 ファイル diagnostics 0。"
+**Context**: Construction Phase / Per-Unit Loop / Unit-4 Reel — NFR Design の過剰設計・矛盾の再点検と修正（承認待ち）
+
+---
+
+## Unit-4 Reel — NFR Design 承認 + Infrastructure Design Part 1 Planning
+**Timestamp**: 2026-05-30T09:00:00Z
+**User Input**: "インフラデザインに進んでください。Unit1でインフラ周りは整備してると思います"
+**AI Response**: "Unit-4 Reel NFR Design を承認として記録（過剰設計・矛盾 2 件修正後）。Infrastructure Design ステージ Part 1 を実施。Unit-1 Platform のインフラ基盤（VPC / 単一 API Gateway + Authorizer / Cognito / ElastiCache Redis / OpenSearch Serverless〔Unit-4 着手時追加と Unit-1 infra に明記〕/ KMS / IAM 規約 / 観測 / AuditLogger Lambda Layer / Secrets Manager / SSM）と shared-infrastructure.md（SSM 参照規約・命名・デプロイ順序）を確認。Unit-4 は新規基盤を作らず reel-stack 固有分のみ足す軽量スコープと判断。`aidlc-docs/construction/plans/unit-4-reel-infrastructure-design-plan.md` を作成し、Q1〜Q7（SSM 参照準拠 / DynamoDB 2 テーブル設計〔amazon-transitions + impressions、SafeguardStates・EXP は Unit-7/2 参照〕/ Lambda VPC 境界の物理化〔MVP は VPC 外・B-11 プロセス内、決勝のみ B-11 VPC 内〕/ API パス相乗り + 429 / 外部接続〔Secrets Manager + Bedrock + 決勝 VPC Endpoint〕/ 観測継承 + reel 固有 Alarm / reel-stack 単一・dev/prd・cdk-nag・feature フラグで MVP↔決勝出し分け）を [Answer]: タグ形式で提示。diagnostics 0。Q1〜Q7 の回答待ち（承認ゲート前）。"
+**Context**: Construction Phase / Per-Unit Loop / Unit-4 Reel — NFR Design 承認、Infrastructure Design Part 1 Planning（質問提示、回答待ち）
+
+---
+
+## Unit-4 Reel — Infrastructure Design Q1〜Q7 回答受領 + Part 2 Generation
+**Timestamp**: 2026-05-30T10:00:00Z
+**User Input**: "回答しました"（unit-4-reel-infrastructure-design-plan.md: Q1〜Q7 すべて A）
+**AI Response**: "Q1〜Q7 全 A 確定、曖昧さなしのため clarification 不要。Part 2 で `aidlc-docs/construction/reel/infrastructure-design/` に 2 成果物を生成。(1) infrastructure-design.md: Unit-1 基盤の SSM 参照継承表 / DynamoDB 2 テーブル（amazon-transitions〔冪等 clientTransitionId 条件付き書き込み + gsi-month〕/ impressions、SafeguardStates・EXP は Unit-7/2 参照）/ Lambda 配置（B-03/B-13/B-10 = VPC 外 SnapStart、B-11 = MVP プロセス内ダミー・決勝のみ VPC 内）/ API パス相乗り + POST 429 / 外部統合（Bedrock MVP 有効・Creators 決勝・Secrets Manager）/ reel 固有 SSM / 観測継承 + reel Alarm / セキュリティ / 論理→物理マッピング。(2) deployment-architecture.md: 環境戦略（dev/prd、feature フラグで MVP↔決勝出し分け）/ デプロイ順序（platform→auth→reel）/ reel-stack 構成 / CI-CD / cdk-nag / デプロイ図 + テキスト代替 / コスト最適化（MVP は VPC/Redis/OpenSearch 不使用でコストゼロ）/ 未確定事項。OpenSearch 追加は決勝時の Unit-1 依頼事項として注記。過剰設計の再点検済み（MVP は基盤を足さない）。全 2 ファイル diagnostics 0。承認ゲート前（次ステージ = Code Generation）。"
+**Context**: Construction Phase / Per-Unit Loop / Unit-4 Reel — Infrastructure Design Part 2 Generation 完了、承認待ち
+
+---
+
+## Unit-4 Reel — 全設計ステージ横断の矛盾点検 + 3 件修正
+**Timestamp**: 2026-05-30T11:00:00Z
+**User Input**: "矛盾はないですか？"
+**AI Response**: "Infrastructure Design とその上流（FD / NFR / component-methods.md / services.md / OpenAPI）を突き合わせ、3 件の矛盾/過剰を検出し全件修正。(1) [矛盾・誤帰属] EXP 担当: 私が NFR Design 以降『EXP は B-08 が非同期加算』と書いたが、component-methods.md では B-13 record_transition() -> ExpAwardDto が EXP 加算を同期で担い、B-08 は嗜好ベクトルの日次バッチ（EXP 加算しない）。services.md も『B-13 → EXP 加算 → Lv↑』。→ 全ドキュメント（FD business-logic/business-rules/domain-entities、NFR patterns/logical-components/requirements/tech-stack、Infra 2 ファイル）で『EXP は B-13 が Achievements〔Unit-2 スキーマ〕へ同期付与、非同期は嗜好ベクトル学習のみ』に統一。当初の楽観 +1 / 非同期 EXP パイプラインより単純化（過剰設計も解消）。(2) [矛盾] Associates タグが Secrets Manager と SSM に二重定義 → タグは URL 公開の非機密のため SSM に一本化、Secrets Manager は Creators OAuth 認証情報のみに訂正（Infra §5/SSM 表/マッピング/deployment 図）。(3) [過剰] B-10 Special Link を専用 Lambda にしていた → 外部呼び出しのない純関数のため feed/transition Lambda 同梱の共有モジュールに変更、reel-stack の Lambda 3→2 + 共有モジュールに削減（Infra §3/§8、deployment 構成図/Mermaid）。全 9 ファイル diagnostics 0。Code Generation 着手前の整合性を確保。"
+**Context**: Construction Phase / Per-Unit Loop / Unit-4 Reel — 設計 4 ステージ横断の整合性レビューと修正（Infrastructure Design 承認待ち）
+
+---
+
+## Unit-4 Reel — Infrastructure Design 承認 + Code Generation Part 1 Planning
+**Timestamp**: 2026-05-30T12:00:00Z
+**User Input**: "Code Generationへ進んでください"
+**AI Response**: "Unit-4 Reel Infrastructure Design を承認として記録（横断矛盾 3 件修正後）。Code Generation ステージ Part 1（Planning）を実施。`aidlc-docs/construction/plans/unit-4-reel-code-generation-plan.md` を作成（Single Source of Truth）。10 ステップ: (1) API 契約非破壊拡張〔reel.yaml + examples〕(2) Backend ビジネスロジック〔models/catalog/ranking/labels/special_link/transition〕(3) Backend ロジックテスト + PBT-02/03/04/07 (4) Backend API レイヤ〔feed/transition handler〕(5) Backend サマリ (6) Mobile フロント〔use-reel-feed/use-amazon-redirect/use-reel-gestures/reel-screen、依存 FlashList/gesture-handler/reanimated を declare〕(7) Mobile テスト + MSW (8) Mobile サマリ (9) Infra〔reel-stack.ts + cdk-nag snapshot test〕(10) Infra + Unit-4 総括サマリ。TDD（Backend クラシック / Mobile Outside-In / CDK Snapshot、AI 生成順序 = テスト→実装→PBT→Refactor）。US-02-01〜05 トレーサビリティ + スコープ外（テスト実行・型生成・cdk synth・依存インストール〔CVE チェック込み〕は Build and Test へ）を明記。diagnostics 0。**Code Generation Part 2 着手前にユーザーの明示承認が必要**（code-generation.md Step 7）。"
+**Context**: Construction Phase / Per-Unit Loop / Unit-4 Reel — Infrastructure Design 承認、Code Generation Part 1 Planning 完了、Part 2 生成の承認待ち
+
+---
+
+## Unit-4 Reel — Code Generation Plan レビュー + 3 件修正 + 2 件注記
+**Timestamp**: 2026-05-30T13:00:00Z
+**User Input**: "コード生成計画をレビューしてください" → "はい"（中 3 点反映 + 確認 2 点注記に同意）
+**AI Response**: "コード生成計画を実装観点で精査（既存 scaffold と照合）。前提検証 OK: backend/src/reel は .py 無し（stale __pycache__ のみ）/ shared/safeguard-policy・asin-extractor・backend/src/common・mobile/src/features/platform・msw-handlers・reel.yaml すべて実在で import 前提は正しい。3 件修正: (1) Step 2 冒頭に『stale __pycache__ 削除』を追加（別ブランチ由来の associates_link/creators_client/opensearch_client/service/transition_service.pyc が本計画と異なる命名で残存、import 混乱防止）。(2) transition.py に『既存 safeguard_policy.py の decide_allow(SafeguardInput(transition_count_month, monthly_limit_yen, current_budget_used_yen, SafeguardFlags(...))) 正本シグネチャに整合』を明示（独自再実装禁止、SG-10）。(3) labels.py の『Bedrock stub』を bedrock_client.py（boto3 bedrock-runtime 薄ラッパ + テストはDI モック注入）に具体化、Step 3 test_labels もモック注入を明記。2 件注記: Step 9 に API GW を RestApi.fromRestApiAttributes()（SSM api-id/root-resource-id）で import + addResource 方式を明記 / スコープ外に『Part 2 は reel.yaml と実装を同ターン生成するが PR 化時は契約 PR 分離先行』を注記。過剰設計なし。diagnostics 0。Code Generation Part 2 着手前の最終承認待ち。"
+**Context**: Construction Phase / Per-Unit Loop / Unit-4 Reel — Code Generation Plan レビュー修正、Part 2 生成の承認待ち
+
+---
+
+## Unit-4 Reel — Code Generation Plan 承認 + Part 2 Generation 着手
+**Timestamp**: 2026-05-30T13:30:00Z
+**User Input**: "コード生成へ"
+**AI Response**: "Code Generation Plan を承認として記録。Part 2 着手。事前掃除として別ブランチ由来の stale `backend/src/reel/__pycache__/` を削除済み。既存規約（DomainError/to_problem_details、require_owner、asin_extractor の AsinResult、safeguard_policy.decide_allow シグネチャ）を確認し様式を踏襲。Step 1〜10 を TDD（テスト→実装→PBT→Refactor）で順次生成開始。実行・型生成・cdk synth・依存インストールは Build and Test へ。"
+**Context**: Construction Phase / Per-Unit Loop / Unit-4 Reel — Code Generation Part 2 Generation 開始
+
+---
+
+## Unit-4 Reel — Code Generation Part 2 完了
+**Timestamp**: 2026-05-30T15:00:00Z
+**User Input**: "続けて" / "ロジックテストが長いので分割させてください（Mobile）" / "テストを実行してください" → "3つ目で"（実行は Build and Test 段に回す）
+**AI Response**: "Code Generation Part 2 を全 10 ステップ完了。(Step1) shared/schema に reel.yaml 詳細 + components/schemas/reel.yaml + examples/reel.yaml + openapi.yaml 登録。(Step2-4) backend/src/reel に models/catalog(+dummy_catalog.json)/ranking/bedrock_client/labels/special_link/cursor/feed/transition/handlers を生成。S-03 は shared 正本 decide_allow を参照（conftest に shared python パス追加）。EXP は B-13 同期付与（横断矛盾解消反映）。(Step3) backend/tests/reel に strategies + ranking/boost/special_link/transition/labels/cursor/handler テスト。**ロジック+PBT 40 件 pass 実行確認**（.venv、coverage 無効化）。handler 2 件は aws_xray_sdk 未導入のローカル制約で collection 不可（Unit-1 と同制約、Build and Test で実行）。(Step6-8) mobile/src/features/reel に gestures/boost-nudge/client-transition-id/reel-api/use-reel-feed/use-amazon-redirect/reel-screen + index、テストは example/PBT を別ファイル分割（ユーザー要望）。msw-handlers に reel ルート追記。(Step9) infra/lib/reel-stack.ts（DynamoDB 2 + feed/transition Lambda VPC 外 SnapStart + API パス相乗り fromRestApiAttributes + usage plan 429 + SSM + Alarm）+ reel-stack.test.ts（CDK assertions + cdk-nag）+ bin/app.ts 登録。(Step10) backend/mobile/infra/unit-4 総括サマリ 4 本。**検出した cross-unit 依存**: platform-stack が api-id/api-root-resource-id を SSM 未公開 → Member A へ依頼（infra-summary.md / unit-4-code-summary.md に記録、Unit-1 owned ファイルは編集せず）。Mobile vitest / infra cdk synth は Build and Test 段で実行（package-lock 未コミットのため install 保留・ユーザー合意）。全生成ファイル diagnostics 0。Code Generation Part 2 承認待ち。"
+**Context**: Construction Phase / Per-Unit Loop / Unit-4 Reel — Code Generation Part 2 Generation 完了、承認待ち
 
 ---
 

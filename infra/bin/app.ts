@@ -14,6 +14,7 @@ import { AwsSolutionsChecks } from 'cdk-nag';
 import { AuthStack } from '../lib/auth-stack';
 import { CartStack } from '../lib/cart-stack';
 import { PlatformStack } from '../lib/platform-stack';
+import { ReelStack } from '../lib/reel-stack';
 
 const app = new App();
 
@@ -28,7 +29,14 @@ new PlatformStack(app, `platform-${env}${stackSuffix}-stack`, {
   env: { region },
 });
 
+// Unit-2 Auth & Profile
 new AuthStack(app, `auth-${env}-stack`, {
+  envName: env,
+  env: { region },
+});
+
+// Unit-4 Reel（platform-stack の後段にデプロイ、SSM 参照で連携）
+new ReelStack(app, `reel-${env}-stack`, {
   envName: env,
   env: { region },
 });

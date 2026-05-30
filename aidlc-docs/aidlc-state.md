@@ -9,7 +9,7 @@
 - **Project Type**: Greenfield
 - **Start Date**: 2026-05-07T00:00:00Z
 - **Current Phase**: 🟢 CONSTRUCTION PHASE
-- **Current Stage**: 🎉 Unit-1 + Unit-2 完了（Member A 前半フェーズ完了）→ Unit-3 Debate UI SSOT を Direction D「黒服のコンシェルジュ」に切替完了（2026-05-30）+ Unit-5 Cart Intercept Code Generation Part 2 完了 + 1 巡目セルフレビュー Z1〜Z6 + 2 巡目セルフレビュー W1〜W7 + Build and Test 検証完了（2026-05-30、Unit-5 スコープ内 177 件すべて pass + 検証時修正 4 件 + Unit-1 由来問題 2 件 backlog 登録 = B-506 / B-507）。Unit-3 は Code Generation Phase 1 Part 2（実装着手）前 / Unit-5 は Member A の Unit-1 修正待ち項目を除き単独ブロックなし、承認ゲート → 次 Unit / 次ステージ移行待ち
+- **Current Stage**: 🎉 Unit-1 + Unit-2 完了（Member A 前半フェーズ完了）→ Unit-3 Debate UI SSOT を Direction D「黒服のコンシェルジュ」に切替完了（2026-05-30）+ Unit-4 Reel Code Generation Part 2 完了（reel 実装・テスト・CDK 生成、Backend 40 件 pass、2026-05-30）+ Unit-5 Cart Intercept Code Generation Part 2 完了 + 1 巡目セルフレビュー Z1〜Z6 + 2 巡目セルフレビュー W1〜W7 + Build and Test 検証完了（2026-05-30、Unit-5 スコープ内 177 件すべて pass + 検証時修正 4 件 + Unit-1 由来問題 2 件 backlog 登録 = B-506 / B-507）。`feature/unit-4-reel` を develop にマージ（2026-05-30）。Unit-3 は Code Generation Phase 1 Part 2（実装着手）前 / Unit-4・Unit-5 は承認ゲート通過、次 Unit / 次ステージ移行待ち
 - **User Language**: Japanese
 
 ## Workspace State
@@ -104,8 +104,19 @@
       - **Step 構成**: Step 1 Infra Snapshot TDD / Step 2 SSM Loader / Step 3 Domain Models / Step 4 Cooldown DDB Adapter / Step 5 main.py 最小実装 / Step 6 Mobile AgentCore Client / Step 7 Mobile Event Parser / Step 8 疎通確認
       - **多巡セルフレビュー（3 巡）**（Critical 2 + Major 4 + 1 + 0 件 = 計 7 件を 3 巡で修正、`parse_jwt_actor_id` の責務を Step 4 → Step 5 へ移動 / `bedrock_kwargs={}` 仕様確認注記 / RuntimeEndpoint live test 追加 / `agentcore invoke --dev` モード明示 / vitest `vi.stubEnv` モック方法明示 / SSM model-id 動的反映の再起動待ち追記 / **Step 3/4 順序逆転を解消（Domain Models を Step 3 へ繰り上げ、Cooldown を Step 4 へ）** / **CDK で `kms.Key.fromKeyArn()` での復元を明示** / Cognito MFA 未設定リスクの緩和策表現改善）
     - [ ] Code Generation Phase 1 Part 2 実装着手（pending、Step 1〜8 を Part 2 で順次実行）
-  - **Unit-4 Reel**（コア 3 並行、pending）
-  - **Unit-5 Cart Intercept**（進行中、Functional Design / NFR Requirements / NFR Design / Infrastructure Design 完了、Code Generation ステージ移行待ち、2026-05-29）
+  - **Unit-4 Reel**（進行中）
+    - [x] Functional Design Part 1 Planning（2026-05-30、`feature/unit-4-reel` ブランチ作成 + Q1〜Q10 提示 + CL-1/2/3 clarification、全回答受領）
+    - [x] Functional Design Part 2 Generation（2026-05-30、`construction/reel/functional-design/` に domain-entities / business-logic-model / business-rules / frontend-components の 4 種生成、承認済み 2026-05-30）
+    - [x] NFR Requirements Part 1 Planning（2026-05-30、Q1〜Q10 提示、全 A 回答受領）
+    - [x] NFR Requirements Part 2 Generation（2026-05-30、`construction/reel/nfr-requirements/` に nfr-requirements / tech-stack-decisions 生成、承認済み 2026-05-30。再レビューで 5 件修正済み）
+    - [x] NFR Design Part 1 Planning（2026-05-30、Q1〜Q10 提示、全 A 回答受領）
+    - [x] NFR Design Part 2 Generation（2026-05-30、`construction/reel/nfr-design/` に nfr-design-patterns / logical-components 生成、矛盾 3 件解消 + 過剰設計・矛盾 2 件再修正、承認済み 2026-05-30）
+    - [x] Infrastructure Design Part 1 Planning（2026-05-30、Q1〜Q7 提示、全 A 回答受領）
+    - [x] Infrastructure Design Part 2 Generation（2026-05-30、`construction/reel/infrastructure-design/` に infrastructure-design / deployment-architecture 生成、Unit-1 基盤を SSM 参照で再利用、承認済み 2026-05-30。横断矛盾 3 件修正済み）
+    - [x] Code Generation Part 1 Planning（2026-05-30、`unit-4-reel-code-generation-plan.md` 10 ステップ提示、レビュー修正 3 件後承認）
+    - [x] Code Generation Part 2 Generation（2026-05-30、shared/schema + backend/src/reel + mobile/src/features/reel + infra/lib/reel-stack 生成。Backend ロジック+PBT 40 件 pass 実行確認。承認済み 2026-05-30、`feature/unit-4-reel` を develop にマージ）
+      - **cross-unit 依頼**: platform-stack の `api-id`/`api-root-resource-id` SSM 公開（Member A）、OpenSearch コレクション追加（決勝）
+  - **Unit-5 Cart Intercept**（進行中、Functional Design / NFR Requirements / NFR Design / Infrastructure Design 完了、Code Generation Part 2 完了、Build and Test 検証完了、2026-05-30）
   - **Unit-6 Calendar / Unit-7 Safeguard / Unit-8 Dame Report**（サポート 3 並行、pending）
 - [ ] Functional Design (EXECUTE, per-unit)
   - [x] Unit-1 Platform Functional Design Part 1 Planning（2026-05-27、Q1〜Q10 確定）

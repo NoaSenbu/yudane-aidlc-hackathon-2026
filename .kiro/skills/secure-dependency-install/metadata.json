@@ -1,0 +1,13 @@
+{
+  "version": "1.0.0",
+  "organization": "YUDANE Team",
+  "date": "May 2026",
+  "abstract": "新しい依存パッケージをインストールする前に CVE / 既知脆弱性を OSV.dev で照会し、CVSS から深刻度を算出して導入可否を判断するスキル。npm（TypeScript / React Native / CDK）と PyPI（Python 3.13 Lambda）の両エコシステムに対応。Critical / High はインストールをブロックし、修正版があれば提案、無ければ代替検討や見送りを促す。プロジェクトの SECURITY-10（SBOM / Snyk / Dependabot）と品質ゲート §9（SAST Critical / High = 0）をインストール段階に前倒しする事前防御層。",
+  "references": [
+    "https://osv.dev/",
+    "https://api.osv.dev/",
+    "https://github.com/advisories",
+    "https://pypi.org/",
+    "https://www.first.org/cvss/v3.1/specification-document"
+  ]
+}
